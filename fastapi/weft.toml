@@ -1,0 +1,9 @@
+[template]
+name = "fastapi"
+weft-version = "0.1"
+description = "Template for building APIs using FastAPI."
+
+[[question]]
+id = "project_name"
+kind = "string"
+prompt = "Project name"

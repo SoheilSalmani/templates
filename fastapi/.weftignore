@@ -1,0 +1,8 @@
+# Cache folders (Python)
+__pycache__/
+
+# Virtual environments (Python)
+.venv/
+
+# Configuration and data (Rope)
+.ropeproject/
