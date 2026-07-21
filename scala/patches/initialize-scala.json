@@ -4,6 +4,9 @@
       "op": "create_file",
       "path": ".gitignore",
       "content": [
+        "# Configuration directory (Bloop)",
+        ".bloop/",
+        "",
         "# Connection files (Build Server Protocol)",
         ".bsp/",
         "",
@@ -31,7 +34,7 @@
     },
     {
       "op": "create_file",
-      "path": "hello.scala",
+      "path": "Main.scala",
       "content": [
         [
           "//> using scala ",

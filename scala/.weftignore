@@ -1,8 +1,14 @@
+# Configuration directory (Bloop)
+.bloop/
+
 # Connection files (Build Server Protocol)
 .bsp/
 
 # Workspace data (Metals)
 .metals/
+
+# Build output (sbt)
+target/
 
 # Build outputs & caches (Scala CLI)
 .scala-build/

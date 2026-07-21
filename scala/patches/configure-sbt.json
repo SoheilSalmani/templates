@@ -1,0 +1,68 @@
+{
+  "title": "Configure sbt",
+  "description": "Configure sbt.",
+  "depends_on": [
+    "initialize-scala"
+  ],
+  "when": "configure_sbt",
+  "ops": [
+    {
+      "op": "delete_file",
+      "path": "Main.scala"
+    },
+    {
+      "op": "create_file",
+      "path": "build.sbt",
+      "content": [
+        [
+          "scalaVersion := \"",
+          {
+            "answer": "scala_version"
+          },
+          "\""
+        ],
+        "",
+        [
+          "name := \"",
+          {
+            "answer": "project_name"
+          },
+          "\""
+        ],
+        [
+          "version := \"",
+          {
+            "answer": "project_version"
+          },
+          "\""
+        ],
+        [
+          "organization := \"",
+          {
+            "answer": "project_organization"
+          },
+          "\""
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "project/build.properties",
+      "content": [
+        "sbt.version=2.0.3"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "src/main/scala/Main.scala",
+      "content": [
+        "@main",
+        "def hello(): Unit =",
+        "  println(\"Hello, World!\")"
+      ],
+      "mode": 420
+    }
+  ]
+}

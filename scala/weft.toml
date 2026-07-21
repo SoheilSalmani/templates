@@ -8,7 +8,6 @@ id = "scala_version"
 kind = "choice"
 choices = ["3.8.4", "3.3.8", "2.13.18"]
 prompt = "Scala version"
-example = "3.8.4"
 
 [[question]]
 id = "scalafmt_runner_dialect"
@@ -16,3 +15,24 @@ kind = "choice"
 computed = true
 choices = ["scala3", "Scala33", "scala213"]
 default = "{'3.8.4': 'scala3', '3.3.8': 'Scala33'}.get(scala_version, 'scala213')"
+
+[[question]]
+id = "configure_sbt"
+kind = "bool"
+
+[[question]]
+id = "project_name"
+kind = "string"
+prompt = "Project name"
+when = "configure_sbt"
+
+[[question]]
+id = "project_version"
+kind = "string"
+when = "configure_sbt"
+
+[[question]]
+id = "project_organization"
+kind = "string"
+prompt = "Project organization"
+when = "configure_sbt"
