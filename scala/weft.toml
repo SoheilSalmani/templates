@@ -1,0 +1,18 @@
+[template]
+name = "scala"
+weft-version = "0.1"
+description = "TODO: what this template scaffolds."
+
+[[question]]
+id = "scala_version"
+kind = "choice"
+choices = ["3.8.4", "3.3.8", "2.13.18"]
+prompt = "Scala version"
+example = "3.8.4"
+
+[[question]]
+id = "scalafmt_runner_dialect"
+kind = "choice"
+computed = true
+choices = ["scala3", "Scala33", "scala213"]
+default = "{'3.8.4': 'scala3', '3.3.8': 'Scala33'}.get(scala_version, 'scala213')"

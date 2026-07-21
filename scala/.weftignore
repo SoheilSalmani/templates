@@ -1,0 +1,8 @@
+# Connection files (Build Server Protocol)
+.bsp/
+
+# Workspace data (Metals)
+.metals/
+
+# Build outputs & caches (Scala CLI)
+.scala-build/

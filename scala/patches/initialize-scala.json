@@ -1,0 +1,71 @@
+{
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".gitignore",
+      "content": [
+        "# Connection files (Build Server Protocol)",
+        ".bsp/",
+        "",
+        "# Workspace data (Metals)",
+        ".metals/",
+        "",
+        "# Build outputs & caches (Scala CLI)",
+        ".scala-build/"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".scalafmt.conf",
+      "content": [
+        "version = \"3.11.4\"",
+        [
+          "runner.dialect = ",
+          {
+            "answer": "scalafmt_runner_dialect"
+          }
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "hello.scala",
+      "content": [
+        [
+          "//> using scala ",
+          {
+            "answer": "scala_version"
+          }
+        ],
+        "",
+        "@main",
+        "def hello(): Unit =",
+        "  println(\"Hello, World!\")"
+      ],
+      "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-scala",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify the correct Scala version is installed",
+      "action": [
+        "scala -version | grep -q ",
+        {
+          "answer": "scala_version"
+        }
+      ]
+    },
+    {
+      "id": "verify-scalafmt",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify correct version of `scalafmt` is installed",
+      "action": "scalafmt --version | grep 3.11.4"
+    }
+  ]
+}
