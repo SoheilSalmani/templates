@@ -1,0 +1,27 @@
+{
+  "depends_on": [
+    "configure-sbt"
+  ],
+  "when": "configure_zio",
+  "ops": [
+    {
+      "op": "delete_file",
+      "path": "src/main/scala/Main.scala"
+    },
+    {
+      "op": "create_file",
+      "path": "src/main/scala/MainApp.scala",
+      "content": [
+        "import java.io.IOException",
+        "",
+        "import zio._",
+        "",
+        "object MainApp extends ZIOAppDefault {",
+        "  def run: IO[IOException, Unit] =",
+        "    Console.printLine(\"Hello, World!\")",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}

@@ -36,3 +36,9 @@ id = "project_organization"
 kind = "string"
 prompt = "Project organization"
 when = "configure_sbt"
+
+[[question]]
+id = "configure_zio"
+kind = "bool"
+prompt = "Configure ZIO"
+when = "configure_sbt"
