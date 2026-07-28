@@ -1,0 +1,62 @@
+[template]
+name = "java"
+weft-version = "0.1"
+description = "A Java 25 app on Gradle (Kotlin DSL) with an opinionated tooling stack (Spotless + palantir-java-format, Error Prone, JUnit 6, AssertJ), growing into a Spring Boot web service."
+
+[[question]]
+id = "project_name"
+kind = "string"
+prompt = "Project name"
+example = "Demo Service"
+
+[[question]]
+id = "app_slug"
+kind = "string"
+computed = true
+default = "project_name.lower().replace(' ', '-')"
+
+[[question]]
+id = "java_version"
+kind = "string"
+prompt = "Java version"
+default = "'25'"
+
+[[question]]
+id = "use_spring_boot"
+kind = "bool"
+prompt = "Add Spring Boot (a web service)"
+default = "True"
+
+[[question]]
+id = "package"
+kind = "string"
+prompt = "Base package"
+example = "com.example.demo"
+default = "'com.example.app'"
+when = "use_spring_boot"
+
+[[question]]
+id = "package_path"
+kind = "string"
+computed = true
+default = "package.replace('.', '/')"
+when = "use_spring_boot"
+
+[[question]]
+id = "use_testcontainers"
+kind = "bool"
+prompt = "Add Testcontainers integration tests"
+default = "True"
+when = "use_spring_boot"
+
+[[question]]
+id = "use_github_actions"
+kind = "bool"
+prompt = "Add a GitHub Actions CI workflow"
+default = "True"
+
+[[question]]
+id = "use_renovate"
+kind = "bool"
+prompt = "Add Renovate dependency-update config"
+default = "True"

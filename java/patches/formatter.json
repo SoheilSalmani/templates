@@ -1,0 +1,50 @@
+{
+  "title": "Spotless + palantir-java-format",
+  "depends_on": [
+    "testing"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "build.gradle.kts",
+      "hunks": [
+        {
+          "context_before": [
+            "    java",
+            "    application"
+          ],
+          "removed": [],
+          "added": [
+            "    id(\"com.diffplug.spotless\") version \"7.0.2\""
+          ],
+          "context_after": [
+            "}",
+            ""
+          ]
+        },
+        {
+          "context_before": [
+            "    useJUnitPlatform()",
+            "}"
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "spotless {",
+            "    java {",
+            "        // palantir-java-format cannot yet parse JEP 512 compact source",
+            "        // files, so the compact entrypoint (present only without Spring",
+            "        // Boot) is skipped until the formatter supports it.",
+            "        targetExclude(\"src/main/java/App.java\")",
+            "        palantirJavaFormat(\"2.96.0\")",
+            "        removeUnusedImports()",
+            "        formatAnnotations()",
+            "    }",
+            "}"
+          ],
+          "context_after": []
+        }
+      ]
+    }
+  ]
+}

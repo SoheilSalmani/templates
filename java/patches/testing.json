@@ -1,0 +1,52 @@
+{
+  "title": "JUnit 6 + AssertJ",
+  "depends_on": [
+    "gradle-wrapper"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "build.gradle.kts",
+      "hunks": [
+        {
+          "context_before": [
+            "",
+            "dependencies {"
+          ],
+          "removed": [],
+          "added": [
+            "    testImplementation(platform(\"org.junit:junit-bom:6.0.0\"))",
+            "    testImplementation(\"org.junit.jupiter:junit-jupiter\")",
+            "    testRuntimeOnly(\"org.junit.platform:junit-platform-launcher\")",
+            "    testImplementation(\"org.assertj:assertj-core:3.27.6\")",
+            "}",
+            "",
+            "tasks.named<Test>(\"test\") {",
+            "    useJUnitPlatform()"
+          ],
+          "context_after": [
+            "}"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": "src/test/java/SmokeTest.java",
+      "content": [
+        "import static org.assertj.core.api.Assertions.assertThat;",
+        "",
+        "import org.junit.jupiter.api.Test;",
+        "",
+        "class SmokeTest {",
+        "",
+        "    @Test",
+        "    void toolchainWorks() {",
+        "        assertThat(\"Hello, World!\").startsWith(\"Hello\").endsWith(\"!\");",
+        "    }",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}

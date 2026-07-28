@@ -1,0 +1,122 @@
+{
+  "title": "REST greeting endpoint",
+  "depends_on": [
+    "spring-boot"
+  ],
+  "when": "use_spring_boot",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": [
+        "src/main/java/",
+        {
+          "answer": "package_path"
+        },
+        "/GreetingController.java"
+      ],
+      "content": [
+        [
+          "package ",
+          {
+            "answer": "package"
+          },
+          ";"
+        ],
+        "",
+        "import org.springframework.web.bind.annotation.GetMapping;",
+        "import org.springframework.web.bind.annotation.RestController;",
+        "",
+        "@RestController",
+        "public class GreetingController {",
+        "",
+        "    private final GreetingService greetingService;",
+        "",
+        "    public GreetingController(GreetingService greetingService) {",
+        "        this.greetingService = greetingService;",
+        "    }",
+        "",
+        "    @GetMapping(\"/greeting\")",
+        "    public String greeting() {",
+        "        return greetingService.greeting();",
+        "    }",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": [
+        "src/main/java/",
+        {
+          "answer": "package_path"
+        },
+        "/GreetingService.java"
+      ],
+      "content": [
+        [
+          "package ",
+          {
+            "answer": "package"
+          },
+          ";"
+        ],
+        "",
+        "import org.springframework.stereotype.Service;",
+        "",
+        "@Service",
+        "public class GreetingService {",
+        "",
+        "    public String greeting() {",
+        "        return \"Hello, World!\";",
+        "    }",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": [
+        "src/test/java/",
+        {
+          "answer": "package_path"
+        },
+        "/GreetingControllerTest.java"
+      ],
+      "content": [
+        [
+          "package ",
+          {
+            "answer": "package"
+          },
+          ";"
+        ],
+        "",
+        "import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;",
+        "import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;",
+        "import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;",
+        "",
+        "import org.junit.jupiter.api.Test;",
+        "import org.springframework.beans.factory.annotation.Autowired;",
+        "import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;",
+        "import org.springframework.context.annotation.Import;",
+        "import org.springframework.test.web.servlet.MockMvc;",
+        "",
+        "@WebMvcTest(GreetingController.class)",
+        "@Import(GreetingService.class)",
+        "class GreetingControllerTest {",
+        "",
+        "    @Autowired",
+        "    private MockMvc mockMvc;",
+        "",
+        "    @Test",
+        "    void returnsGreeting() throws Exception {",
+        "        mockMvc.perform(get(\"/greeting\"))",
+        "                .andExpect(status().isOk())",
+        "                .andExpect(content().string(\"Hello, World!\"));",
+        "    }",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}

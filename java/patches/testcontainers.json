@@ -1,0 +1,192 @@
+{
+  "title": "Testcontainers Postgres integration test",
+  "depends_on": [
+    "rest-api"
+  ],
+  "when": "use_spring_boot and use_testcontainers",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "build.gradle.kts",
+      "hunks": [
+        {
+          "context_before": [
+            "dependencies {",
+            "    implementation(\"org.springframework.boot:spring-boot-starter-web\")"
+          ],
+          "removed": [],
+          "added": [
+            "    implementation(\"org.springframework.boot:spring-boot-starter-data-jpa\")",
+            "    runtimeOnly(\"org.postgresql:postgresql\")"
+          ],
+          "context_after": [
+            "",
+            "    testImplementation(platform(\"org.junit:junit-bom:6.0.0\"))"
+          ]
+        },
+        {
+          "context_before": [
+            "    testImplementation(\"org.assertj:assertj-core:3.27.6\")",
+            "    testImplementation(\"org.springframework.boot:spring-boot-starter-test\")"
+          ],
+          "removed": [],
+          "added": [
+            "    testImplementation(\"org.springframework.boot:spring-boot-testcontainers\")",
+            "    testImplementation(\"org.testcontainers:junit-jupiter\")",
+            "    testImplementation(\"org.testcontainers:postgresql\")"
+          ],
+          "context_after": [
+            "",
+            "    errorprone(\"com.google.errorprone:error_prone_core:2.36.0\")"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "src/main/resources/application.properties",
+      "hunks": [
+        {
+          "context_before": [
+            [
+              "spring.application.name=",
+              {
+                "answer": "app_slug"
+              }
+            ]
+          ],
+          "removed": [],
+          "added": [
+            "spring.jpa.hibernate.ddl-auto=update"
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": [
+        "src/main/java/",
+        {
+          "answer": "package_path"
+        },
+        "/Greeting.java"
+      ],
+      "content": [
+        [
+          "package ",
+          {
+            "answer": "package"
+          },
+          ";"
+        ],
+        "",
+        "import jakarta.persistence.Entity;",
+        "import jakarta.persistence.GeneratedValue;",
+        "import jakarta.persistence.GenerationType;",
+        "import jakarta.persistence.Id;",
+        "",
+        "@Entity",
+        "public class Greeting {",
+        "",
+        "    @Id",
+        "    @GeneratedValue(strategy = GenerationType.IDENTITY)",
+        "    private Long id;",
+        "",
+        "    private String message;",
+        "",
+        "    protected Greeting() {}",
+        "",
+        "    public Greeting(String message) {",
+        "        this.message = message;",
+        "    }",
+        "",
+        "    public Long getId() {",
+        "        return id;",
+        "    }",
+        "",
+        "    public String getMessage() {",
+        "        return message;",
+        "    }",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": [
+        "src/main/java/",
+        {
+          "answer": "package_path"
+        },
+        "/GreetingRepository.java"
+      ],
+      "content": [
+        [
+          "package ",
+          {
+            "answer": "package"
+          },
+          ";"
+        ],
+        "",
+        "import org.springframework.data.jpa.repository.JpaRepository;",
+        "",
+        "public interface GreetingRepository extends JpaRepository<Greeting, Long> {}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": [
+        "src/test/java/",
+        {
+          "answer": "package_path"
+        },
+        "/GreetingRepositoryIntegrationTest.java"
+      ],
+      "content": [
+        [
+          "package ",
+          {
+            "answer": "package"
+          },
+          ";"
+        ],
+        "",
+        "import static org.assertj.core.api.Assertions.assertThat;",
+        "",
+        "import org.junit.jupiter.api.Test;",
+        "import org.springframework.beans.factory.annotation.Autowired;",
+        "import org.springframework.boot.test.context.SpringBootTest;",
+        "import org.springframework.boot.testcontainers.service.connection.ServiceConnection;",
+        "import org.testcontainers.containers.PostgreSQLContainer;",
+        "import org.testcontainers.junit.jupiter.Container;",
+        "import org.testcontainers.junit.jupiter.Testcontainers;",
+        "",
+        "@Testcontainers",
+        "@SpringBootTest",
+        "class GreetingRepositoryIntegrationTest {",
+        "",
+        "    @Container",
+        "    @ServiceConnection",
+        "    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(\"postgres:16-alpine\");",
+        "",
+        "    @Autowired",
+        "    private GreetingRepository greetings;",
+        "",
+        "    @Test",
+        "    void persistsAndReadsBack() {",
+        "        Greeting saved = greetings.save(new Greeting(\"Hello, World!\"));",
+        "",
+        "        assertThat(greetings.findById(saved.getId()))",
+        "                .get()",
+        "                .extracting(Greeting::getMessage)",
+        "                .isEqualTo(\"Hello, World!\");",
+        "    }",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}

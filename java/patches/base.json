@@ -1,0 +1,25 @@
+{
+  "title": "Java 25 Hello World",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": "src/main/java/App.java",
+      "content": [
+        [
+          "/// A minimal Java ",
+          {
+            "answer": "java_version"
+          },
+          " application."
+        ],
+        "///",
+        "/// Uses JEP 512 compact source files and instance main methods: no class",
+        "/// declaration, no `String[] args`, and `IO.println` is available unqualified.",
+        "void main() {",
+        "    IO.println(\"Hello, World!\");",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}

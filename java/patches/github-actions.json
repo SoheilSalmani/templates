@@ -1,0 +1,41 @@
+{
+  "title": "GitHub Actions CI",
+  "depends_on": [
+    "linter"
+  ],
+  "when": "use_github_actions",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".github/workflows/ci.yml",
+      "content": [
+        "name: CI",
+        "",
+        "on:",
+        "  push:",
+        "    branches: [main]",
+        "  pull_request:",
+        "",
+        "jobs:",
+        "  build:",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - uses: actions/checkout@v4",
+        "      - name: Set up JDK",
+        "        uses: actions/setup-java@v4",
+        "        with:",
+        "          distribution: temurin",
+        [
+          "          java-version: \"",
+          {
+            "answer": "java_version"
+          },
+          "\""
+        ],
+        "      - name: Build",
+        "        run: ./gradlew build"
+      ],
+      "mode": 420
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "title": "Gradle build (Kotlin DSL)",
+  "depends_on": [
+    "base"
+  ],
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".editorconfig",
+      "content": [
+        "root = true",
+        "",
+        "[*]",
+        "charset = utf-8",
+        "end_of_line = lf",
+        "insert_final_newline = true",
+        "trim_trailing_whitespace = true",
+        "indent_style = space",
+        "indent_size = 4",
+        "",
+        "[*.{yml,yaml,json}]",
+        "indent_size = 2"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".gitignore",
+      "content": [
+        ".gradle/",
+        "build/",
+        ".idea/",
+        "*.iml",
+        "*.class",
+        "",
+        "# Keep the Gradle wrapper jar in version control.",
+        "!gradle/wrapper/gradle-wrapper.jar"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "README.md",
+      "content": [
+        [
+          "# ",
+          {
+            "answer": "project_name"
+          }
+        ],
+        "",
+        [
+          "A Java ",
+          {
+            "answer": "java_version"
+          },
+          " application built with Gradle."
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "build.gradle.kts",
+      "content": [
+        "plugins {",
+        "    java",
+        "    application",
+        "}",
+        "",
+        "group = \"com.example\"",
+        "version = \"0.1.0\"",
+        "",
+        "java {",
+        "    toolchain {",
+        [
+          "        languageVersion = JavaLanguageVersion.of(",
+          {
+            "answer": "java_version"
+          },
+          ")"
+        ],
+        "    }",
+        "}",
+        "",
+        "application {",
+        "    mainClass = \"App\"",
+        "}",
+        "",
+        "repositories {",
+        "    mavenCentral()",
+        "}",
+        "",
+        "dependencies {",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "settings.gradle.kts",
+      "content": [
+        [
+          "rootProject.name = \"",
+          {
+            "answer": "app_slug"
+          },
+          "\""
+        ]
+      ],
+      "mode": 420
+    }
+  ]
+}

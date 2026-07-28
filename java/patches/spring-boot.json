@@ -1,0 +1,128 @@
+{
+  "title": "Spring Boot application",
+  "depends_on": [
+    "linter"
+  ],
+  "when": "use_spring_boot",
+  "ops": [
+    {
+      "op": "delete_file",
+      "path": "src/main/java/App.java"
+    },
+    {
+      "op": "modify_file",
+      "path": "build.gradle.kts",
+      "hunks": [
+        {
+          "context_before": [
+            "plugins {",
+            "    java"
+          ],
+          "removed": [
+            "    application"
+          ],
+          "added": [
+            "    id(\"org.springframework.boot\") version \"3.5.6\"",
+            "    id(\"io.spring.dependency-management\") version \"1.1.7\""
+          ],
+          "context_after": [
+            "    id(\"com.diffplug.spotless\") version \"7.0.2\"",
+            "    id(\"net.ltgt.errorprone\") version \"4.1.0\""
+          ]
+        },
+        {
+          "context_before": [
+            [
+              "        languageVersion = JavaLanguageVersion.of(",
+              {
+                "answer": "java_version"
+              },
+              ")"
+            ],
+            "    }"
+          ],
+          "removed": [
+            "}",
+            "",
+            "application {",
+            "    mainClass = \"App\""
+          ],
+          "added": [],
+          "context_after": [
+            "}",
+            ""
+          ]
+        },
+        {
+          "context_before": [
+            "",
+            "dependencies {"
+          ],
+          "removed": [
+            "    testImplementation(platform(\"org.junit:junit-bom:6.0.0\"))",
+            "    testImplementation(\"org.junit.jupiter:junit-jupiter\")",
+            "    testRuntimeOnly(\"org.junit.platform:junit-platform-launcher\")",
+            "    testImplementation(\"org.assertj:assertj-core:3.27.6\")"
+          ],
+          "added": [
+            "    implementation(\"org.springframework.boot:spring-boot-starter-web\")",
+            "",
+            "    testImplementation(platform(\"org.junit:junit-bom:6.0.0\"))",
+            "    testImplementation(\"org.junit.jupiter:junit-jupiter\")",
+            "    testRuntimeOnly(\"org.junit.platform:junit-platform-launcher\")",
+            "    testImplementation(\"org.assertj:assertj-core:3.27.6\")",
+            "    testImplementation(\"org.springframework.boot:spring-boot-starter-test\")"
+          ],
+          "context_after": [
+            "",
+            "    errorprone(\"com.google.errorprone:error_prone_core:2.36.0\")"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": [
+        "src/main/java/",
+        {
+          "answer": "package_path"
+        },
+        "/Application.java"
+      ],
+      "content": [
+        [
+          "package ",
+          {
+            "answer": "package"
+          },
+          ";"
+        ],
+        "",
+        "import org.springframework.boot.SpringApplication;",
+        "import org.springframework.boot.autoconfigure.SpringBootApplication;",
+        "",
+        "@SpringBootApplication",
+        "public class Application {",
+        "",
+        "    public static void main(String[] args) {",
+        "        SpringApplication.run(Application.class, args);",
+        "    }",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "src/main/resources/application.properties",
+      "content": [
+        [
+          "spring.application.name=",
+          {
+            "answer": "app_slug"
+          }
+        ]
+      ],
+      "mode": 420
+    }
+  ]
+}

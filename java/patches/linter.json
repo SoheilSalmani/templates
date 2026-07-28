@@ -1,0 +1,70 @@
+{
+  "title": "Error Prone static analysis",
+  "depends_on": [
+    "formatter"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "build.gradle.kts",
+      "hunks": [
+        {
+          "context_before": [],
+          "removed": [
+            "plugins {",
+            "    java",
+            "    application",
+            "    id(\"com.diffplug.spotless\") version \"7.0.2\""
+          ],
+          "added": [
+            "import net.ltgt.gradle.errorprone.errorprone",
+            "",
+            "plugins {",
+            "    java",
+            "    application",
+            "    id(\"com.diffplug.spotless\") version \"7.0.2\"",
+            "    id(\"net.ltgt.errorprone\") version \"4.1.0\""
+          ],
+          "context_after": [
+            "}",
+            ""
+          ]
+        },
+        {
+          "context_before": [
+            "    testRuntimeOnly(\"org.junit.platform:junit-platform-launcher\")",
+            "    testImplementation(\"org.assertj:assertj-core:3.27.6\")"
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "    errorprone(\"com.google.errorprone:error_prone_core:2.36.0\")"
+          ],
+          "context_after": [
+            "}",
+            ""
+          ]
+        },
+        {
+          "context_before": [
+            "}",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "tasks.withType<JavaCompile>().configureEach {",
+            "    options.errorprone {",
+            "        disableWarningsInGeneratedCode = true",
+            "    }",
+            "}",
+            ""
+          ],
+          "context_after": [
+            "spotless {",
+            "    java {"
+          ]
+        }
+      ]
+    }
+  ]
+}

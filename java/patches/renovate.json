@@ -1,0 +1,28 @@
+{
+  "title": "Renovate dependency updates",
+  "depends_on": [
+    "linter"
+  ],
+  "when": "use_renovate",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": "renovate.json",
+      "content": [
+        "{",
+        "  \"$schema\": \"https://docs.renovatebot.com/renovate-schema.json\",",
+        "  \"extends\": [",
+        "    \"config:recommended\"",
+        "  ],",
+        "  \"packageRules\": [",
+        "    {",
+        "      \"matchManagers\": [\"gradle-wrapper\"],",
+        "      \"automerge\": true",
+        "    }",
+        "  ]",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}
