@@ -1,0 +1,10 @@
+[template]
+name = "airflow"
+weft-version = "0.1"
+description = "An Apache Airflow project."
+
+[[question]]
+id = "project_name"
+kind = "string"
+prompt = "Project name"
+example = "Demo Project"

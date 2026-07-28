@@ -8,3 +8,9 @@ id = "project_name"
 kind = "string"
 prompt = "Project name"
 example = "Demo Project"
+
+[[question]]
+id = "profile_name"
+kind = "string"
+prompt = "Project name"
+example = "Demo Project"
