@@ -1,2 +1,12 @@
-# Recording sessions (Weft)
+# Weft session worktrees (scratch renders; never committed)
+.weft-sessions/
 .weft-record/
+
+# Editor / build-tool side-products
+.ropeproject/
+.metals/
+.scala-build/
+.bsp/
+.temp/
+.tmp/
+.DS_Store
