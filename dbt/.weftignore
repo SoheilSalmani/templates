@@ -1,0 +1,26 @@
+# Compiled files (dbt)
+target/
+
+# Internal packages (dbt)
+dbt_internal_packages/
+
+# Lock files (dbt)
+package-lock.yml
+
+# Logs (dbt)
+logs/
+
+# Third-party packages (dbt)
+dbt_packages/
+
+# Cache folders (Python)
+__pycache__/
+
+# Virtual environments (Python)
+.venv/
+
+# Configuration and data (Rope)
+.ropeproject/
+
+# Lock files (uv)
+uv.lock

@@ -1,0 +1,153 @@
+{
+  "title": "Initialize dbt project",
+  "description": "Initialize an empty dbt project.",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".gitignore",
+      "content": [
+        "# Compiled files (dbt)",
+        "target/",
+        "",
+        "# Internal packages (dbt)",
+        "dbt_internal_packages/",
+        "",
+        "# Logs (dbt)",
+        "logs/",
+        "",
+        "# Third-party packages (dbt)",
+        "dbt_packages/",
+        "",
+        "# Cache folders (Python)",
+        "__pycache__/",
+        "",
+        "# Virtual environments (Python)",
+        ".venv/",
+        "",
+        "# Configuration and data (Rope)",
+        ".ropeproject/"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".python-version",
+      "content": [
+        "3.13"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".vscode/extensions.json",
+      "content": [
+        "{",
+        "  \"recommendations\": [",
+        "    \"dbtLabsInc.dbt\"",
+        "  ]",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "dbt_project.yml",
+      "content": [
+        [
+          "name: ",
+          {
+            "answer": "project_name"
+          }
+        ],
+        "",
+        [
+          "profile: ",
+          {
+            "answer": "project_name"
+          }
+        ],
+        "",
+        "seed-paths: [\"seeds\"]",
+        "model-paths: [\"models\"]",
+        "macro-paths: [\"macros\"]",
+        "clean-targets:",
+        "  - \"target\"",
+        "  - \"dbt_packages\"",
+        "",
+        "seeds:",
+        "  # Builds seeds into '<your_schema_name>_raw'",
+        [
+          "  ",
+          {
+            "answer": "project_name"
+          },
+          ":"
+        ],
+        "    +schema: raw",
+        "",
+        "models:",
+        [
+          "  ",
+          {
+            "answer": "project_name"
+          },
+          ":"
+        ],
+        "    +static_analysis: strict",
+        "    # Materialize staging models as views, and marts as tables",
+        "    staging:",
+        "      +materialized: view",
+        "    marts:",
+        "      +materialized: table"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "macros/.gitkeep",
+      "content": [],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "models/.gitkeep",
+      "content": [],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "packages.yml",
+      "content": [
+        "packages:",
+        "  - package: dbt-labs/dbt_utils",
+        "    version: \">=1.3.0\""
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "pyproject.toml",
+      "content": [
+        "[project]",
+        [
+          "name = \"",
+          {
+            "answer": "project_name"
+          },
+          "\""
+        ],
+        "version = \"0.1.0\"",
+        "description = \"Add your description here\"",
+        "requires-python = \">=3.13\"",
+        "dependencies = [\"dbt>=2.0.0rc202\"]"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "seeds/.gitkeep",
+      "content": [],
+      "mode": 420
+    }
+  ]
+}

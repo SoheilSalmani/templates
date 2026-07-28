@@ -1,0 +1,10 @@
+[template]
+name = "dbt"
+weft-version = "0.1"
+description = "TODO: what this template scaffolds."
+
+[[question]]
+id = "project_name"
+kind = "string"
+prompt = "Project name"
+example = "Demo Project"
