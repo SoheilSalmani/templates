@@ -1,0 +1,5 @@
+# gitignore-style patterns excluded when weft reads a recording
+# worktree back (weft commit / diff / patch resync). Keeps tool
+# side-products out of patches. `.git/`, `.weft/`, and `.DS_Store`
+# are always ignored.
+node_modules/
