@@ -1,8 +1,8 @@
 {
   "title": "Linear skills",
-  "description": "Tracking work, reviewing a team's items, and writing project updates in Linear.",
+  "description": "Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.",
   "depends_on": [
-    "base"
+    "skills"
   ],
   "when": "use_linear",
   "ops": [
@@ -873,7 +873,7 @@
         "    },",
         "    {",
         "      \"id\": 2,",
-        "      \"prompt\": \"/reviewing-linear the Jutsu engineering foundations project. The plan changed a few weeks ago and I don't think the issues reflect it.\",",
+        "      \"prompt\": \"/reviewing-linear the Billing platform foundations project. The plan changed a few weeks ago and I don't think the issues reflect it.\",",
         "      \"expected_output\": \"Findings covering stale descriptions, misplaced implementation detail, and structural noise, ranked by consequence, each with a concrete fix and a destination for anything removed.\",",
         "      \"assertions\": [",
         "        \"Findings are ranked, with wrong-object and stale findings above cosmetic ones\",",
@@ -1548,7 +1548,7 @@
         "    },",
         "    {",
         "      \"id\": 2,",
-        "      \"prompt\": \"Can you post the weekly update for Jutsu engineering foundations? I don't think much happened this week.\",",
+        "      \"prompt\": \"Can you post the weekly update for Billing platform foundations? I don't think much happened this week.\",",
         "      \"expected_output\": \"Either a recommendation to post nothing, or a two-line update naming the blocker and its age, with a health value that does not claim health.\",",
         "      \"assertions\": [",
         "        \"The response does not manufacture progress\",",

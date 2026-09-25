@@ -2,4 +2,17 @@
 # worktree back (weft commit / diff / patch resync). Keeps tool
 # side-products out of patches. `.git/`, `.weft/`, and `.DS_Store`
 # are always ignored.
+
+# Python (skill scripts)
+__pycache__/
+.venv/
+
+# Node (skill scripts, MCP servers)
 node_modules/
+
+# Claude Code symlink farm (rebuilt by the sync-claude-skills hook)
+.claude/skills/
+
+# Personal, per-machine files
+mise.local.toml
+.env

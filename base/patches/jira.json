@@ -1,8 +1,8 @@
 {
   "title": "Jira skills",
-  "description": "House conventions for Jira tickets and the hierarchy they sit in.",
+  "description": "Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.",
   "depends_on": [
-    "base"
+    "skills"
   ],
   "when": "use_jira",
   "ops": [

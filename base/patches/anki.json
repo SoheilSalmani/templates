@@ -1,8 +1,8 @@
 {
   "title": "Anki skills",
-  "description": "Authoring flashcards and deciding what from a change is worth remembering.",
+  "description": "Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.",
   "depends_on": [
-    "base"
+    "skills"
   ],
   "when": "use_anki",
   "ops": [
@@ -142,9 +142,9 @@
       "content": [
         "# House style for card text",
         "",
-        "Derived from sampled notes in the live collection, plus the writing rules from the humanizer skill at",
-        "`~/.hermes/skills/creative/humanizer/SKILL.md`. Cards are prose that gets read hundreds of times, so",
-        "the writing rules matter more here than in ordinary text, not less.",
+        "Derived from sampled notes in the live collection, plus the writing rules from the `humanizer` skill.",
+        "Cards are prose that gets read hundreds of times, so the writing rules matter more here than in",
+        "ordinary text, not less.",
         "",
         "## Real cards from the collection",
         "",
