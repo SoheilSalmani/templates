@@ -1,5 +1,6 @@
 {
   "title": "Renovate dependency updates",
+  "description": "Adds a Renovate configuration that keeps Gradle plugins and dependencies current.",
   "depends_on": [
     "linter"
   ],

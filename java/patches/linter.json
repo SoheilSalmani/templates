@@ -1,5 +1,6 @@
 {
   "title": "Error Prone static analysis",
+  "description": "Adds Error Prone 2.36 through the net.ltgt.errorprone plugin, with warnings disabled in generated code.",
   "depends_on": [
     "formatter"
   ],

@@ -1,5 +1,6 @@
 {
   "title": "Testcontainers Postgres integration test",
+  "description": "Adds Spring Data JPA over Postgres with a Testcontainers-backed repository integration test; needs Docker at test time.",
   "depends_on": [
     "rest-api"
   ],

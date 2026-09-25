@@ -58,7 +58,6 @@ No template ships a LICENSE, pre-commit, ruff or mypy configuration, a justfile 
 
 Steer away from these; they are not conventions:
 
-- `java` is a six-deep chain (`base → gradle → gradle-wrapper → testing → formatter → linter`) because every patch was recorded on `latest`; only the `build.gradle.kts` edits needed the order.
-- `scala`'s `zio` patch adds `MainApp.scala` without the `dev.zio` library dependency in `build.sbt`, so `sbt compile` fails under `use_zio=true`; the fix is one `weft patch amend zio` adding the hunk with a pinned ZIO version.
+- `java` is a chain `base → testing → formatter → linter → spring-boot` because every patch edits the same `plugins {}` and `dependencies {}` blocks of `build.gradle.kts` and each hunk anchors on the previous patch's lines. That is the legitimate shared-config case, not a smell; do not try to flatten it. The Gradle build, its wrapper and the entry point are one `base` patch: a Gradle project without its wrapper is not a state anyone wants.
 - `weft hook ls` prints `git-commit` before the setup hooks it lists in `--after`; `weft describe --json` and the actual run honour the order. Display only.
 - `web-template` and `python-service` do not match their directory names.

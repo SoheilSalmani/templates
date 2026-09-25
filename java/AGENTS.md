@@ -29,7 +29,6 @@ Secrets are never passed as answers — they resolve from their source
 
 ## Patches
 
-- **base**
 - **editorconfig**: Adds the house .editorconfig: UTF-8, LF, final newline, four-space indentation with two spaces for YAML, JSON and TOML, and trailing whitespace kept in Markdown.
 - **gitattributes**: Adds a .gitattributes that stores and checks out every text file with LF line endings.
 - **instructions**: Adds AGENTS.md as the single instruction file, read by Codex and oh-my-pi directly and by Claude Code through a CLAUDE.md that imports it. It records only what is true for every scaffold: mise setup, where skills live, and how MCP servers are declared.
@@ -37,21 +36,20 @@ Secrets are never passed as answers — they resolve from their source
 - **mise**: Adds mise.toml pinning Node 24 for skill scripts and MCP servers; stack templates add their runtime under [tools], and personal overrides go in the gitignored mise.local.toml.
 - **skills**: Installs the house Agent Skills that apply to any repository under .agents/skills, the canonical location read by Codex and oh-my-pi; Claude Code reaches them through the symlink farm the sync-claude-skills hook rebuilds.
 - **anki** _(when `use_anki`)_: Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.
+- **base**: Gradle build on the Kotlin DSL with the 9.6.1 wrapper committed, a Java 25 toolchain, a hello-world entry point, README and the house .gitignore; the Gradle rules for .bat and .jar files are a hunk on the portable .gitattributes.
 - **github** _(when `use_github`)_: Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata. They drive gh; no MCP server is added.
-- **gradle**
 - **jira** _(when `use_jira`)_: Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.
 - **linear** _(when `use_linear`)_: Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.
 - **mise-java**: Pins Java 25 in mise.toml so mise install provides the JDK that the Gradle build uses.
 - **obsidian** _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
-- **gradle-wrapper**
-- **testing**
-- **formatter**
-- **linter**
-- **github-actions** _(when `use_github_actions`)_
-- **renovate** _(when `use_renovate`)_
-- **spring-boot** _(when `use_spring_boot`)_
-- **rest-api** _(when `use_spring_boot`)_
-- **testcontainers** _(when `use_spring_boot and use_testcontainers`)_
+- **testing**: Adds JUnit 6 through the junit-bom with AssertJ, wires the test task to the JUnit platform, and ships one smoke test that proves the toolchain.
+- **formatter**: Adds Spotless 7 with palantir-java-format 2.96, unused-import removal and annotation formatting; the compact hello-world entry point is excluded until the formatter can parse it.
+- **linter**: Adds Error Prone 2.36 through the net.ltgt.errorprone plugin, with warnings disabled in generated code.
+- **github-actions** _(when `use_github_actions`)_: Adds a GitHub Actions workflow that builds and tests with the wrapper on every push and pull request.
+- **renovate** _(when `use_renovate`)_: Adds a Renovate configuration that keeps Gradle plugins and dependencies current.
+- **spring-boot** _(when `use_spring_boot`)_: Turns the build into a Spring Boot 3.5 web service: replaces the application plugin with the Boot and dependency-management plugins, adds the web starter, and swaps the hello-world entry point for a Spring application class.
+- **rest-api** _(when `use_spring_boot`)_: Adds a greeting REST endpoint with its service and a MockMvc test, as the first real code of the service.
+- **testcontainers** _(when `use_spring_boot and use_testcontainers`)_: Adds Spring Data JPA over Postgres with a Testcontainers-backed repository integration test; needs Docker at test time.
 
 ## Hooks (side-effects, in run order)
 
@@ -62,9 +60,9 @@ idempotent local, **deploy** = external/irreversible (confirm first).
 | phase | effect | label | patch | command | when |
 | --- | --- | --- | --- | --- | --- |
 | pre | check | Verify mise is installed | `mise` | `command -v mise` | — |
-| post | setup | Initialise the git repository | `base` | `git init -q -b main` | — |
 | post | setup | Install the pinned toolchain | `mise` | `mise trust -q && mise install -y` | — |
 | post | setup | Mirror .agents/skills into .claude/skills as symlinks | `skills` | `mkdir -p .claude/skills && for d in .agents/skills/*/; do name=$(basename "$d"); ln -sfn "../../.agents/skills/$name" ".claude/skills/$name"; done && find .claude/skills -maxdepth 1 -type l ! -exec test -e {} \; -delete` | — |
+| post | setup | Initialise the git repository | `base` | `git init -q -b main` | — |
 | post | setup | Commit the scaffold | `base` | `git add -A && git commit -q -m 'Scaffold repository'` | — |
 
 ## Scaffold

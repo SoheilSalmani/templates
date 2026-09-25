@@ -1,5 +1,6 @@
 {
   "title": "GitHub Actions CI",
+  "description": "Adds a GitHub Actions workflow that builds and tests with the wrapper on every push and pull request.",
   "depends_on": [
     "linter"
   ],

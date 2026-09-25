@@ -1,5 +1,6 @@
 {
   "title": "Spotless + palantir-java-format",
+  "description": "Adds Spotless 7 with palantir-java-format 2.96, unused-import removal and annotation formatting; the compact hello-world entry point is excluded until the formatter can parse it.",
   "depends_on": [
     "testing"
   ],

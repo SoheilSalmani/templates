@@ -1,7 +1,8 @@
 {
   "title": "JUnit 6 + AssertJ",
+  "description": "Adds JUnit 6 through the junit-bom with AssertJ, wires the test task to the JUnit platform, and ships one smoke test that proves the toolchain.",
   "depends_on": [
-    "gradle-wrapper"
+    "base"
   ],
   "ops": [
     {

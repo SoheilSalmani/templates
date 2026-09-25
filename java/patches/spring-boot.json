@@ -1,5 +1,6 @@
 {
   "title": "Spring Boot application",
+  "description": "Turns the build into a Spring Boot 3.5 web service: replaces the application plugin with the Boot and dependency-management plugins, adds the web starter, and swaps the hello-world entry point for a Spring application class.",
   "depends_on": [
     "linter"
   ],

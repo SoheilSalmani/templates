@@ -1,5 +1,6 @@
 {
   "title": "REST greeting endpoint",
+  "description": "Adds a greeting REST endpoint with its service and a MockMvc test, as the first real code of the service.",
   "depends_on": [
     "spring-boot"
   ],

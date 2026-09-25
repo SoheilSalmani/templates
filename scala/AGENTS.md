@@ -42,7 +42,7 @@ Secrets are never passed as answers — they resolve from their source
 - **mise-java**: Pins Java 25 in mise.toml so mise install provides the JDK that scala-cli and sbt run on.
 - **obsidian** _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
 - **sbt** _(when `use_sbt`)_: Replaces the scala-cli entry point with an sbt build: build.sbt named after the project, a pinned sbt launcher, and the hello-world source under src/main/scala.
-- **zio** _(when `use_zio`)_: Replaces the sbt hello-world entry point with a ZIOAppDefault that prints through the ZIO Console.
+- **zio** _(when `use_zio`)_: Replaces the hello-world entry point with a ZIO 2.1 ZIOAppDefault and adds the zio library to build.sbt.
 
 ## Hooks (side-effects, in run order)
 
@@ -63,21 +63,21 @@ idempotent local, **deploy** = external/irreversible (confirm first).
 ## Scaffold
 
 ```sh
-weft new . <dest> --answer "project_name=Demo Service" --non-interactive
+weft new scala <dest> --answer "project_name=Demo Service" --non-interactive
 ```
 
 Agents can pass answers as JSON instead of flags:
 
 ```sh
-weft new . <dest> --answers-json '{"project_name":"Demo Service"}'
+weft new scala <dest> --answers-json '{"project_name":"Demo Service"}'
 ```
 
 ## Evolve this template
 
 ```sh
-weft record --template . <answers…>   # base worktree is printed
+weft record --template scala <answers…>   # base worktree is printed
 … edit the worktree files with concrete values …
-weft commit --template . --name <patch> --describe "what it does" --yes
+weft commit --template scala --name <patch> --describe "what it does" --yes
 ```
 
 Run `weft check --json` after any change; independent patches must
