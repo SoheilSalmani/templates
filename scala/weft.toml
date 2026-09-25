@@ -1,13 +1,22 @@
 [template]
 name = "scala"
 weft-version = "0.1"
-description = "TODO: what this template scaffolds."
+description = "A Scala 3 (or 2.13) hello world on scala-cli with scalafmt, optionally as an sbt build with a ZIO entry point, on a JDK 25 mise toolchain with the house editor and git configuration, agent instructions, skills and MCP connections."
+
+[[question]]
+id = "project_name"
+kind = "string"
+prompt = "Project name"
+description = "Human-facing name; becomes the README title and the sbt project name."
+example = "Demo Service"
 
 [[question]]
 id = "scala_version"
 kind = "choice"
 choices = ["3.8.4", "3.3.8", "2.13.18"]
 prompt = "Scala version"
+description = "Scala release pinned in the scala-cli directive (or scalaVersion in build.sbt); the scalafmt dialect follows it."
+default = "'3.8.4'"
 
 [[question]]
 id = "scalafmt_runner_dialect"
@@ -17,28 +26,69 @@ choices = ["scala3", "Scala33", "scala213"]
 default = "{'3.8.4': 'scala3', '3.3.8': 'Scala33'}.get(scala_version, 'scala213')"
 
 [[question]]
-id = "configure_sbt"
+id = "use_sbt"
 kind = "bool"
-
-[[question]]
-id = "project_name"
-kind = "string"
-prompt = "Project name"
-when = "configure_sbt"
+prompt = "Build with sbt?"
+description = "Replaces the scala-cli entry point with an sbt build (build.sbt, project/build.properties, src/main/scala)."
+default = "True"
 
 [[question]]
 id = "project_version"
 kind = "string"
-when = "configure_sbt"
+prompt = "Project version"
+description = "Initial version written to build.sbt."
+example = "0.1.0"
+default = "'0.1.0'"
+when = "use_sbt"
 
 [[question]]
 id = "project_organization"
 kind = "string"
 prompt = "Project organization"
-when = "configure_sbt"
+description = "Organization written to build.sbt, usually a reverse domain name."
+example = "com.example"
+default = "'com.example'"
+when = "use_sbt"
 
 [[question]]
-id = "configure_zio"
+id = "use_zio"
 kind = "bool"
-prompt = "Configure ZIO"
-when = "configure_sbt"
+prompt = "Use ZIO?"
+description = "Replaces the sbt hello-world entry point with a ZIOAppDefault application."
+default = "False"
+when = "use_sbt"
+
+[[question]]
+id = "use_github"
+kind = "bool"
+prompt = "Hosted on GitHub?"
+description = "Installs the skills for issues, pull requests, README and repository metadata. They drive gh; no MCP server is added."
+default = "True"
+
+[[question]]
+id = "use_linear"
+kind = "bool"
+prompt = "Track work in Linear?"
+description = "Installs the Linear skills and the Linear remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+default = "True"
+
+[[question]]
+id = "use_jira"
+kind = "bool"
+prompt = "Track work in Jira?"
+description = "Installs the Jira skills and the Atlassian remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+default = "False"
+
+[[question]]
+id = "use_anki"
+kind = "bool"
+prompt = "Write Anki flashcards about this project?"
+description = "Installs anki-flashcards and remembering-what-you-built. AnkiConnect is per machine, so its MCP server stays in user-level config."
+default = "False"
+
+[[question]]
+id = "use_obsidian"
+kind = "bool"
+prompt = "Keep this project's ideas in an Obsidian vault?"
+description = "Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config."
+default = "False"

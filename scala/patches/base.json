@@ -1,0 +1,132 @@
+{
+  "title": "scala-cli hello world",
+  "description": "Adds a scala-cli entry point pinned to the chosen Scala release, a matching .scalafmt.conf, the README with a mise setup recipe, and the .gitignore for Scala tooling, OS junk, environment files, mise.local.toml and Claude Code local settings.",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".gitignore",
+      "content": [
+        "# Configuration directory (Bloop)",
+        ".bloop/",
+        "",
+        "# Connection files (Build Server Protocol)",
+        ".bsp/",
+        "",
+        "# Workspace data (Metals)",
+        ".metals/",
+        "",
+        "# Build outputs & caches (Scala CLI)",
+        ".scala-build/",
+        "",
+        "# Operating system",
+        ".DS_Store",
+        "Thumbs.db",
+        "",
+        "# Environment files",
+        ".env",
+        ".env.*",
+        "!.env.example",
+        "",
+        "# Personal toolchain overrides (mise)",
+        "mise.local.toml",
+        "",
+        "# Personal settings (Claude Code)",
+        ".claude/settings.local.json"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".scalafmt.conf",
+      "content": [
+        "version = \"3.11.4\"",
+        [
+          "runner.dialect = ",
+          {
+            "answer": "scalafmt_runner_dialect"
+          }
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "Main.scala",
+      "content": [
+        [
+          "//> using scala ",
+          {
+            "answer": "scala_version"
+          }
+        ],
+        "",
+        "@main",
+        "def hello(): Unit =",
+        "  println(\"Hello, World!\")"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "README.md",
+      "content": [
+        [
+          "# ",
+          {
+            "answer": "project_name"
+          }
+        ],
+        "",
+        "A Scala application.",
+        "",
+        "## Setup",
+        "",
+        "```sh",
+        "mise install",
+        "```"
+      ],
+      "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-scala",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify the correct Scala version is installed",
+      "action": [
+        "scala -version | grep -q ",
+        {
+          "answer": "scala_version"
+        }
+      ]
+    },
+    {
+      "id": "verify-scalafmt",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify correct version of `scalafmt` is installed",
+      "action": "scalafmt --version | grep 3.11.4"
+    },
+    {
+      "id": "git-init",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Initialise the git repository",
+      "action": "git init -q -b main"
+    },
+    {
+      "id": "git-commit",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Commit the scaffold",
+      "description": "First commit after every setup hook that may exist has run.",
+      "action": "git add -A && git commit -q -m 'Scaffold repository'",
+      "after": [
+        "git-init",
+        "mise-install",
+        "sync-claude-skills"
+      ]
+    }
+  ]
+}

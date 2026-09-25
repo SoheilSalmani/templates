@@ -1,8 +1,10 @@
 {
+  "title": "ZIO application",
+  "description": "Replaces the sbt hello-world entry point with a ZIOAppDefault that prints through the ZIO Console.",
   "depends_on": [
-    "configure-sbt"
+    "sbt"
   ],
-  "when": "configure_zio",
+  "when": "use_zio",
   "ops": [
     {
       "op": "delete_file",
