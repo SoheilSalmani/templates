@@ -1,6 +1,6 @@
 {
-  "title": "Initialize dbt project",
-  "description": "Initialize an empty dbt project.",
+  "title": "dbt project",
+  "description": "Adds dbt_project.yml with dbt_utils in packages.yml, a uv-managed pyproject.toml pinned to Python 3.13, the empty models, macros and seeds directories, the dbt VS Code extension recommendation, and the stack .gitignore.",
   "ops": [
     {
       "op": "create_file",
@@ -25,7 +25,22 @@
         ".venv/",
         "",
         "# Configuration and data (Rope)",
-        ".ropeproject/"
+        ".ropeproject/",
+        "",
+        "# Operating system",
+        ".DS_Store",
+        "Thumbs.db",
+        "",
+        "# Environment files",
+        ".env",
+        ".env.*",
+        "!.env.example",
+        "",
+        "# Personal toolchain overrides (mise)",
+        "mise.local.toml",
+        "",
+        "# Personal settings (Claude Code)",
+        ".claude/settings.local.json"
       ],
       "mode": 420
     },
@@ -56,14 +71,14 @@
         [
           "name: ",
           {
-            "answer": "project_name"
+            "answer": "package_name"
           }
         ],
         "",
         [
           "profile: ",
           {
-            "answer": "project_name"
+            "answer": "profile_name"
           }
         ],
         "",
@@ -79,7 +94,7 @@
         [
           "  ",
           {
-            "answer": "project_name"
+            "answer": "package_name"
           },
           ":"
         ],
@@ -89,7 +104,7 @@
         [
           "  ",
           {
-            "answer": "project_name"
+            "answer": "package_name"
           },
           ":"
         ],
@@ -132,7 +147,7 @@
         [
           "name = \"",
           {
-            "answer": "project_name"
+            "answer": "package_name"
           },
           "\""
         ],
@@ -148,6 +163,63 @@
       "path": "seeds/.gitkeep",
       "content": [],
       "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-uv",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify uv is installed",
+      "action": "command -v uv"
+    },
+    {
+      "id": "git-init",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Initialise the git repository",
+      "action": "git init -q -b main"
+    },
+    {
+      "id": "uv-sync",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Lock and sync the Python environment",
+      "action": "uv lock && uv sync",
+      "after": [
+        "mise-install"
+      ],
+      "inputs": [
+        "glob:pyproject.toml"
+      ]
+    },
+    {
+      "id": "dbt-deps",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Install dbt packages",
+      "action": "uv run dbt deps",
+      "after": [
+        "uv-sync"
+      ],
+      "inputs": [
+        "glob:packages.yml"
+      ]
+    },
+    {
+      "id": "git-commit",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Commit the scaffold",
+      "description": "First commit after every setup hook that may exist has run.",
+      "action": "git add -A && git commit -q -m 'Scaffold repository'",
+      "after": [
+        "git-init",
+        "mise-install",
+        "sync-claude-skills",
+        "uv-sync",
+        "dbt-deps"
+      ]
     }
   ]
 }
