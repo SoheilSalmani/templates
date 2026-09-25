@@ -1,0 +1,44 @@
+name: Check templates
+
+# weft is a private Rust project without releases yet, so the job builds it
+# from source. WEFT_REPO_TOKEN is a fine-grained PAT with read access to
+# SoheilSalmani/weft (Contents: read). Bump WEFT_REF to move every check to a
+# newer weft.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  WEFT_REF: main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out weft
+        uses: actions/checkout@v4
+        with:
+          repository: SoheilSalmani/weft
+          ref: ${{ env.WEFT_REF }}
+          token: ${{ secrets.WEFT_REPO_TOKEN }}
+          path: .weft-src
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .weft-src
+          cache-on-failure: true
+
+      - name: Install weft
+        run: cargo install --path .weft-src/crates/weft-cli --locked
+
+      - name: Portable patches match base
+        run: scripts/check-portable-drift.sh
+
+      - name: weft check every template
+        run: scripts/check-templates.sh
