@@ -1,0 +1,62 @@
+{
+  "title": "MCP connections",
+  "description": "Declares the remote MCP servers for the trackers in use, identically in .mcp.json (Claude Code), .codex/config.toml (Codex) and .omp/mcp.json (oh-my-pi). Definitions only: each person authorises with OAuth. The entries are expr segments on use_linear and use_jira because one file cannot be shared by two sibling patches.",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".codex/config.toml",
+      "content": [
+        "# Project-scoped Codex configuration. Codex reads it only after `codex` has marked this project as trusted.",
+        "",
+        "[mcp_servers]",
+        [
+          {
+            "expr": "'linear-server = { url = \"https://mcp.linear.app/mcp\" }' if use_linear else ''"
+          }
+        ],
+        [
+          {
+            "expr": "'atlassian = { url = \"https://mcp.atlassian.com/v2/mcp\" }' if use_jira else ''"
+          }
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".mcp.json",
+      "content": [
+        "{",
+        "  \"mcpServers\": {",
+        [
+          "    ",
+          {
+            "expr": "', '.join([e for e, on in [('\"linear-server\": { \"type\": \"http\", \"url\": \"https://mcp.linear.app/mcp\" }', use_linear), ('\"atlassian\": { \"type\": \"http\", \"url\": \"https://mcp.atlassian.com/v2/mcp\" }', use_jira)] if on])"
+          }
+        ],
+        "  }",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".omp/mcp.json",
+      "content": [
+        "{",
+        "  \"$schema\": \"https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json\",",
+        "  \"mcpServers\": {",
+        [
+          "    ",
+          {
+            "expr": "', '.join([e for e, on in [('\"linear-server\": { \"type\": \"http\", \"url\": \"https://mcp.linear.app/mcp\" }', use_linear), ('\"atlassian\": { \"type\": \"http\", \"url\": \"https://mcp.atlassian.com/v2/mcp\" }', use_jira)] if on])"
+          }
+        ],
+        "  }",
+        "}"
+      ],
+      "mode": 420
+    }
+  ],
+  "when": "use_linear or use_jira"
+}

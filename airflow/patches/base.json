@@ -1,13 +1,18 @@
 {
-  "title": "Initalize Astro project.",
-  "description": "Initialize an Astro project directory.",
+  "title": "Astro CLI project",
+  "description": "Adds the Astro CLI project layout: Dockerfile on Astro Runtime, the example DAG with its DAG-integrity tests, requirements.txt, packages.txt and the house .gitignore stanzas.",
   "ops": [
     {
       "op": "create_file",
       "path": ".astro/config.yaml",
       "content": [
         "project:",
-        "    name: worktree"
+        [
+          "    name: ",
+          {
+            "answer": "package_name"
+          }
+        ]
       ],
       "mode": 420
     },
@@ -224,7 +229,22 @@
         "airflow.cfg",
         "airflow.db",
         ".astro/*.local.yml",
-        ".astro/*.local.yaml"
+        ".astro/*.local.yaml",
+        "",
+        "# Operating system",
+        ".DS_Store",
+        "Thumbs.db",
+        "",
+        "# Environment files",
+        ".env",
+        ".env.*",
+        "!.env.example",
+        "",
+        "# Personal toolchain overrides (mise)",
+        "mise.local.toml",
+        "",
+        "# Personal settings (Claude Code)",
+        ".claude/settings.local.json"
       ],
       "mode": 420
     },
@@ -502,6 +522,35 @@
         "    ), f\"{dag_id} in {fileloc} must have task retries >= 2.\""
       ],
       "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-astro",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify the Astro CLI is installed",
+      "action": "command -v astro"
+    },
+    {
+      "id": "git-init",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Initialise the git repository",
+      "action": "git init -q -b main"
+    },
+    {
+      "id": "git-commit",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Commit the scaffold",
+      "description": "First commit after every setup hook that may exist has run.",
+      "action": "git add -A && git commit -q -m 'Scaffold repository'",
+      "after": [
+        "git-init",
+        "mise-install",
+        "sync-claude-skills"
+      ]
     }
   ]
 }

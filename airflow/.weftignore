@@ -13,7 +13,6 @@ uv.lock
 .git
 .env
 airflow_settings.yaml
-__pycache__/
 astro
 .venv
 .astro/standalone/
@@ -23,3 +22,12 @@ airflow.cfg
 airflow.db
 .astro/*.local.yml
 .astro/*.local.yaml
+
+# Skill scripts
+node_modules/
+
+# Claude Code symlink farm (rebuilt by the sync-claude-skills hook)
+.claude/skills/
+
+# Personal, per-machine files
+mise.local.toml

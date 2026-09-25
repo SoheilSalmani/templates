@@ -1,0 +1,26 @@
+{
+  "title": "Astro CLI 1.45 via mise",
+  "description": "Pins the Astro CLI 1.45 in mise.toml so mise install provides the astro binary that runs and tests the project locally.",
+  "depends_on": [
+    "mise"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "mise.toml",
+      "hunks": [
+        {
+          "context_before": [
+            "[tools]",
+            "node = \"24\""
+          ],
+          "removed": [],
+          "added": [
+            "astro = \"1.45\""
+          ],
+          "context_after": []
+        }
+      ]
+    }
+  ]
+}
