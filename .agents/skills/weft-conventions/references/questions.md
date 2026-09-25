@@ -60,6 +60,8 @@ Questions are processed in declaration order, and a `default` or `when` may only
 
 Nothing else: no `validate`, `regex`, `min`, `max`, `required`, `help`. `required` appears only in `weft describe --json`, meaning "no default, not computed, not secret".
 
+**A `choice` value is abstracted wherever it appears**, including prose. Verified 2026-09-25 on the `base` template: recording the Agent Skills with `tracker = 'linear'` turned every lowercase `linear` in the skill text into `{"answer": "tracker"}`, and the Linear skills alone would have needed hundreds of `--keep-literal` flags on every amend. When the alternatives are product or tool names that the recorded files will mention, use one `bool` per alternative (`use_linear`, `use_jira`) instead: bools and ints are never abstracted. Reserve `choice` for values that are exclusive *and* never appear verbatim in content.
+
 ## Defaults, gates and the eager-binding rule
 
 `default` and `when` are Starlark source strings, so a string default is quoted twice (`default = "'api'"`), a bool is `"True"`, a list is `"['issues']"`. Answers are globals named by their ids. The standard library only: string methods, arithmetic, comparisons, `if`/`else` expressions, comprehensions. There are no weft builtins.
