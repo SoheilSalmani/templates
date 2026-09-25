@@ -1,0 +1,155 @@
+{
+  "title": "FastAPI application",
+  "description": "Adds a uv-managed FastAPI project on Python 3.13 with a main.py exposing three example routes, a README and the house .gitignore stanzas.",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".gitignore",
+      "content": [
+        "# Cache folders (Python)",
+        "__pycache__/",
+        "",
+        "# Virtual environments (Python)",
+        ".venv/",
+        "",
+        "# Configuration and data (Rope)",
+        ".ropeproject/",
+        "",
+        "# Operating system",
+        ".DS_Store",
+        "Thumbs.db",
+        "",
+        "# Environment files",
+        ".env",
+        ".env.*",
+        "!.env.example",
+        "",
+        "# Personal toolchain overrides (mise)",
+        "mise.local.toml",
+        "",
+        "# Personal settings (Claude Code)",
+        ".claude/settings.local.json"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".python-version",
+      "content": [
+        "3.13"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "README.md",
+      "content": [
+        [
+          "# ",
+          {
+            "answer": "project_name"
+          }
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "main.py",
+      "content": [
+        "from fastapi import FastAPI",
+        "from pydantic import BaseModel",
+        "",
+        "app = FastAPI()",
+        "",
+        "",
+        "class Item(BaseModel):",
+        "    name: str",
+        "    price: float",
+        "    is_offer: bool | None = None",
+        "",
+        "",
+        "@app.get(\"/\")",
+        "def read_root():",
+        "    return {\"Hello\": \"World\"}",
+        "",
+        "",
+        "@app.get(\"/items/{item_id}\")",
+        "def read_item(item_id: int, q: str | None = None):",
+        "    return {\"item_id\": item_id, \"q\": q}",
+        "",
+        "",
+        "@app.put(\"/items/{item_id}\")",
+        "def update_item(item_id: int, item: Item):",
+        "    return {\"item_name\": item.name, \"item_id\": item_id}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "pyproject.toml",
+      "content": [
+        "[project]",
+        [
+          "name = \"",
+          {
+            "answer": "package_name"
+          },
+          "\""
+        ],
+        "version = \"0.1.0\"",
+        "description = \"Add your description here\"",
+        "readme = \"README.md\"",
+        "requires-python = \">=3.13\"",
+        "dependencies = [",
+        "    \"fastapi[standard]>=0.139.2\",",
+        "    \"pydantic>=2.13.4\",",
+        "]"
+      ],
+      "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-uv",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify uv is installed",
+      "action": "command -v uv"
+    },
+    {
+      "id": "git-init",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Initialise the git repository",
+      "action": "git init -q -b main"
+    },
+    {
+      "id": "uv-sync",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Lock and sync the Python environment",
+      "action": "uv lock && uv sync",
+      "after": [
+        "mise-install"
+      ],
+      "inputs": [
+        "glob:pyproject.toml"
+      ]
+    },
+    {
+      "id": "git-commit",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Commit the scaffold",
+      "description": "First commit after every setup hook that may exist has run.",
+      "action": "git add -A && git commit -q -m 'Scaffold repository'",
+      "after": [
+        "git-init",
+        "mise-install",
+        "sync-claude-skills",
+        "uv-sync"
+      ]
+    }
+  ]
+}

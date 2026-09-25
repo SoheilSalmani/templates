@@ -1,9 +1,52 @@
 [template]
 name = "fastapi"
 weft-version = "0.1"
-description = "Template for building APIs using FastAPI."
+description = "A FastAPI service on Python 3.13 managed by uv, with the house editor, git, mise, agent-instruction, skill and MCP configuration."
 
 [[question]]
 id = "project_name"
 kind = "string"
 prompt = "Project name"
+description = "Human-facing name; becomes the README title and, slugified, the package name in pyproject.toml."
+example = "Demo Service"
+
+[[question]]
+id = "package_name"
+kind = "string"
+computed = true
+default = "project_name.lower().replace(' ', '-')"
+
+[[question]]
+id = "use_github"
+kind = "bool"
+prompt = "Hosted on GitHub?"
+description = "Installs the skills for issues, pull requests, README and repository metadata. They drive gh; no MCP server is added."
+default = "True"
+
+[[question]]
+id = "use_linear"
+kind = "bool"
+prompt = "Track work in Linear?"
+description = "Installs the Linear skills and the Linear remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+default = "True"
+
+[[question]]
+id = "use_jira"
+kind = "bool"
+prompt = "Track work in Jira?"
+description = "Installs the Jira skills and the Atlassian remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+default = "False"
+
+[[question]]
+id = "use_anki"
+kind = "bool"
+prompt = "Write Anki flashcards about this project?"
+description = "Installs anki-flashcards and remembering-what-you-built. AnkiConnect is per machine, so its MCP server stays in user-level config."
+default = "False"
+
+[[question]]
+id = "use_obsidian"
+kind = "bool"
+prompt = "Keep this project's ideas in an Obsidian vault?"
+description = "Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config."
+default = "False"
