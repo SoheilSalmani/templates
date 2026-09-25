@@ -1,0 +1,28 @@
+{
+  "title": "Editor configuration",
+  "description": "Adds the house .editorconfig: UTF-8, LF, final newline, four-space indentation with two spaces for YAML, JSON and TOML, and trailing whitespace kept in Markdown.",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".editorconfig",
+      "content": [
+        "root = true",
+        "",
+        "[*]",
+        "charset = utf-8",
+        "end_of_line = lf",
+        "insert_final_newline = true",
+        "trim_trailing_whitespace = true",
+        "indent_style = space",
+        "indent_size = 4",
+        "",
+        "[*.{yml,yaml,json,toml}]",
+        "indent_size = 2",
+        "",
+        "[*.md]",
+        "trim_trailing_whitespace = false"
+      ],
+      "mode": 420
+    }
+  ]
+}

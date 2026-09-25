@@ -1,0 +1,26 @@
+{
+  "title": "Java 25 via mise",
+  "description": "Pins Java 25 in mise.toml so mise install provides the JDK that the Gradle build uses.",
+  "depends_on": [
+    "mise"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "mise.toml",
+      "hunks": [
+        {
+          "context_before": [
+            "[tools]",
+            "node = \"24\""
+          ],
+          "removed": [],
+          "added": [
+            "java = \"25\""
+          ],
+          "context_after": []
+        }
+      ]
+    }
+  ]
+}

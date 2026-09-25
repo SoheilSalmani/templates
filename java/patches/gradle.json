@@ -6,25 +6,6 @@
   "ops": [
     {
       "op": "create_file",
-      "path": ".editorconfig",
-      "content": [
-        "root = true",
-        "",
-        "[*]",
-        "charset = utf-8",
-        "end_of_line = lf",
-        "insert_final_newline = true",
-        "trim_trailing_whitespace = true",
-        "indent_style = space",
-        "indent_size = 4",
-        "",
-        "[*.{yml,yaml,json}]",
-        "indent_size = 2"
-      ],
-      "mode": 420
-    },
-    {
-      "op": "create_file",
       "path": ".gitignore",
       "content": [
         ".gradle/",
@@ -34,7 +15,22 @@
         "*.class",
         "",
         "# Keep the Gradle wrapper jar in version control.",
-        "!gradle/wrapper/gradle-wrapper.jar"
+        "!gradle/wrapper/gradle-wrapper.jar",
+        "",
+        "# Operating system",
+        ".DS_Store",
+        "Thumbs.db",
+        "",
+        "# Environment files",
+        ".env",
+        ".env.*",
+        "!.env.example",
+        "",
+        "# Personal toolchain overrides (mise)",
+        "mise.local.toml",
+        "",
+        "# Personal settings (Claude Code)",
+        ".claude/settings.local.json"
       ],
       "mode": 420
     },
@@ -49,13 +45,7 @@
           }
         ],
         "",
-        [
-          "A Java ",
-          {
-            "answer": "java_version"
-          },
-          " application built with Gradle."
-        ]
+        "A Java 25 application built with Gradle."
       ],
       "mode": 420
     },
@@ -73,13 +63,7 @@
         "",
         "java {",
         "    toolchain {",
-        [
-          "        languageVersion = JavaLanguageVersion.of(",
-          {
-            "answer": "java_version"
-          },
-          ")"
-        ],
+        "        languageVersion = JavaLanguageVersion.of(25)",
         "    }",
         "}",
         "",

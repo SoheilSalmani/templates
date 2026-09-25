@@ -1,23 +1,29 @@
 {
   "title": "Gradle wrapper (9.6.1)",
   "depends_on": [
+    "gitattributes",
     "gradle"
   ],
   "ops": [
     {
-      "op": "create_file",
+      "op": "modify_file",
       "path": ".gitattributes",
-      "content": [
-        "#",
-        "# https://help.github.com/articles/dealing-with-line-endings/",
-        "#",
-        "* text=auto eol=lf",
-        "",
-        "*.bat text eol=crlf",
-        "",
-        "*.jar binary"
-      ],
-      "mode": 420
+      "hunks": [
+        {
+          "context_before": [
+            "# Normalise line endings: text files are stored and checked out with LF.",
+            "* text=auto eol=lf"
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "# Gradle wrapper",
+            "*.bat text eol=crlf",
+            "*.jar binary"
+          ],
+          "context_after": []
+        }
+      ]
     },
     {
       "op": "create_binary_file",

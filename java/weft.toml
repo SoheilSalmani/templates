@@ -16,15 +16,9 @@ computed = true
 default = "project_name.lower().replace(' ', '-')"
 
 [[question]]
-id = "java_version"
-kind = "string"
-prompt = "Java version"
-default = "'25'"
-
-[[question]]
 id = "use_spring_boot"
 kind = "bool"
-prompt = "Add Spring Boot (a web service)"
+prompt = "Add Spring Boot (a web service)?"
 default = "True"
 
 [[question]]
@@ -45,18 +39,53 @@ when = "use_spring_boot"
 [[question]]
 id = "use_testcontainers"
 kind = "bool"
-prompt = "Add Testcontainers integration tests"
+prompt = "Add Testcontainers integration tests?"
 default = "True"
 when = "use_spring_boot"
 
 [[question]]
 id = "use_github_actions"
 kind = "bool"
-prompt = "Add a GitHub Actions CI workflow"
+prompt = "Add a GitHub Actions CI workflow?"
 default = "True"
 
 [[question]]
 id = "use_renovate"
 kind = "bool"
-prompt = "Add Renovate dependency-update config"
+prompt = "Add Renovate dependency-update config?"
 default = "True"
+
+[[question]]
+id = "use_github"
+kind = "bool"
+prompt = "Hosted on GitHub?"
+description = "Installs the skills for issues, pull requests, README and repository metadata. They drive gh; no MCP server is added."
+default = "True"
+
+[[question]]
+id = "use_linear"
+kind = "bool"
+prompt = "Track work in Linear?"
+description = "Installs the Linear skills and the Linear remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+default = "True"
+
+[[question]]
+id = "use_jira"
+kind = "bool"
+prompt = "Track work in Jira?"
+description = "Installs the Jira skills and the Atlassian remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+default = "False"
+
+[[question]]
+id = "use_anki"
+kind = "bool"
+prompt = "Write Anki flashcards about this project?"
+description = "Installs anki-flashcards and remembering-what-you-built. AnkiConnect is per machine, so its MCP server stays in user-level config."
+default = "False"
+
+[[question]]
+id = "use_obsidian"
+kind = "bool"
+prompt = "Keep this project's ideas in an Obsidian vault?"
+description = "Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config."
+default = "False"

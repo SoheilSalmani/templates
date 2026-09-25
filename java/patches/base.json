@@ -5,13 +5,7 @@
       "op": "create_file",
       "path": "src/main/java/App.java",
       "content": [
-        [
-          "/// A minimal Java ",
-          {
-            "answer": "java_version"
-          },
-          " application."
-        ],
+        "/// A minimal Java 25 application.",
         "///",
         "/// Uses JEP 512 compact source files and instance main methods: no class",
         "/// declaration, no `String[] args`, and `IO.println` is available unqualified.",
@@ -20,6 +14,28 @@
         "}"
       ],
       "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "git-init",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Initialise the git repository",
+      "action": "git init -q -b main"
+    },
+    {
+      "id": "git-commit",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Commit the scaffold",
+      "description": "First commit after every setup hook that may exist has run.",
+      "action": "git add -A && git commit -q -m 'Scaffold repository'",
+      "after": [
+        "git-init",
+        "mise-install",
+        "sync-claude-skills"
+      ]
     }
   ]
 }

@@ -25,13 +25,7 @@
         "        uses: actions/setup-java@v4",
         "        with:",
         "          distribution: temurin",
-        [
-          "          java-version: \"",
-          {
-            "answer": "java_version"
-          },
-          "\""
-        ],
+        "          java-version: \"25\"",
         "      - name: Build",
         "        run: ./gradlew build"
       ],
