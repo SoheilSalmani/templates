@@ -32,7 +32,7 @@ Secrets are never passed as answers — they resolve from their source
 - **mise**: Adds mise.toml pinning Node 24 for skill scripts and MCP servers; stack templates add their runtime under [tools], and personal overrides go in the gitignored mise.local.toml.
 - **skills**: Installs the house Agent Skills that apply to any repository under .agents/skills, the canonical location read by Codex and oh-my-pi; Claude Code reaches them through the symlink farm the sync-claude-skills hook rebuilds.
 - **anki** _(when `use_anki`)_: Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.
-- **dbt-skills**: Installs the house dbt Agent Skills under .agents/skills: writing and documenting models, adding unit tests and the tag conventions, next to the general skills the skills patch provides.
+- **dbt-skills**: Installs the house SQL and dbt Agent Skills under .agents/skills: the general SQL rules, writing and documenting models, adding unit tests and the tag conventions, next to the general skills the skills patch provides.
 - **github** _(when `use_github`)_: Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata. They drive gh; no MCP server is added.
 - **jira** _(when `use_jira`)_: Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.
 - **linear** _(when `use_linear`)_: Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.
