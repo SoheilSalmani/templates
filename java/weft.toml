@@ -89,3 +89,10 @@ kind = "bool"
 prompt = "Keep this project's ideas in an Obsidian vault?"
 description = "Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config."
 default = "False"
+
+[[question]]
+id = "use_meetings"
+kind = "bool"
+prompt = "Prepare client meetings from this project?"
+description = "Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo."
+default = "False"

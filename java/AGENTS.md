@@ -23,6 +23,7 @@ For the full machine-readable contract run `weft describe --json` here.
 | `use_jira` | bool | no | False | Installs the Jira skills and the Atlassian remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. |
 | `use_anki` | bool | no | False | Installs anki-flashcards and remembering-what-you-built. AnkiConnect is per machine, so its MCP server stays in user-level config. |
 | `use_obsidian` | bool | no | False | Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config. |
+| `use_meetings` | bool | no | False | Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo. |
 
 Secrets are never passed as answers — they resolve from their source
 (`env:`/`cmd:`/`prompt`) at render time.
@@ -40,6 +41,7 @@ Secrets are never passed as answers — they resolve from their source
 - **github** _(when `use_github`)_: Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata. They drive gh; no MCP server is added.
 - **jira** _(when `use_jira`)_: Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.
 - **linear** _(when `use_linear`)_: Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.
+- **meetings** _(when `use_meetings`)_: Installs preparing-client-meetings, which turns pull requests and tracker tickets into what to say at dailies and weeklies, in a weekly note in the user's Obsidian vault. The vault is found on the local filesystem and the trackers are read through the MCP servers the project already has.
 - **mise-java**: Pins Java 25 in mise.toml so mise install provides the JDK that the Gradle build uses.
 - **obsidian** _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
 - **testing**: Adds JUnit 6 through the junit-bom with AssertJ, wires the test task to the JUnit platform, and ships one smoke test that proves the toolchain.
