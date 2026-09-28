@@ -1,0 +1,279 @@
+{
+  "title": "Export and slide checks",
+  "description": "Adds pnpm export, which prints the built deck with Chrome through playwright-core to a PDF, a page per slide or per step, and PNGs, and pnpm check, which type-checks, builds, renders every slide fully revealed and fails when content runs off a slide or out of a code frame, or the page throws, warning about code shrunk to fit and leaving an image of every slide in .tmp/export.",
+  "depends_on": [
+    "mdx-types"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "## Scripts",
+            ""
+          ],
+          "removed": [
+            "| Command          | What it does                                         |",
+            "| ---------------- | ---------------------------------------------------- |",
+            "| `pnpm dev`       | Serves the deck with hot reload                      |",
+            "| `pnpm build`     | Type-checks and builds a static site into `dist/`    |",
+            "| `pnpm preview`   | Serves the build                                     |",
+            "| `pnpm typecheck` | Type-checks the code and the slides without building |",
+            "| `pnpm format`    | Formats with Prettier                                |"
+          ],
+          "added": [
+            "| Command          | What it does                                                         |",
+            "| ---------------- | -------------------------------------------------------------------- |",
+            "| `pnpm dev`       | Serves the deck with hot reload                                      |",
+            "| `pnpm build`     | Type-checks and builds a static site into `dist/`                    |",
+            "| `pnpm preview`   | Serves the build                                                     |",
+            "| `pnpm typecheck` | Type-checks the code and the slides without building                 |",
+            "| `pnpm export`    | Builds and writes `slides.pdf`, a page per slide, to `.tmp/export/`  |",
+            "| `pnpm check`     | Type-checks, builds, and fails on a slide whose content does not fit |",
+            "| `pnpm format`    | Formats with Prettier                                                |"
+          ],
+          "context_after": [
+            "",
+            "UI components come from [shadcn/ui](https://ui.shadcn.com): `pnpm dlx shadcn@latest add <component>` adds one under `src/components/ui`, themed by the tokens in `src/index.css`."
+          ]
+        },
+        {
+          "context_before": [
+            "`pnpm build` writes a static site with relative paths: `dist/` can be served from any host or sub-path.",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "## Export and checks",
+            "",
+            "`pnpm export` builds the deck and prints it with Chrome to `.tmp/export/slides.pdf`. After a build, `node scripts/export.ts` takes options: `--steps` for a page per step, `--png` for an image per page, `--theme dark`, and `--out <directory>`.",
+            "",
+            "`pnpm check` is the one to run before presenting or pushing. It type-checks, builds, renders every slide fully revealed, and fails when content runs off a slide or out of a code frame, or the page throws; code or a diagram shrunk to fit is a warning. An image of every slide lands in `.tmp/export/` to look through.",
+            "",
+            "Both use the Google Chrome installed on the machine; without it, `pnpm exec playwright-core install chromium` downloads one.",
+            ""
+          ],
+          "context_after": [
+            "## Theme",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "package.json",
+      "hunks": [
+        {
+          "context_before": [
+            "    \"preview\": \"vite preview\",",
+            "    \"typecheck\": \"node scripts/typecheck.ts -b\","
+          ],
+          "removed": [],
+          "added": [
+            "    \"export\": \"vite build && node scripts/export.ts --pdf\",",
+            "    \"check\": \"node scripts/typecheck.ts -b && vite build && node scripts/export.ts --check\","
+          ],
+          "context_after": [
+            "    \"format\": \"prettier --write .\"",
+            "  },"
+          ]
+        },
+        {
+          "context_before": [
+            "    \"estree-util-value-to-estree\": \"^3.5.0\",",
+            "    \"mdast-util-mdx\": \"^3.0.0\","
+          ],
+          "removed": [],
+          "added": [
+            "    \"playwright-core\": \"^1.63.0\","
+          ],
+          "context_after": [
+            "    \"prettier\": \"^3.9.9\",",
+            "    \"prettier-plugin-tailwindcss\": \"^0.8.1\","
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "tsconfig.node.json",
+      "hunks": [
+        {
+          "context_before": [
+            "    \"tsBuildInfoFile\": \"./node_modules/.tmp/tsconfig.node.tsbuildinfo\",",
+            "    \"target\": \"es2023\","
+          ],
+          "removed": [
+            "    \"lib\": [\"ES2023\"],"
+          ],
+          "added": [
+            "    \"lib\": [\"ES2023\", \"DOM\", \"DOM.Iterable\"],"
+          ],
+          "context_after": [
+            "    \"module\": \"esnext\",",
+            "    \"types\": [\"node\"],"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": "scripts/export.ts",
+      "content": [
+        "// Renders the built deck (dist/) in Chrome, through `vite preview` and",
+        "// playwright-core, and writes what it is asked for into .tmp/export:",
+        "//",
+        "//   node scripts/export.ts --pdf          slides.pdf, a page per slide",
+        "//   node scripts/export.ts --pdf --steps  a page per step instead",
+        "//   node scripts/export.ts --png          a PNG per page",
+        "//   node scripts/export.ts --check        a PNG per page, and exits 1 when",
+        "//                                         content overflows a slide or the",
+        "//                                         page throws; content shrunk to",
+        "//                                         fit is a warning",
+        "//   --theme light|dark (default light)    --out <directory>",
+        "//",
+        "// `pnpm export` and `pnpm check` build first. Chrome is the one installed on",
+        "// the machine; without it, run `pnpm exec playwright-core install chromium`.",
+        "import { existsSync } from \"node:fs\"",
+        "import { mkdir, readdir, rm } from \"node:fs/promises\"",
+        "import path from \"node:path\"",
+        "import { parseArgs } from \"node:util\"",
+        "import { chromium, type Browser } from \"playwright-core\"",
+        "import { preview, type PreviewServer } from \"vite\"",
+        "",
+        "const { values: options } = parseArgs({",
+        "  options: {",
+        "    pdf: { type: \"boolean\", default: false },",
+        "    png: { type: \"boolean\", default: false },",
+        "    check: { type: \"boolean\", default: false },",
+        "    steps: { type: \"boolean\", default: false },",
+        "    theme: { type: \"string\", default: \"light\" },",
+        "    out: { type: \"string\", default: \".tmp/export\" },",
+        "  },",
+        "})",
+        "if (options.theme !== \"light\" && options.theme !== \"dark\") {",
+        "  throw new Error(`--theme is light or dark, not ${options.theme}`)",
+        "}",
+        "const theme = options.theme",
+        "const out = path.resolve(options.out)",
+        "",
+        "async function launch(): Promise<Browser> {",
+        "  try {",
+        "    return await chromium.launch({ channel: \"chrome\" })",
+        "  } catch (error) {",
+        "    try {",
+        "      return await chromium.launch()",
+        "    } catch {",
+        "      throw new Error(",
+        "        `Google Chrome was not found; install it, or run \"pnpm exec playwright-core install chromium\".\\n${String(error)}`",
+        "      )",
+        "    }",
+        "  }",
+        "}",
+        "",
+        "let server: PreviewServer | undefined",
+        "let browser: Browser | undefined",
+        "let failed = false",
+        "try {",
+        "  server = await preview({",
+        "    logLevel: \"warn\",",
+        "    preview: { host: \"127.0.0.1\", port: 0, strictPort: true, open: false },",
+        "  })",
+        "  const index = path.resolve(",
+        "    server.config.root,",
+        "    server.config.build.outDir,",
+        "    \"index.html\"",
+        "  )",
+        "  if (!existsSync(index)) {",
+        "    throw new Error(`${index} is missing; run \"pnpm build\" first`)",
+        "  }",
+        "  const url = server.resolvedUrls?.local[0]",
+        "  if (!url) throw new Error(\"vite preview is not listening\")",
+        "",
+        "  browser = await launch()",
+        "  const context = await browser.newContext({",
+        "    viewport: { width: 1280, height: 800 },",
+        "    deviceScaleFactor: 2,",
+        "    colorScheme: theme,",
+        "    reducedMotion: \"reduce\",",
+        "  })",
+        "  // The deck keeps the theme it was last shown in; start from the one asked.",
+        "  await context.addInitScript(`localStorage.setItem(\"theme\", \"${theme}\")`)",
+        "  const page = await context.newPage()",
+        "  page.on(\"pageerror\", (error) => {",
+        "    failed = true",
+        "    console.error(`error: ${error.message}`)",
+        "  })",
+        "",
+        "  await page.goto(`${url}#/print${options.steps ? \"/steps\" : \"\"}`)",
+        "  await page.waitForSelector(\"html[data-print-ready]\", { timeout: 30_000 })",
+        "  const pages = page.locator(\"[data-page]\")",
+        "  const count = await pages.count()",
+        "",
+        "  if (options.check) {",
+        "    const report = await page.evaluate(() =>",
+        "      [...document.querySelectorAll<HTMLElement>(\"[data-page]\")].flatMap(",
+        "        (section) => {",
+        "          const slide = section.querySelector<HTMLElement>(\"[data-slide]\")",
+        "          const at = `slide ${section.dataset.page}`",
+        "          return [",
+        "            ...(slide?.dataset.overflow",
+        "              ? [`overflow: ${at}: ${slide.dataset.overflowWhere}`]",
+        "              : []),",
+        "            ...(slide?.dataset.warning",
+        "              ? [`warning: ${at}: ${slide.dataset.warning}`]",
+        "              : []),",
+        "          ]",
+        "        }",
+        "      )",
+        "    )",
+        "    for (const line of report) console.error(line)",
+        "    const overflowing = report.filter((line) => line.startsWith(\"overflow\"))",
+        "    if (overflowing.length > 0) failed = true",
+        "    console.log(",
+        "      overflowing.length > 0",
+        "        ? `check: ${overflowing.length} of ${count} pages overflow`",
+        "        : `check: ${count} pages fit`",
+        "    )",
+        "  }",
+        "",
+        "  if (options.png || options.check) {",
+        "    await mkdir(out, { recursive: true })",
+        "    // Images of slides a deck no longer has would otherwise linger.",
+        "    for (const name of await readdir(out)) {",
+        "      if (/^slide-.*\\.png$/.test(name)) await rm(path.join(out, name))",
+        "    }",
+        "    for (let i = 0; i < count; i++) {",
+        "      const name = (await pages.nth(i).getAttribute(\"data-page\")) ?? `${i + 1}`",
+        "      const [slide, step] = name.split(\"/\")",
+        "      const file = `slide-${slide.padStart(2, \"0\")}${step ? `-${step}` : \"\"}.png`",
+        "      await pages.nth(i).screenshot({ path: path.join(out, file) })",
+        "    }",
+        "    console.log(`png: ${count} files in ${path.relative(process.cwd(), out)}`)",
+        "  }",
+        "",
+        "  if (options.pdf) {",
+        "    await mkdir(out, { recursive: true })",
+        "    const file = path.join(out, \"slides.pdf\")",
+        "    await page.pdf({",
+        "      path: file,",
+        "      preferCSSPageSize: true,",
+        "      printBackground: true,",
+        "      tagged: true,",
+        "      outline: true,",
+        "    })",
+        "    console.log(`pdf: ${path.relative(process.cwd(), file)}`)",
+        "  }",
+        "} finally {",
+        "  await browser?.close()",
+        "  await server?.close()",
+        "}",
+        "process.exitCode = failed ? 1 : 0"
+      ],
+      "mode": 420
+    }
+  ]
+}

@@ -1,0 +1,248 @@
+{
+  "title": "Type-checked slides",
+  "description": "Type-checks the .mdx slides against the deck's components, in VS Code through the MDX extension and in pnpm typecheck and pnpm build through the same MDX language service: a misspelt component, a missing prop or a wrong value is an error. tsconfig.mdx.json is the project it runs in and mdx-env.d.ts names what a slide can use.",
+  "depends_on": [
+    "diagrams"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "## Scripts",
+            ""
+          ],
+          "removed": [
+            "| Command          | What it does                                      |",
+            "| ---------------- | ------------------------------------------------- |",
+            "| `pnpm dev`       | Serves the deck with hot reload                   |",
+            "| `pnpm build`     | Type-checks and builds a static site into `dist/` |",
+            "| `pnpm preview`   | Serves the build                                  |",
+            "| `pnpm typecheck` | Type-checks without building                      |",
+            "| `pnpm format`    | Formats with Prettier                             |"
+          ],
+          "added": [
+            "| Command          | What it does                                         |",
+            "| ---------------- | ---------------------------------------------------- |",
+            "| `pnpm dev`       | Serves the deck with hot reload                      |",
+            "| `pnpm build`     | Type-checks and builds a static site into `dist/`    |",
+            "| `pnpm preview`   | Serves the build                                     |",
+            "| `pnpm typecheck` | Type-checks the code and the slides without building |",
+            "| `pnpm format`    | Formats with Prettier                                |"
+          ],
+          "context_after": [
+            "",
+            "UI components come from [shadcn/ui](https://ui.shadcn.com): `pnpm dlx shadcn@latest add <component>` adds one under `src/components/ui`, themed by the tokens in `src/index.css`."
+          ]
+        },
+        {
+          "context_before": [
+            "While `pnpm dev` runs, a slide whose content does not fit says so in its top corner, in red, and content shrunk to fit says so in amber.",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "The slides are type-checked like the rest of the code: a misspelt component, a missing prop or a wrong value is an error in `pnpm typecheck`, and in VS Code as you type with the [MDX extension](https://marketplace.visualstudio.com/items?itemName=unifiedjs.vscode-mdx) that `.vscode/extensions.json` recommends. `mdx-env.d.ts` tells the checker which components a slide can use; `tsconfig.mdx.json` is the project it runs in.",
+            ""
+          ],
+          "context_after": [
+            "## Code blocks",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "package.json",
+      "hunks": [
+        {
+          "context_before": [
+            "  \"scripts\": {",
+            "    \"dev\": \"vite\","
+          ],
+          "removed": [
+            "    \"build\": \"tsc -b && vite build\",",
+            "    \"preview\": \"vite preview\",",
+            "    \"typecheck\": \"tsc -b\","
+          ],
+          "added": [
+            "    \"build\": \"node scripts/typecheck.ts -b && vite build\",",
+            "    \"preview\": \"vite preview\",",
+            "    \"typecheck\": \"node scripts/typecheck.ts -b\","
+          ],
+          "context_after": [
+            "    \"format\": \"prettier --write .\"",
+            "  },"
+          ]
+        },
+        {
+          "context_before": [
+            "  },",
+            "  \"devDependencies\": {"
+          ],
+          "removed": [],
+          "added": [
+            "    \"@mdx-js/language-service\": \"^0.7.4\","
+          ],
+          "context_after": [
+            "    \"@mdx-js/rollup\": \"^3.1.1\",",
+            "    \"@shikijs/transformers\": \"^4.4.3\","
+          ]
+        },
+        {
+          "context_before": [
+            "    \"@types/react-dom\": \"^19.3.0\",",
+            "    \"@vitejs/plugin-react\": \"^6.1.1\","
+          ],
+          "removed": [],
+          "added": [
+            "    \"@volar/typescript\": \"~2.4.28\","
+          ],
+          "context_after": [
+            "    \"beautiful-mermaid\": \"~1.1.3\",",
+            "    \"estree-util-value-to-estree\": \"^3.5.0\","
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "tsconfig.json",
+      "hunks": [
+        {
+          "context_before": [
+            "  \"files\": [],",
+            "  \"references\": ["
+          ],
+          "removed": [],
+          "added": [
+            "    { \"path\": \"./tsconfig.mdx.json\" },"
+          ],
+          "context_after": [
+            "    { \"path\": \"./tsconfig.app.json\" },",
+            "    { \"path\": \"./tsconfig.node.json\" }"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "tsconfig.node.json",
+      "hunks": [
+        {
+          "context_before": [
+            "    \"noFallthroughCasesInSwitch\": true",
+            "  },"
+          ],
+          "removed": [
+            "  \"include\": [\"vite.config.ts\", \"plugins\"]"
+          ],
+          "added": [
+            "  \"include\": [\"vite.config.ts\", \"plugins\", \"scripts\"]"
+          ],
+          "context_after": [
+            "}"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": "mdx-env.d.ts",
+      "content": [
+        "// Types for the deck's .mdx files, read by the MDX editor extension and by",
+        "// `pnpm typecheck` through tsconfig.mdx.json. The app does not see them.",
+        "import type { Notes, Slide } from \"./src/deck/slide\"",
+        "import type { components } from \"./src/mdx-components\"",
+        "",
+        "declare global {",
+        "  /** What a slide can use without importing it. */",
+        "  type MDXProvidedComponents = typeof components & {",
+        "    Slide: typeof Slide",
+        "    Notes: typeof Notes",
+        "    /** Replaced by the file it names at build time (plugins/remark-include.ts). */",
+        "    Include: (props: { src: string }) => null",
+        "  }",
+        "",
+        "  /**",
+        "   * `<motion.div>` takes `motion` from the components at run time, but the",
+        "   * MDX language service looks it up as a variable; this makes it one.",
+        "   */",
+        "  const motion: MDXProvidedComponents[\"motion\"]",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "scripts/typecheck.ts",
+      "content": [
+        "// `tsc`, plus the .mdx files, checked by the MDX language service that the",
+        "// VS Code MDX extension runs. Arguments go to tsc unchanged, so",
+        "// `node scripts/typecheck.ts -b` checks every project, slides.mdx included.",
+        "// A tsconfig's `mdx` section (checkMdx, plugins) applies here as it does in",
+        "// the editor.",
+        "import { createRequire } from \"node:module\"",
+        "import {",
+        "  createMdxLanguagePlugin,",
+        "  resolvePlugins,",
+        "} from \"@mdx-js/language-service\"",
+        "import { runTsc } from \"@volar/typescript/lib/quickstart/runTsc.js\"",
+        "import remarkFrontmatter from \"remark-frontmatter\"",
+        "import remarkGfm from \"remark-gfm\"",
+        "import ts from \"typescript\"",
+        "",
+        "const require = createRequire(import.meta.url)",
+        "",
+        "runTsc(require.resolve(\"typescript/lib/tsc\"), [\".mdx\"], (_, { options }) => {",
+        "  const configPath =",
+        "    typeof options.configFilePath === \"string\"",
+        "      ? options.configFilePath",
+        "      : undefined",
+        "  const mdx = configPath",
+        "    ? ts.readConfigFile(configPath, ts.sys.readFile).config?.mdx",
+        "    : undefined",
+        "  const fromConfig = createRequire(configPath ?? import.meta.filename)",
+        "  const [remarkPlugins, virtualCodePlugins] = resolvePlugins(",
+        "    mdx,",
+        "    (name) => fromConfig(name).default",
+        "  )",
+        "  return [",
+        "    createMdxLanguagePlugin(",
+        "      remarkPlugins ?? [[remarkFrontmatter, [\"toml\", \"yaml\"]], remarkGfm],",
+        "      virtualCodePlugins,",
+        "      Boolean(mdx?.checkMdx),",
+        "      options.jsxImportSource ?? \"react\"",
+        "    ),",
+        "  ]",
+        "})"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "tsconfig.mdx.json",
+      "content": [
+        "{",
+        "  \"extends\": \"./tsconfig.app.json\",",
+        "  \"compilerOptions\": {",
+        "    \"tsBuildInfoFile\": \"./node_modules/.tmp/tsconfig.mdx.tsbuildinfo\"",
+        "  },",
+        "  \"mdx\": {",
+        "    \"checkMdx\": true,",
+        "    \"plugins\": [",
+        "      [\"remark-frontmatter\", [\"toml\", \"yaml\"]],",
+        "      \"remark-gfm\",",
+        "      \"remark-mdx-frontmatter\"",
+        "    ]",
+        "  },",
+        "  \"include\": [\"**/*.mdx\", \"mdx-env.d.ts\"]",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}

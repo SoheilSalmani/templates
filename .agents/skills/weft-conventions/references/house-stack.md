@@ -1,6 +1,6 @@
 # The house stack
 
-What the house has already decided, read from the templates that exist. Surveyed 2026-09-25 across `~/Desktop/Projects/templates/{base,java,scala,dbt,fastapi,airflow}` and `~/Desktop/Projects/trendlift/weft-templates/web`. **Look at the templates directory before trusting this file**: a newer template outranks it, and the survey is the reading, not the rule. The rule is in `SKILL.md`: a tool is a decision the template makes; a question is for what varies between projects.
+What the house has already decided, read from the templates that exist. Surveyed 2026-09-25 across `~/Desktop/Projects/templates/{base,java,scala,dbt,fastapi,airflow}` and `~/Desktop/Projects/trendlift/weft-templates/web`, with `slides` added 2026-09-28. **Look at the templates directory before trusting this file**: a newer template outranks it, and the survey is the reading, not the rule. The rule is in `SKILL.md`: a tool is a decision the template makes; a question is for what varies between projects.
 
 ## Contents
 
@@ -37,7 +37,8 @@ Two rules follow from it:
 | Stack | Decided | Asked with `use_*` | Evidence |
 | --- | --- | --- | --- |
 | Python | uv pinned by mise (`mise-uv`), Python pinned by `.python-version` (uv reads it natively), `pyproject.toml`; hooks `verify-uv`, `uv-sync` (`uv lock && uv sync`, `glob:pyproject.toml`) | Docker | `fastapi`, `dbt`, `web` (apps/api) |
-| Node | pnpm (`packageManager` pinned), Turborepo, Prettier | shadcn/ui, Prisma, Better Auth, Resend, Fumadocs, Mastra, PostHog, Stripe, Typesense, Cloudinary | `web` |
+| Node (monorepo) | pnpm (`packageManager` pinned), Turborepo, Prettier | shadcn/ui, Prisma, Better Auth, Resend, Fumadocs, Mastra, PostHog, Stripe, Typesense, Cloudinary | `web` |
+| Node (single app) | Vite + React in TypeScript, no workspace; pnpm pinned by `packageManager` and by mise (`mise-pnpm`); Tailwind CSS 4 with the shadcn/ui radix-nova tokens; Prettier with prettier-plugin-tailwindcss, ignoring `*.mdx` (it reflows text inside JSX, which MDX then reads as paragraphs), `.weft/`, `.agents/` and the generated `src/components/ui/`; `base: "./"` so `dist/` runs under any path; one generator patch per shadcn/ui component; hooks `verify-pnpm`, `pnpm-install` (`pnpm install`, `glob:package.json`, after `mise-install`). A deck adds: `.mdx` type-checked by the MDX language service (`tsconfig.mdx.json`, `pnpm typecheck` through Volar's `runTsc`), a `pnpm check` that renders the build with playwright-core and the machine's Chrome, Mermaid drawn at build time, a file explorer whose Material Icon Theme icons are resolved at build time, and a `writing-slides` skill patch; CI installs the toolchain with `jdx/mise-action` rather than `setup-node` | Twoslash, React Flow diagrams (default on) and dbt lineage on top of them (default off), GitHub Actions (default follows `use_github`), GitHub Pages | `slides` |
 | Java | JDK 25 by mise (`mise-java`), Gradle with the Kotlin DSL and a committed wrapper, Spotless + palantir-java-format, Error Prone, JUnit + AssertJ | Spring Boot, Testcontainers, GitHub Actions, Renovate | `java` |
 | Scala | JDK 25 by mise (`mise-java`), scala-cli entry point, scalafmt with a pinned version, `verify-scala` and `verify-scalafmt` pre checks | sbt, ZIO | `scala` |
 | dbt | uv-managed Python, snake_case `package_name` feeding both `dbt_project.yml` and `pyproject.toml`, `profile_name` defaulting to it, `.vscode/extensions.json` recommending the dbt extension, a `dbt-skills` patch with the four dbt skills; hooks `uv-sync`, `dbt-deps` (`uv run dbt deps`, `glob:packages.yml`) | | `dbt` |
@@ -45,7 +46,7 @@ Two rules follow from it:
 
 ## Pinned, not asked
 
-- Language and tool versions: `node`, `java`, `uv`, `astro` in `mise.toml`; `.python-version`; `packageManager`; the Gradle wrapper version; `scalafmt`; Spring Boot. Bump with `weft patch amend`; `weft update` moves every project. `java_version` was dropped from `java` on 2026-09-25. `scala` still asks `scala_version`, a 2.13-versus-3 axis rather than a plain version; do not add version questions elsewhere.
+- Language and tool versions: `node`, `java`, `uv`, `astro`, `pnpm` in `mise.toml`; `.python-version`; `packageManager`; the Gradle wrapper version; `scalafmt`; Spring Boot; the shadcn CLI as a devDependency, which the generated component patches run. Bump with `weft patch amend`; `weft update` moves every project. `java_version` was dropped from `java` on 2026-09-25. `scala` still asks `scala_version`, a 2.13-versus-3 axis rather than a plain version; do not add version questions elsewhere.
 - Lockfiles: never in a patch. `uv.lock`, `pnpm-lock.yaml`, `gradle.lockfile` are produced by a `setup` hook with `inputs` on the manifest. List them in `.weftignore`.
 - Formatter and linter configuration: shipped, not offered.
 - Editor and git configuration, AGENTS.md, the skills, the MCP file set: shipped by the portable patches, never asked.

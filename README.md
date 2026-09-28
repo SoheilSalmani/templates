@@ -1,6 +1,6 @@
 # Templates
 
-Weft templates, one directory each. `base` is the root every repository starts from; the stack templates (`java`, `fastapi`, `dbt`, `airflow`, `scala`) carry copies of its portable patches plus their own stack.
+Weft templates, one directory each. `base` is the root every repository starts from; the stack templates (`java`, `fastapi`, `dbt`, `airflow`, `scala`, `slides`) carry copies of its portable patches plus their own stack.
 
 ## The portable set
 

@@ -1,0 +1,61 @@
+{
+  "title": "GitHub Actions check",
+  "description": "Adds a GitHub Actions workflow that installs the toolchain from mise.toml and runs pnpm check on every push to main and every pull request, uploading an image of every slide as an artifact.",
+  "depends_on": [
+    "export"
+  ],
+  "when": "use_github_actions",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".github/workflows/ci.yml",
+      "content": [
+        "name: CI",
+        "",
+        "on:",
+        "  push:",
+        "    branches: [main]",
+        "  pull_request:",
+        "",
+        "permissions:",
+        "  contents: read",
+        "",
+        "concurrency:",
+        "  group: ci-${{ github.ref }}",
+        "  cancel-in-progress: true",
+        "",
+        "jobs:",
+        "  check:",
+        "    # ubuntu-latest ships Google Chrome, which `pnpm check` drives; the -arm",
+        "    # images do not.",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - uses: actions/checkout@v7",
+        "      # Node and pnpm from mise.toml; pnpm then switches itself to the",
+        "      # packageManager version in package.json.",
+        "      - uses: jdx/mise-action@v4",
+        "      - name: Locate the pnpm store",
+        "        id: pnpm-store",
+        "        run: echo \"path=$(pnpm store path)\" >> \"$GITHUB_OUTPUT\"",
+        "      - uses: actions/cache@v6",
+        "        with:",
+        "          path: ${{ steps.pnpm-store.outputs.path }}",
+        "          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}",
+        "          restore-keys: pnpm-store-${{ runner.os }}-",
+        "      - run: pnpm install --frozen-lockfile",
+        "      # Type-checks the slides, builds, and fails on a slide whose content",
+        "      # does not fit; the slide images land in .tmp/export either way.",
+        "      - run: pnpm check",
+        "      - uses: actions/upload-artifact@v7",
+        "        if: ${{ !cancelled() }}",
+        "        with:",
+        "          name: slides",
+        "          path: .tmp/export/",
+        "          # .tmp is a dot-directory, which upload-artifact skips by default.",
+        "          include-hidden-files: true",
+        "          if-no-files-found: ignore"
+      ],
+      "mode": 420
+    }
+  ]
+}

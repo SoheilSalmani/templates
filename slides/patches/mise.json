@@ -1,0 +1,38 @@
+{
+  "title": "mise-en-place toolchain",
+  "description": "Adds mise.toml pinning Node 24 for skill scripts and MCP servers; stack templates add their runtime under [tools], and personal overrides go in the gitignored mise.local.toml.",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": "mise.toml",
+      "content": [
+        "# Toolchain pins for this repository, installed with `mise install`.",
+        "# Personal overrides (extra tools, local env) go in mise.local.toml, which is gitignored.",
+        "",
+        "[tools]",
+        "node = \"24\""
+      ],
+      "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-mise",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify mise is installed",
+      "action": "command -v mise"
+    },
+    {
+      "id": "mise-install",
+      "phase": "post",
+      "effect": "setup",
+      "label": "Install the pinned toolchain",
+      "description": "Trusts mise.toml and installs every tool it pins. Idempotent; re-runs when mise.toml changes.",
+      "action": "mise trust -q && mise install -y",
+      "inputs": [
+        "glob:mise.toml"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Git text normalisation",
+  "description": "Adds a .gitattributes that stores and checks out every text file with LF line endings.",
+  "ops": [
+    {
+      "op": "create_file",
+      "path": ".gitattributes",
+      "content": [
+        "# Normalise line endings: text files are stored and checked out with LF.",
+        "* text=auto eol=lf"
+      ],
+      "mode": 420
+    }
+  ]
+}

@@ -1,0 +1,393 @@
+{
+  "title": "Build-time diagrams",
+  "description": "Turns mermaid fences into SVG when the deck builds with beautiful-mermaid, coloured by the theme tokens so they follow light and dark mode, with no diagram library in the browser: flowcharts, sequence, state, class, entity relationship and XY charts. Other kinds fall back to highlighted source, and a diagram too wide for the slide is a build warning.",
+  "depends_on": [
+    "code"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "`````",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "## Diagrams",
+            "",
+            "A `mermaid` fence becomes an SVG when the deck builds, coloured by the theme tokens, so it follows light and dark mode and loads no diagram library in the browser. Flowcharts, sequence, state, class, entity relationship and `xychart-beta` diagrams are drawn; other kinds show their source, with a warning. Keep a diagram to a handful of nodes in one direction: a wide one is scaled down to fit, which the build warns about, and the slide's corner says so when its labels end up smaller than 18 px, the least a room can read.",
+            "",
+            "````md",
+            "```mermaid",
+            "flowchart LR",
+            "  A[slides.mdx] --> B(MDX) --> C((Slide))",
+            "```",
+            "````",
+            ""
+          ],
+          "context_after": [
+            "## Presenting",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "package.json",
+      "hunks": [
+        {
+          "context_before": [
+            "    \"@types/react-dom\": \"^19.3.0\",",
+            "    \"@vitejs/plugin-react\": \"^6.1.1\","
+          ],
+          "removed": [],
+          "added": [
+            "    \"beautiful-mermaid\": \"~1.1.3\","
+          ],
+          "context_after": [
+            "    \"estree-util-value-to-estree\": \"^3.5.0\",",
+            "    \"mdast-util-mdx\": \"^3.0.0\","
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "plugins/slides.ts",
+      "hunks": [
+        {
+          "context_before": [
+            "import { takeDependencies } from \"./dependencies.ts\"",
+            "import { remarkCode } from \"./remark-code.ts\""
+          ],
+          "removed": [],
+          "added": [
+            "import { remarkDiagrams } from \"./remark-diagrams.ts\""
+          ],
+          "context_after": [
+            "import { remarkInclude } from \"./remark-include.ts\"",
+            "import { remarkSlides, type RemarkSlidesOptions } from \"./remark-slides.ts\""
+          ]
+        },
+        {
+          "context_before": [
+            "      [remarkMdxFrontmatter, { default: {} }],",
+            "      remarkGfm,"
+          ],
+          "removed": [],
+          "added": [
+            "      remarkDiagrams,"
+          ],
+          "context_after": [
+            "      remarkCode,",
+            "      [remarkSlides, slideOptions],"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "slides.mdx",
+      "hunks": [
+        {
+          "context_before": [
+            "---",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "## Diagrams are drawn when the deck builds, in its colours",
+            "",
+            "```mermaid",
+            "flowchart LR",
+            "  A[slides.mdx] --> B(MDX) --> C[Shiki] --> D((Slide))",
+            "```",
+            "",
+            "<Notes>",
+            "",
+            "A `mermaid` fence becomes an SVG at build time, coloured by the theme",
+            "tokens, so it follows light and dark mode.",
+            "",
+            "</Notes>",
+            "",
+            "---",
+            ""
+          ],
+          "context_after": [
+            "## The presenter view has your notes, the next slide and a timer",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "src/mdx-components.tsx",
+      "hunks": [
+        {
+          "context_before": [
+            "  Statement,",
+            "} from \"@/components/layouts\""
+          ],
+          "removed": [],
+          "added": [
+            "import { Diagram } from \"@/components/diagram\""
+          ],
+          "context_after": [
+            "import {",
+            "  Card,"
+          ]
+        },
+        {
+          "context_before": [
+            "  CodeTabs,",
+            "  MagicMove,"
+          ],
+          "removed": [],
+          "added": [
+            "  Diagram,"
+          ],
+          "context_after": [
+            "} satisfies MDXComponents"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": "plugins/remark-diagrams.ts",
+      "content": [
+        "import { renderMermaidSVG } from \"beautiful-mermaid\"",
+        "import type { Nodes, Root } from \"mdast\"",
+        "import type { MdxjsEsm } from \"mdast-util-mdx\"",
+        "import type { VFile } from \"vfile\"",
+        "import { hoisted } from \"./hoist.ts\"",
+        "import { warn } from \"./mdast.ts\"",
+        "",
+        "/** Stands for element ids in the SVG; each <Diagram> puts its own in (see src/components/diagram.tsx). */",
+        "const ID = \"__DIAGRAM_ID__\"",
+        "",
+        "/** The slide's content width (960 − 2 × 64): wider diagrams get small text. */",
+        "const CONTENT_WIDTH = 832",
+        "",
+        "interface Diagram {",
+        "  svg: string",
+        "  width: number",
+        "  height: number",
+        "}",
+        "",
+        "// Rendering is synchronous and fast, but a dev server re-renders every",
+        "// diagram of a deck on each save; unchanged ones come from here.",
+        "const rendered = new Map<string, Diagram>()",
+        "",
+        "/**",
+        " * Draws Mermaid source as SVG. The colours are not in it: they are CSS",
+        " * variables that `src/components/diagram.css` maps to the theme, so one SVG",
+        " * follows light and dark mode. Throws on syntax errors and on diagram",
+        " * types beautiful-mermaid does not draw (it does flowchart, sequence,",
+        " * state, class, ER and xychart).",
+        " */",
+        "function draw(source: string): Diagram {",
+        "  const known = rendered.get(source)",
+        "  if (known) return known",
+        "  const raw = renderMermaidSVG(source, { transparent: true })",
+        "  const [, width = \"0\", height = \"0\"] =",
+        "    /viewBox=\"0 0 ([\\d.]+) ([\\d.]+)\"/.exec(raw) ?? []",
+        "  let svg = raw",
+        "    // Its <style> would apply to the whole page, loads Google Fonts, and",
+        "    // reads --muted, --border and --accent, which mean other things here.",
+        "    .replace(/<style>[\\s\\S]*?<\\/style>\\s*/, \"\")",
+        "    .replace(",
+        "      /<svg ([^>]*?)\\swidth=\"[^\"]*\" height=\"[^\"]*\" style=\"[^\"]*\"/,",
+        "      \"<svg $1\"",
+        "    )",
+        "  // Only arrowhead markers carry ids; make them unique per <Diagram>.",
+        "  for (const id of new Set(",
+        "    [...raw.matchAll(/\\sid=\"([^\"]+)\"/g)].map((m) => m[1])",
+        "  )) {",
+        "    svg = svg",
+        "      .replaceAll(` id=\"${id}\"`, ` id=\"${ID}-${id}\"`)",
+        "      .replaceAll(`url(#${id})`, `url(#${ID}-${id})`)",
+        "      .replaceAll(`href=\"#${id}\"`, `href=\"#${ID}-${id}\"`)",
+        "  }",
+        "  const diagram = {",
+        "    svg,",
+        "    width: Math.round(Number(width)),",
+        "    height: Math.round(Number(height)),",
+        "  }",
+        "  rendered.set(source, diagram)",
+        "  return diagram",
+        "}",
+        "",
+        "/**",
+        " * Turns ```` ```mermaid ```` fences into `<Diagram>` SVGs at build time, with",
+        " * no browser. A fence it cannot draw stays a code block, with a warning.",
+        " */",
+        "export function remarkDiagrams() {",
+        "  return (tree: Root, file: VFile) => {",
+        "    const constants: MdxjsEsm[] = []",
+        "    const visit = (node: Nodes) => {",
+        "      if (!(\"children\" in node)) return",
+        "      node.children.forEach((child, index) => {",
+        "        if (child.type !== \"code\" || child.lang !== \"mermaid\") {",
+        "          visit(child)",
+        "          return",
+        "        }",
+        "        let diagram: Diagram",
+        "        try {",
+        "          diagram = draw(child.value)",
+        "        } catch (error) {",
+        "          warn(",
+        "            file,",
+        "            child,",
+        "            `mermaid: ${(error as Error).message}; showing the source`",
+        "          )",
+        "          return",
+        "        }",
+        "        if (diagram.width > CONTENT_WIDTH) {",
+        "          warn(",
+        "            file,",
+        "            child,",
+        "            `the diagram is ${diagram.width}px wide and will be scaled down; try \\`flowchart TD\\` or fewer nodes`",
+        "          )",
+        "        }",
+        "        const [element, constant] = hoisted(",
+        "          \"Diagram\",",
+        "          `__diagram${constants.length}`,",
+        "          { ...diagram }",
+        "        )",
+        "        ;(node.children as unknown[])[index] = element",
+        "        constants.push(constant)",
+        "      })",
+        "    }",
+        "    visit(tree)",
+        "    tree.children.push(...constants)",
+        "  }",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "src/components/diagram.css",
+      "content": [
+        "/* beautiful-mermaid SVGs read these variables. They map to the theme's",
+        "   tokens, so one SVG follows light and dark mode. Its own names --muted,",
+        "   --border and --surface would clash with shadcn/ui's, so they are not set. */",
+        "",
+        ".diagram svg {",
+        "  display: block;",
+        "  width: 100%;",
+        "  height: 100%;",
+        "  --bg: var(--background);",
+        "  --accent: var(--foreground);",
+        "  --_text: var(--foreground);",
+        "  --_text-sec: var(--muted-foreground);",
+        "  --_text-muted: var(--muted-foreground);",
+        "  --_text-faint: color-mix(in oklch, var(--foreground) 25%, var(--background));",
+        "  --_line: var(--muted-foreground);",
+        "  --_arrow: var(--foreground);",
+        "  --_node-fill: var(--muted);",
+        "  --_node-stroke: color-mix(in oklch, var(--foreground) 20%, var(--background));",
+        "  --_group-fill: var(--background);",
+        "  --_group-hdr: color-mix(in oklch, var(--foreground) 5%, var(--background));",
+        "  --_inner-stroke: color-mix(",
+        "    in oklch,",
+        "    var(--foreground) 12%,",
+        "    var(--background)",
+        "  );",
+        "  --_key-badge: color-mix(in oklch, var(--foreground) 10%, var(--background));",
+        "  --xychart-color-1: var(--chart-1);",
+        "  --xychart-color-2: var(--chart-2);",
+        "  --xychart-color-3: var(--chart-3);",
+        "  --xychart-color-4: var(--chart-4);",
+        "  --xychart-color-5: var(--chart-5);",
+        "}",
+        "",
+        ".diagram text {",
+        "  font-family: var(--font-sans);",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "src/components/diagram.tsx",
+      "content": [
+        "import { useId, useLayoutEffect, useMemo, useRef } from \"react\"",
+        "import { cn } from \"@/lib/utils\"",
+        "import \"./diagram.css\"",
+        "",
+        "/** The id placeholder plugins/remark-diagrams.ts writes into each SVG. */",
+        "const ID = \"__DIAGRAM_ID__\"",
+        "",
+        "/** Labels are drawn at 13px; up to 1.5× brings them near the body text. */",
+        "const MAX_SCALE = 1.5",
+        "const LABEL_PX = 13",
+        "",
+        "/** The smallest label a room can read, in canvas pixels. */",
+        "const MIN_LABEL_PX = 18",
+        "",
+        "/**",
+        " * A diagram drawn at build time from a ```` ```mermaid ```` fence. Its",
+        " * colours follow the theme. It takes the width it is given, up to 1.5× its",
+        " * drawn size, and shrinks when the slide runs out of height; when that",
+        " * leaves its labels under 18px, it marks itself `data-shrunk`, for the slide",
+        " * to report.",
+        " */",
+        "export function Diagram({",
+        "  svg,",
+        "  width,",
+        "  height,",
+        "  className,",
+        "}: {",
+        "  svg: string",
+        "  width: number",
+        "  height: number",
+        "  className?: string",
+        "}) {",
+        "  // Several copies can be on screen at once (overview, presenter, print),",
+        "  // so every copy gets its own marker ids.",
+        "  const id = useId().replace(/[^\\w-]/g, \"\")",
+        "  const html = useMemo(() => svg.replaceAll(ID, `d${id}`), [svg, id])",
+        "  const ref = useRef<HTMLElement>(null)",
+        "",
+        "  useLayoutEffect(() => {",
+        "    const figure = ref.current",
+        "    if (!figure) return",
+        "    const measure = () => {",
+        "      const scale = Math.min(",
+        "        figure.clientWidth / width,",
+        "        figure.clientHeight / height",
+        "      )",
+        "      const legible = (LABEL_PX * scale) / MIN_LABEL_PX",
+        "      if (legible < 1) figure.dataset.shrunk = legible.toFixed(2)",
+        "      else delete figure.dataset.shrunk",
+        "    }",
+        "    measure()",
+        "    const observer = new ResizeObserver(measure)",
+        "    observer.observe(figure)",
+        "    return () => observer.disconnect()",
+        "  }, [width, height])",
+        "",
+        "  return (",
+        "    <figure",
+        "      ref={ref}",
+        "      className={cn(\"diagram mx-auto min-h-0 w-full\", className)}",
+        "      style={{",
+        "        maxWidth: width * MAX_SCALE,",
+        "        aspectRatio: `${width} / ${height}`,",
+        "      }}",
+        "      dangerouslySetInnerHTML={{ __html: html }}",
+        "    />",
+        "  )",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}

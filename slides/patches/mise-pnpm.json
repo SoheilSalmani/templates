@@ -1,0 +1,26 @@
+{
+  "title": "pnpm via mise",
+  "description": "Pins pnpm 11 in mise.toml so mise install provides the package manager that installs the deck's dependencies; the exact release is the packageManager field in package.json.",
+  "depends_on": [
+    "mise"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "mise.toml",
+      "hunks": [
+        {
+          "context_before": [
+            "[tools]",
+            "node = \"24\""
+          ],
+          "removed": [],
+          "added": [
+            "pnpm = \"11\""
+          ],
+          "context_after": []
+        }
+      ]
+    }
+  ]
+}

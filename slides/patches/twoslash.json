@@ -1,0 +1,968 @@
+{
+  "title": "Twoslash types in code",
+  "description": "Adds twoslash to code fences: TypeScript runs on the block when the deck builds, hovering a name shows its type and documentation, // ^? pins a type under the line, and // @errors shows an error the code is meant to have, while any other error stops the build. One Twoslash instance and a results cache keep saves fast; the README and the writing-slides skill document it.",
+  "depends_on": [
+    "export",
+    "writing-slides"
+  ],
+  "when": "use_twoslash",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": ".agents/skills/writing-slides/references/code-slides.md",
+      "hunks": [
+        {
+          "context_before": [
+            "- Terminal output",
+            "- What to cut"
+          ],
+          "removed": [],
+          "added": [
+            "- Types from TypeScript"
+          ],
+          "context_after": [
+            "",
+            "## Fence options"
+          ]
+        },
+        {
+          "context_before": [
+            "",
+            "Nobody compiles a slide. Imports, types the audience already knows, error handling and logging go unless they are the point, and the notes say what was cut when it matters. Rename to the words the talk uses. When code on a slide would not compile as shown, the notes say so."
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "## Types from TypeScript",
+            "",
+            "`twoslash` after the language (`ts`, `tsx`, `js`, `jsx`) runs TypeScript on the block when the deck builds. Use it when the types are the point of the slide:",
+            "",
+            "- `// ^?` under a line pins the type of what the caret points at, in a box under the line. It shows in print, so it can carry the slide's evidence.",
+            "- `// @errors: 2322` shows an error the code is meant to have, underlined, with the message under the line. Any error the block does not declare stops the build, so a block that builds compiles.",
+            "- `// ---cut---` hides the setup above it, and `// @noErrors` accepts every error, which completions (`// ^|`) need.",
+            "- Hovering a name shows its type, for the audience of the published deck; a talk cannot rely on it.",
+            "",
+            "Every pinned type and error adds a line or more of height, so count them against the budget above. A block is a module at the root of the deck: it can import the deck's dependencies and `./snippets/…`. Twoslash does not work with `diff` or magic moves.",
+            "",
+            "`````mdx",
+            "## A const object keeps its literal types",
+            "",
+            "```ts twoslash",
+            "const config = { mode: \"fast\", retries: 3 } as const",
+            "//    ^?",
+            "```",
+            "`````"
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "`````",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "### Types in code",
+            "",
+            "`twoslash` after the language (`ts`, `tsx`, `js` or `jsx`) runs [Twoslash](https://twoslash.netlify.app) on the block when the deck builds: hovering a name shows its type and documentation, `// ^?` under a line pins the type of what it points at, and `// @errors: 2322` shows an error the code is meant to have. Any other error stops the build, so the code on the slides compiles.",
+            "",
+            "````md",
+            "```ts twoslash",
+            "// @errors: 2322",
+            "const deck = { title: \"Slides in MDX\", slides: 12 }",
+            "//    ^?",
+            "deck.slides = \"twelve\"",
+            "```",
+            "````",
+            "",
+            "A block is a module at the root of the deck: it can import the deck's dependencies and `./snippets/…`. `// ---cut---` hides the lines above it, and `// @noErrors` accepts every error. After changing a file a block imports, restart `pnpm dev` (<kbd>r</kbd> in its terminal) to see new types. Twoslash does not combine with `diff` or `magic-move`.",
+            ""
+          ],
+          "context_after": [
+            "## Diagrams",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "package.json",
+      "hunks": [
+        {
+          "context_before": [
+            "    \"@mdx-js/rollup\": \"^3.1.1\",",
+            "    \"@shikijs/transformers\": \"^4.4.3\","
+          ],
+          "removed": [],
+          "added": [
+            "    \"@shikijs/twoslash\": \"^4.4.3\","
+          ],
+          "context_after": [
+            "    \"@tailwindcss/vite\": \"^4.3.3\",",
+            "    \"@types/estree\": \"^1.0.9\","
+          ]
+        },
+        {
+          "context_before": [
+            "    \"tailwindcss\": \"^4.3.3\",",
+            "    \"tw-animate-css\": \"^1.4.0\","
+          ],
+          "removed": [],
+          "added": [
+            "    \"twoslash\": \"^0.3.9\","
+          ],
+          "context_after": [
+            "    \"typescript\": \"~6.0.3\",",
+            "    \"vfile\": \"^6.0.3\","
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "plugins/remark-code.ts",
+      "hunks": [
+        {
+          "context_before": [
+            "import { warn } from \"./mdast.ts\"",
+            "import { highlighterFor, themes } from \"./shiki.ts\""
+          ],
+          "removed": [],
+          "added": [
+            "import {",
+            "  noteOf,",
+            "  tokenInfo,",
+            "  transformerTwoslash,",
+            "  twoslashLangs,",
+            "} from \"./twoslash.ts\""
+          ],
+          "context_after": [
+            "",
+            "interface CodeMeta {"
+          ]
+        },
+        {
+          "context_before": [
+            "  /** Line numbers from the file, when a snippet skips some of its lines. */",
+            "  numbers?: number[]"
+          ],
+          "removed": [],
+          "added": [
+            "  /** Type-checks the code with Twoslash: hover types, queries, errors. */",
+            "  twoslash: boolean"
+          ],
+          "context_after": [
+            "}",
+            ""
+          ]
+        },
+        {
+          "context_before": [
+            " * - `// [!code ++]`, `[!code --]`, `[!code highlight]`, `[!code focus]`,",
+            " *   `[!code error]`, `[!code warning]`, `[!code word:name]` comments"
+          ],
+          "removed": [],
+          "added": [
+            " * - ` ```ts twoslash ` → types from TypeScript: on hover, under `// ^?`,",
+            " *   and the errors the block expects with `// @errors: 2322`"
+          ],
+          "context_after": [
+            " */",
+            "export function remarkCode() {"
+          ]
+        },
+        {
+          "context_before": [
+            "  const [lang = \"text\", attached = \"\"] = (node.lang ?? \"text\").split(/(?=\\{)/)",
+            "  const meta = parseMeta(`${attached} ${node.meta ?? \"\"}`, file, node)"
+          ],
+          "removed": [],
+          "added": [
+            "  if (meta.twoslash && (meta.diff || meta.magicMove)) {",
+            "    warn(file, node, \"twoslash does not work with diff or magic-move\")",
+            "    meta.twoslash = false",
+            "  }"
+          ],
+          "context_after": [
+            "",
+            "  if ((lang === \"md\" || lang === \"markdown\") && meta.magicMove) {"
+          ]
+        },
+        {
+          "context_before": [
+            "      fences.map((fence) => {",
+            "        const fenceMeta = parseMeta(fence.meta, file, node)"
+          ],
+          "removed": [],
+          "added": [
+            "        if (fenceMeta.twoslash) {",
+            "          warn(file, node, \"twoslash does not work with magic-move\")",
+            "        }"
+          ],
+          "context_after": [
+            "        const snippet = fenceMeta.file",
+            "          ? readSnippet(fenceMeta.file, node, file)"
+          ]
+        },
+        {
+          "context_before": [
+            "    warn(file, node, `Shiki has no language \"${requested}\"; showing plain text`)",
+            "  }"
+          ],
+          "removed": [],
+          "added": [
+            "  if (meta.twoslash && !twoslashLangs.includes(lang)) {",
+            "    warn(file, node, `twoslash checks ${twoslashLangs.join(\", \")} only`)",
+            "  }"
+          ],
+          "context_after": [
+            "",
+            "  const hast = highlighter.codeToHast(code, {"
+          ]
+        },
+        {
+          "context_before": [
+            "    defaultColor: false,",
+            "    transformers: ["
+          ],
+          "removed": [],
+          "added": [
+            "      ...(meta.twoslash",
+            "        ? [",
+            "            await transformerTwoslash(",
+            "              // The build stops at the fence, and the dev server shows why.",
+            "              (reason) => file.fail(reason, node),",
+            "              (reason) => warn(file, node, reason)",
+            "            ),",
+            "          ]",
+            "        : []),"
+          ],
+          "context_after": [
+            "      transformerNotationDiff(),",
+            "      transformerNotationHighlight(),"
+          ]
+        },
+        {
+          "context_before": [
+            "    split: false,",
+            "    magicMove: false,"
+          ],
+          "removed": [],
+          "added": [
+            "    twoslash: false,"
+          ],
+          "context_after": [
+            "  }",
+            "  const pattern = /\\{([^}]*)\\}|([\\w-]+)(?:=(?:\"([^\"]*)\"|'([^']*)'|(\\S+)))?/g"
+          ]
+        },
+        {
+          "context_before": [
+            "    else if (key === \"maxLines\") result.maxLines = Number(value) || undefined",
+            "    else if (key === \"file\") result.file = value"
+          ],
+          "removed": [],
+          "added": [
+            "    else if (key === \"twoslash\") result.twoslash = true"
+          ],
+          "context_after": [
+            "    else warn(file, node, `unknown code block option \"${key}\"`)",
+            "  }"
+          ]
+        },
+        {
+          "context_before": [
+            "  for (const line of code.children) {",
+            "    if (line.type !== \"element\") continue"
+          ],
+          "removed": [],
+          "added": [
+            "    const note = noteOf(line)",
+            "    if (note) {",
+            "      const above = lines.at(-1)",
+            "      if (above) (above.notes ??= []).push(note)",
+            "      continue",
+            "    }"
+          ],
+          "context_after": [
+            "    const classes = classesOf(line)",
+            "    const marks: LineMark[] = []"
+          ]
+        },
+        {
+          "context_before": [
+            "    lines.push(marks.length ? { tokens, marks } : { tokens })",
+            "  }"
+          ],
+          "removed": [],
+          "added": [
+            "  // A `// ^?` on the last line leaves an empty line behind.",
+            "  while (",
+            "    lines.length > 1 &&",
+            "    !lines.at(-1)?.notes &&",
+            "    lines.at(-1)?.tokens.every((token) => !token.content.trim())",
+            "  ) {",
+            "    lines.pop()",
+            "  }"
+          ],
+          "context_after": [
+            "  return lines",
+            "}"
+          ]
+        },
+        {
+          "context_before": [
+            "    const className = classesOf(node).join(\" \") || inherited.className",
+            "    return tokensOf(node.children, {"
+          ],
+          "removed": [
+            "      ...(style && { style }),",
+            "      ...(className && { className }),"
+          ],
+          "added": [
+            "      ...inherited,",
+            "      ...(style && { style }),",
+            "      ...(className && { className }),",
+            "      ...tokenInfo(node.properties),"
+          ],
+          "context_after": [
+            "    })",
+            "  })"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "slides.mdx",
+      "hunks": [
+        {
+          "context_before": [
+            "---",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "## TypeScript shows the types and errors you point at",
+            "",
+            "```ts twoslash title=\"deck.ts\"",
+            "// @errors: 2322",
+            "const deck = { title: \"Slides in MDX\", slides: 12 }",
+            "//    ^?",
+            "",
+            "deck.slides = \"twelve\"",
+            "document.title = deck.title.toUpperCase()",
+            "```",
+            "",
+            "<Notes>",
+            "",
+            "`twoslash` after the language runs TypeScript when the deck builds. Hover a",
+            "name for its type; `// ^?` pins one under the line, and `// @errors: 2322`",
+            "shows an error the code is meant to have. Any other error stops the build.",
+            "",
+            "</Notes>",
+            "",
+            "---",
+            ""
+          ],
+          "context_after": [
+            "## Diagrams are drawn when the deck builds, in its colours",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "src/code/code-lines.tsx",
+      "hunks": [
+        {
+          "context_before": [],
+          "removed": [],
+          "added": [
+            "import { Fragment } from \"react\"",
+            "import { LineNotes, TokenInfo } from \"./twoslash\""
+          ],
+          "context_after": [
+            "import type { CodeLine } from \"./types\"",
+            ""
+          ]
+        },
+        {
+          "context_before": [
+            "  return (",
+            "    <code className=\"grid min-w-max\">"
+          ],
+          "removed": [
+            "      {lines.map(({ tokens, marks = [] }, i) => {"
+          ],
+          "added": [
+            "      {lines.map(({ tokens, marks = [], notes }, i) => {"
+          ],
+          "context_after": [
+            "        const numbered = !(",
+            "          marks.includes(\"hunk\") ||"
+          ]
+        },
+        {
+          "context_before": [
+            "          (focusing && !marks.includes(\"focus\"))",
+            "        return ("
+          ],
+          "removed": [
+            "          <span",
+            "            key={i}",
+            "            className=\"code-line\"",
+            "            data-line={i + 1}",
+            "            data-marks={marks.join(\" \") || undefined}",
+            "            data-lit={lit.has(i + 1) || undefined}",
+            "            data-dim={dim || undefined}",
+            "          >",
+            "            {lineNumbers && (",
+            "              <span className=\"code-line-number\">",
+            "                {numbers ? numbers[i] : numbered ? number++ : \"\"}",
+            "              </span>",
+            "            )}",
+            "            {diff && (",
+            "              <span className=\"code-diff-sign\">",
+            "                {marks.includes(\"add\")",
+            "                  ? \"+\"",
+            "                  : marks.includes(\"remove\")",
+            "                    ? \"-\"",
+            "                    : \"\"}",
+            "              </span>",
+            "            )}",
+            "            <span className=\"code-line-content\">",
+            "              {tokens.map(({ content, style, className }, j) => (",
+            "                <span",
+            "                  key={j}",
+            "                  className={",
+            "                    className ? `code-token ${className}` : \"code-token\"",
+            "                  }",
+            "                  style={style}",
+            "                >",
+            "                  {content}",
+            "                </span>",
+            "              ))}",
+            "            </span>",
+            "          </span>"
+          ],
+          "added": [
+            "          <Fragment key={i}>",
+            "            <span",
+            "              className=\"code-line\"",
+            "              data-line={i + 1}",
+            "              data-marks={marks.join(\" \") || undefined}",
+            "              data-lit={lit.has(i + 1) || undefined}",
+            "              data-dim={dim || undefined}",
+            "            >",
+            "              {lineNumbers && (",
+            "                <span className=\"code-line-number\">",
+            "                  {numbers ? numbers[i] : numbered ? number++ : \"\"}",
+            "                </span>",
+            "              )}",
+            "              {diff && (",
+            "                <span className=\"code-diff-sign\">",
+            "                  {marks.includes(\"add\")",
+            "                    ? \"+\"",
+            "                    : marks.includes(\"remove\")",
+            "                      ? \"-\"",
+            "                      : \"\"}",
+            "                </span>",
+            "              )}",
+            "              <span className=\"code-line-content\">",
+            "                {tokens.map((token, j) => {",
+            "                  const span = (",
+            "                    <span",
+            "                      key={j}",
+            "                      className={",
+            "                        token.className",
+            "                          ? `code-token ${token.className}`",
+            "                          : \"code-token\"",
+            "                      }",
+            "                      style={token.style}",
+            "                    >",
+            "                      {token.content}",
+            "                    </span>",
+            "                  )",
+            "                  return token.hover || token.error ? (",
+            "                    <TokenInfo key={j} token={token}>",
+            "                      {span}",
+            "                    </TokenInfo>",
+            "                  ) : (",
+            "                    span",
+            "                  )",
+            "                })}",
+            "              </span>",
+            "            </span>",
+            "            {notes && (",
+            "              <LineNotes",
+            "                notes={notes}",
+            "                lineNumbers={lineNumbers}",
+            "                diff={diff}",
+            "                dim={dim}",
+            "              />",
+            "            )}",
+            "          </Fragment>"
+          ],
+          "context_after": [
+            "        )",
+            "      })}"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "src/code/types.ts",
+      "hunks": [
+        {
+          "context_before": [
+            "  style?: Record<string, string>",
+            "  className?: string"
+          ],
+          "removed": [
+            "}",
+            "",
+            "export interface CodeLine {",
+            "  tokens: CodeToken[]",
+            "  marks?: LineMark[]"
+          ],
+          "added": [
+            "  /** Twoslash: the type shown when the token is hovered, `const x: number`. */",
+            "  hover?: string",
+            "  /** Twoslash: the first paragraph of the symbol's documentation. */",
+            "  docs?: string",
+            "  /** Twoslash: the error this token is part of. */",
+            "  error?: string",
+            "}",
+            "",
+            "/** Twoslash output shown under a line, in print too. */",
+            "export type LineNote =",
+            "  /** `// ^?`: the type of the token above `character`. */",
+            "  | { kind: \"query\"; character: number; text: string }",
+            "  /** An error the block expects with `// @errors: 2322`. */",
+            "  | { kind: \"error\"; character: number; text: string; code?: string }",
+            "  /** `// ^|`: what the editor would complete at `character`. */",
+            "  | { kind: \"completion\"; character: number; prefix: string; items: string[] }",
+            "  /** `// @log: …`, `@warn`, `@error` or `@annotate`. */",
+            "  | { kind: \"tag\"; name: string; text?: string }",
+            "",
+            "export interface CodeLine {",
+            "  tokens: CodeToken[]",
+            "  marks?: LineMark[]",
+            "  notes?: LineNote[]"
+          ],
+          "context_after": [
+            "}",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": "plugins/twoslash.ts",
+      "content": [
+        "import path from \"node:path\"",
+        "import {",
+        "  createTransformerFactory,",
+        "  defaultHoverInfoProcessor,",
+        "  type TwoslashRenderer,",
+        "  type TwoslashShikiReturn,",
+        "} from \"@shikijs/twoslash/core\"",
+        "import type { Element, Properties, Text } from \"hast\"",
+        "import type { ShikiTransformer } from \"shiki\"",
+        "import {",
+        "  TwoslashError,",
+        "  createTwoslasher,",
+        "  type TwoslashInstance,",
+        "} from \"twoslash/core\"",
+        "import type { CodeToken, LineNote } from \"../src/code/types.ts\"",
+        "",
+        "/** Fence languages Twoslash can check. */",
+        "export const twoslashLangs = [\"ts\", \"tsx\", \"js\", \"jsx\"]",
+        "",
+        "/**",
+        " * One Twoslash instance for the whole dev server, made when the first block",
+        " * asks for it, since importing TypeScript alone takes a few hundred",
+        " * milliseconds. It builds a language service on the first block (about half",
+        " * a second) and one more for each distinct set of `// @flag` lines; after",
+        " * that a block takes 5–40 ms.",
+        " */",
+        "let twoslasher: Promise<TwoslashInstance> | undefined",
+        "",
+        "/**",
+        " * Results by block, for the life of the dev server: saving slides.mdx",
+        " * recompiles every block, and the unchanged ones then skip TypeScript. Like",
+        " * the language service, this does not notice edits to the files a block",
+        " * imports; restart the dev server (`r`) after changing them.",
+        " */",
+        "const results = new Map<string, TwoslashShikiReturn>()",
+        "",
+        "/** Wraps a token's text in a span that carries only data properties. */",
+        "function mark(node: Element | Text, properties: Properties): Element {",
+        "  return { type: \"element\", tagName: \"span\", properties, children: [node] }",
+        "}",
+        "",
+        "/** A sibling of the line elements, which `noteOf` turns into a line note. */",
+        "function note(properties: Properties): Element {",
+        "  return { type: \"element\", tagName: \"div\", properties, children: [] }",
+        "}",
+        "",
+        "/**",
+        " * The first paragraph of a JSDoc comment. Twoslash joins the comment's",
+        " * parts with newlines, so `{@link X}` arrives as `{@link \\nX\\n}`.",
+        " */",
+        "function summary(docs: string | undefined) {",
+        "  return docs",
+        "    ?.split(/\\n\\s*\\n/)[0]",
+        "    ?.replace(/\\{@link(?:code|plain)?\\s+([^}]*?)\\s*\\}/g, \"$1\")",
+        "    .replace(/\\s+/g, \" \")",
+        "    .trim()",
+        "}",
+        "",
+        "/**",
+        " * Adds no markup of its own: each hook returns a bare element whose data",
+        " * properties hold what Twoslash found, which `tokenInfo` and `noteOf` read",
+        " * back. HAST property names are camelCase: `dataHover` is `data-hover`.",
+        " */",
+        "const renderer: TwoslashRenderer = {",
+        "  nodeStaticInfo(info, node) {",
+        "    return mark(node, {",
+        "      dataHover: defaultHoverInfoProcessor(info.text),",
+        "      dataDocs: summary(info.docs),",
+        "    })",
+        "  },",
+        "  nodeQuery(query, node) {",
+        "    return mark(node, {",
+        "      dataHover: defaultHoverInfoProcessor(query.text),",
+        "      dataDocs: summary(query.docs),",
+        "    })",
+        "  },",
+        "  nodeError(error, node) {",
+        "    return mark(node, { dataError: error.text })",
+        "  },",
+        "  lineQuery(query) {",
+        "    return [",
+        "      note({",
+        "        dataNote: \"query\",",
+        "        dataCharacter: query.character,",
+        "        dataText: defaultHoverInfoProcessor(query.text),",
+        "      }),",
+        "    ]",
+        "  },",
+        "  lineError(error) {",
+        "    return [",
+        "      note({",
+        "        dataNote: \"error\",",
+        "        dataCharacter: error.character,",
+        "        dataText: error.text,",
+        "        dataCode: error.code,",
+        "      }),",
+        "    ]",
+        "  },",
+        "  lineCompletion(completion) {",
+        "    return [",
+        "      note({",
+        "        dataNote: \"completion\",",
+        "        dataCharacter: completion.character,",
+        "        dataPrefix: completion.completionsPrefix,",
+        "        dataItems: completion.completions.map((item) => item.name).join(\"\\n\"),",
+        "      }),",
+        "    ]",
+        "  },",
+        "  lineCustomTag(tag) {",
+        "    return [note({ dataNote: \"tag\", dataName: tag.name, dataText: tag.text })]",
+        "  },",
+        "}",
+        "",
+        "/**",
+        " * The Twoslash transformer for a block. Creating it is cheap; the",
+        " * TypeScript work is shared. `fail` is for a block Twoslash rejects (an",
+        " * error the block does not expect with `// @errors`, a `^?` that points at",
+        " * nothing), `warn` for a result it could not place on the tokens.",
+        " */",
+        "export async function transformerTwoslash(",
+        "  fail: (reason: string) => never,",
+        "  warn: (reason: string) => void",
+        "): Promise<ShikiTransformer> {",
+        "  // Imported here, not at the top: Vite bundles this file into the config,",
+        "  // and a static import would load TypeScript on every start.",
+        "  twoslasher ??= import(\"typescript\").then(({ default: ts }) =>",
+        "    createTwoslasher({",
+        "      tsModule: ts,",
+        "      // A block is a virtual `index.ts` at the project root, so its imports",
+        "      // resolve like the deck's own code: packages from node_modules,",
+        "      // `./src/…` and `@/…` from the project. No tsconfig is read; these",
+        "      // options are all a block gets, plus its own `// @flag` lines.",
+        "      vfsRoot: path.resolve(import.meta.dirname, \"..\"),",
+        "      compilerOptions: {",
+        "        moduleResolution: ts.ModuleResolutionKind.Bundler,",
+        "        jsx: ts.JsxEmit.ReactJSX,",
+        "        allowImportingTsExtensions: true,",
+        "        noEmit: true,",
+        "        paths: { \"@/*\": [\"./src/*\"] },",
+        "      },",
+        "    })",
+        "  )",
+        "  return createTransformerFactory(",
+        "    await twoslasher,",
+        "    renderer",
+        "  )({",
+        "    langs: twoslashLangs,",
+        "    typesCache: {",
+        "      read: (code, lang) => results.get(`${lang}:${code}`) ?? null,",
+        "      write: (code, data, lang) => void results.set(`${lang}:${code}`, data),",
+        "    },",
+        "    onTwoslashError(error) {",
+        "      fail(",
+        "        error instanceof TwoslashError",
+        "          ? `twoslash: ${error.title}. ${error.description.trim()}`",
+        "          : `twoslash: ${error instanceof Error ? error.message : error}`",
+        "      )",
+        "    },",
+        "    onShikiError(error) {",
+        "      warn(`twoslash: ${error instanceof Error ? error.message : error}`)",
+        "    },",
+        "  })",
+        "}",
+        "",
+        "/** What Twoslash put on a token's element: its type, docs or error. */",
+        "export function tokenInfo(",
+        "  properties: Properties",
+        "): Pick<CodeToken, \"hover\" | \"docs\" | \"error\"> {",
+        "  const { dataHover, dataDocs, dataError } = properties",
+        "  return {",
+        "    ...(dataHover !== undefined && { hover: String(dataHover) }),",
+        "    ...(dataDocs !== undefined && { docs: String(dataDocs) }),",
+        "    ...(dataError !== undefined && { error: String(dataError) }),",
+        "  }",
+        "}",
+        "",
+        "/** A note element from the renderer above, as data; none for a line. */",
+        "export function noteOf({ properties: p }: Element): LineNote | undefined {",
+        "  const character = Number(p.dataCharacter) || 0",
+        "  switch (p.dataNote) {",
+        "    case \"query\":",
+        "      return { kind: \"query\", character, text: String(p.dataText) }",
+        "    case \"error\":",
+        "      return {",
+        "        kind: \"error\",",
+        "        character,",
+        "        text: String(p.dataText),",
+        "        ...(p.dataCode !== undefined && { code: String(p.dataCode) }),",
+        "      }",
+        "    case \"completion\":",
+        "      return {",
+        "        kind: \"completion\",",
+        "        character,",
+        "        prefix: String(p.dataPrefix),",
+        "        items: String(p.dataItems).split(\"\\n\"),",
+        "      }",
+        "    case \"tag\":",
+        "      return {",
+        "        kind: \"tag\",",
+        "        name: String(p.dataName),",
+        "        ...(p.dataText !== undefined && { text: String(p.dataText) }),",
+        "      }",
+        "  }",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "src/code/twoslash.css",
+      "content": [
+        "/* Twoslash: types on hover and notes under lines, from plugins/twoslash.ts. */",
+        "",
+        ".code-info {",
+        "  border-radius: 0.2em;",
+        "  cursor: help;",
+        "}",
+        "",
+        ".code-info:hover {",
+        "  background-color: var(--code-highlight);",
+        "}",
+        "",
+        "/* On the wrapper, since the token's own text-decoration comes from Shiki. */",
+        ".code-info[data-error] {",
+        "  text-decoration: underline wavy var(--destructive);",
+        "  text-decoration-skip-ink: none;",
+        "  text-underline-offset: 0.25em;",
+        "}",
+        "",
+        "/* A note never widens the block: it wraps at the width of the code. */",
+        ".code-note {",
+        "  contain: inline-size;",
+        "}",
+        "",
+        ".code-note .code-line-content {",
+        "  white-space: pre-wrap;",
+        "}",
+        "",
+        ".code-note-box {",
+        "  position: relative;",
+        "  display: inline-block;",
+        "  margin-block: 0.3em 0.45em;",
+        "  padding: 0.05em 0.6em;",
+        "  border: 1px solid color-mix(in oklch, var(--foreground) 22%, transparent);",
+        "  border-radius: 0.375em;",
+        "  background-color: var(--popover);",
+        "  color: var(--popover-foreground);",
+        "}",
+        "",
+        "/* A query points up at the token it asks about. */",
+        ".code-note[data-note=\"query\"] .code-note-box::before {",
+        "  content: \"\";",
+        "  position: absolute;",
+        "  top: -0.36em;",
+        "  left: 0.6em;",
+        "  width: 0.65em;",
+        "  height: 0.65em;",
+        "  border-top: inherit;",
+        "  border-left: inherit;",
+        "  background-color: inherit;",
+        "  transform: rotate(45deg);",
+        "}",
+        "",
+        ".code-note[data-note=\"error\"] .code-note-box {",
+        "  border-color: color-mix(in oklch, var(--destructive) 60%, transparent);",
+        "  background-color: color-mix(",
+        "    in oklch,",
+        "    var(--destructive) 12%,",
+        "    var(--background)",
+        "  );",
+        "}",
+        "",
+        ".code-note-label {",
+        "  color: var(--muted-foreground);",
+        "}"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "src/code/twoslash.tsx",
+      "content": [
+        "import type { ReactElement } from \"react\"",
+        "import {",
+        "  Tooltip,",
+        "  TooltipContent,",
+        "  TooltipTrigger,",
+        "} from \"@/components/ui/tooltip\"",
+        "import type { CodeToken, LineNote } from \"./types\"",
+        "import \"./twoslash.css\"",
+        "",
+        "/**",
+        " * A token Twoslash knows the type of, or found an error in: hovering it",
+        " * shows the type and its documentation, or the error.",
+        " */",
+        "export function TokenInfo({",
+        "  token,",
+        "  children,",
+        "}: {",
+        "  token: CodeToken",
+        "  children: ReactElement",
+        "}) {",
+        "  return (",
+        "    <Tooltip>",
+        "      <TooltipTrigger asChild>",
+        "        <span className=\"code-info\" data-error={token.error ? \"\" : undefined}>",
+        "          {children}",
+        "        </span>",
+        "      </TooltipTrigger>",
+        "      <TooltipContent",
+        "        side=\"bottom\"",
+        "        align=\"start\"",
+        "        className=\"max-w-lg flex-col items-start gap-1 font-mono text-[13px] leading-snug\"",
+        "      >",
+        "        <span className=\"whitespace-pre-wrap\">",
+        "          {token.error ?? token.hover}",
+        "        </span>",
+        "        {token.docs && !token.error && (",
+        "          <span className=\"font-sans opacity-80\">{token.docs}</span>",
+        "        )}",
+        "      </TooltipContent>",
+        "    </Tooltip>",
+        "  )",
+        "}",
+        "",
+        "/**",
+        " * Twoslash's notes under a line: the type a `// ^?` asks for, an expected",
+        " * error, completions and `@log` tags. Unlike hovers they are always shown,",
+        " * in print too, and they dim with their line.",
+        " */",
+        "export function LineNotes({",
+        "  notes,",
+        "  lineNumbers,",
+        "  diff,",
+        "  dim,",
+        "}: {",
+        "  notes: LineNote[]",
+        "  lineNumbers: boolean",
+        "  diff: boolean",
+        "  dim: boolean",
+        "}) {",
+        "  return notes.map((note, i) => (",
+        "    <span",
+        "      key={i}",
+        "      className=\"code-line code-note\"",
+        "      data-note={note.kind}",
+        "      data-dim={dim || undefined}",
+        "    >",
+        "      {lineNumbers && <span className=\"code-line-number\" />}",
+        "      {diff && <span className=\"code-diff-sign\" />}",
+        "      <span",
+        "        className=\"code-line-content\"",
+        "        style={{",
+        "          paddingInlineStart: `${\"character\" in note ? note.character : 0}ch`,",
+        "        }}",
+        "      >",
+        "        <span className=\"code-note-box\">",
+        "          <NoteText note={note} />",
+        "        </span>",
+        "      </span>",
+        "    </span>",
+        "  ))",
+        "}",
+        "",
+        "function NoteText({ note }: { note: LineNote }) {",
+        "  switch (note.kind) {",
+        "    case \"query\":",
+        "      return note.text",
+        "    case \"error\":",
+        "      return (",
+        "        <>",
+        "          {note.text}",
+        "          {note.code && <span className=\"code-note-label\"> {note.code}</span>}",
+        "        </>",
+        "      )",
+        "    case \"completion\":",
+        "      return note.items.slice(0, 6).map((item) => (",
+        "        <span key={item} className=\"block\">",
+        "          <b>{item.slice(0, note.prefix.length)}</b>",
+        "          {item.slice(note.prefix.length)}",
+        "        </span>",
+        "      ))",
+        "    case \"tag\":",
+        "      return (",
+        "        <>",
+        "          <span className=\"code-note-label\">{note.name}</span> {note.text}",
+        "        </>",
+        "      )",
+        "  }",
+        "}"
+      ],
+      "mode": 420
+    }
+  ]
+}
