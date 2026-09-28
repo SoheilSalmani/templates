@@ -1,9 +1,8 @@
 name: Check templates
 
-# weft is a private Rust project without releases yet, so the job builds it
-# from source. WEFT_REPO_TOKEN is a fine-grained PAT with read access to
-# SoheilSalmani/weft (Contents: read). Bump WEFT_REF to move every check to a
-# newer weft.
+# The job builds weft from source at WEFT_REF, a release tag of the public
+# SoheilSalmani/weft repository, so no token is needed to check it out. Bump
+# WEFT_REF to move every check to a newer weft.
 
 on:
   push:
@@ -11,7 +10,7 @@ on:
   pull_request:
 
 env:
-  WEFT_REF: main
+  WEFT_REF: v0.1.0
 
 jobs:
   check:
@@ -24,7 +23,6 @@ jobs:
         with:
           repository: SoheilSalmani/weft
           ref: ${{ env.WEFT_REF }}
-          token: ${{ secrets.WEFT_REPO_TOKEN }}
           path: .weft-src
 
       - uses: dtolnay/rust-toolchain@stable

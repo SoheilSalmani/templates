@@ -13,4 +13,4 @@ scripts/check-portable-drift.sh          # fail if any template's copy differs f
 scripts/check-templates.sh               # weft check every template under the shared answer combinations
 ```
 
-CI (`.github/workflows/check.yml`) runs the last two; it builds `weft` from its private repository, which needs the `WEFT_REPO_TOKEN` secret.
+CI (`.github/workflows/check.yml`) runs the last two, with `weft` built from source at the release its `WEFT_REF` names.
