@@ -40,7 +40,7 @@ weft session end [NAME] [--discard]
 ```
 
 - `--base latest` (default) stacks on everything active. `--base PATCH` renders that patch and its ancestors only, so the new patch is independent of everything later.
-- `--exec CMD` runs the command in the rendered worktree; its output is the patch and the command is stored so `weft patch resync` can re-run it. `${answer}` and `${expr}` interpolate declared answers. Pass `--exec` with no value to write the command in `$EDITOR`.
+- `--exec CMD` runs the command in the rendered worktree; its output is the patch and the command is stored so `weft patch resync` can re-run it. `${answer}` and `${expr}` interpolate declared answers. Pass `--exec` with no value to write the command in `$EDITOR`. What the command prints to stdout comes out before the worktree path (verified 2026-09-28 with the shadcn CLI), so `cd $(…)` breaks; `cd` into `.weft-sessions/NAME/worktree` instead.
 - `adopt` on a directory `weft new` made needs no arguments beyond `-n`; it reads `.weft/state.toml`. On any other directory pass `--template`, the answers, and `--scope`, or every file reads as new.
 - `end` refuses a worktree with uncommitted changes unless `--discard`. A worktree weft created is deleted; an adopted one is only unlinked.
 - Inside a worktree no `--template` or `--session` is needed: weft walks up to `.weft/worktree.toml`. From the template root, `-s NAME` when more than one session exists.
