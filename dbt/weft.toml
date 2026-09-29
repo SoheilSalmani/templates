@@ -1,7 +1,7 @@
 [template]
 name = "dbt"
 weft-version = "0.1"
-description = "A dbt project on uv-managed Python 3.13 with dbt_utils, the house Agent Skills including the dbt ones, an opinionated mise toolchain (Node 24, uv), and optionally Lightdash: its CLI pinned by mise and its Agent Skills."
+description = "A dbt project on uv-managed Python 3.13 with dbt_utils, the house Agent Skills including the dbt ones, an opinionated mise toolchain (Node 24, uv), and optionally Lightdash: its CLI pinned by mise, its MCP server and its Agent Skills."
 extends = "../base"
 
 [[question]]
@@ -22,8 +22,17 @@ default = "package_name"
 id = "use_lightdash"
 kind = "bool"
 prompt = "Explore the models in Lightdash?"
-description = "Pins the Lightdash CLI in mise.toml. Lightdash's Agent Skills, for building the semantic layer in the models' YAML, come with `lightdash` in `stack_skills`, which also turns this on by default. Each person logs in to their own Lightdash instance with `lightdash login`, so nothing about it is stored in the repo."
+description = "Pins the Lightdash CLI in mise.toml and declares Lightdash's remote MCP server for Claude Code, Codex and oh-my-pi. Lightdash's Agent Skills, for building the semantic layer in the models' YAML, come with `lightdash` in `stack_skills`, which also turns this on by default. Each person authorises with their own Lightdash account (`lightdash login`, OAuth for the MCP server), so no credential is stored in the repo."
 default = "'lightdash' in stack_skills"
+
+[[question]]
+id = "lightdash_url"
+kind = "string"
+prompt = "Lightdash instance URL"
+description = "The Lightdash instance the project deploys to and the agents query, without a trailing slash: https://app.lightdash.cloud or https://eu1.lightdash.cloud on Lightdash Cloud, or a self-hosted address. Becomes LIGHTDASH_URL in mise.toml and the base of the MCP server URL."
+example = "https://eu1.lightdash.cloud"
+default = "'https://app.lightdash.cloud'"
+when = "use_lightdash"
 
 [refine.project_name]
 description = "Human-facing name; its snake_case slug names the dbt project and the Python package."

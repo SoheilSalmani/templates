@@ -78,9 +78,8 @@ default = "True"
 id = "commit_mcp"
 kind = "bool"
 prompt = "Commit the MCP server configuration to git?"
-description = "When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Any false commit_* answer also gitignores paseo.json and .weft/."
+description = "When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Asked whatever the trackers, since a stack can add its own server to them. Any false commit_* answer also gitignores paseo.json and .weft/."
 default = "True"
-when = "use_linear or use_jira"
 
 [[question]]
 id = "commit_mise"

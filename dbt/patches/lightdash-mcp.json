@@ -1,0 +1,57 @@
+{
+  "title": "Lightdash MCP server",
+  "description": "Declares Lightdash's remote MCP server in base's MCP files for Claude Code, Codex and oh-my-pi, at LIGHTDASH_URL/api/v1/mcp: Claude Code and oh-my-pi expand LIGHTDASH_URL from mise's environment, falling back to the scaffolded instance, and Codex, which expands no variables in a URL, takes the instance as written. Definition only, authorised per person with OAuth.",
+  "depends_on": [
+    "mcp",
+    "lightdash"
+  ],
+  "when": "use_lightdash",
+  "ops": [
+    {
+      "op": "fill_slot",
+      "path": ".codex/config.toml",
+      "slot": "entries",
+      "key": "lightdash-mcp",
+      "lines": [
+        "# Codex does not expand variables in a URL, so this one repeats LIGHTDASH_URL from mise.toml.",
+        [
+          "lightdash = { url = \"",
+          {
+            "answer": "lightdash_url"
+          },
+          "/api/v1/mcp\" }"
+        ]
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".mcp.json",
+      "slot": "entries",
+      "key": "lightdash-mcp",
+      "lines": [
+        [
+          "    \"lightdash\": { \"type\": \"http\", \"url\": \"${LIGHTDASH_URL:-",
+          {
+            "answer": "lightdash_url"
+          },
+          "}/api/v1/mcp\" }"
+        ]
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".omp/mcp.json",
+      "slot": "entries",
+      "key": "lightdash-mcp",
+      "lines": [
+        [
+          "    \"lightdash\": { \"type\": \"http\", \"url\": \"${LIGHTDASH_URL:-",
+          {
+            "answer": "lightdash_url"
+          },
+          "}/api/v1/mcp\" }"
+        ]
+      ]
+    }
+  ]
+}

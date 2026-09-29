@@ -1,6 +1,6 @@
 {
   "title": "Lightdash CLI via mise",
-  "description": "Pins the Lightdash CLI 2.361.0 in mise.toml as the self-contained release binary, verified against its GitHub attestations, rather than the npm package that mise's embedded installer rejects; Lightdash publishes that binary for macOS and Linux x64 only. Base's lightdash-skills runs the same version, so bump both, then resync that patch in base.",
+  "description": "Pins the Lightdash CLI 2.361.0 in mise.toml as the self-contained release binary, verified against its GitHub attestations, rather than the npm package that mise's embedded installer rejects; Lightdash publishes that binary for macOS and Linux x64 only. Its [env] points LIGHTDASH_URL at the project's instance for the CLI and the MCP server entries. Base's lightdash-skills runs the same version, so bump both, then resync that patch in base.",
   "depends_on": [
     "mise-uv"
   ],
@@ -17,7 +17,17 @@
           ],
           "removed": [],
           "added": [
-            "\"github:lightdash/lightdash\" = { version = \"2.361.0\", rename_exe = \"lightdash\" }"
+            "\"github:lightdash/lightdash\" = { version = \"2.361.0\", rename_exe = \"lightdash\" }",
+            "",
+            "[env]",
+            "# The Lightdash instance the lightdash CLI and the agents' Lightdash MCP server connect to.",
+            [
+              "LIGHTDASH_URL = \"",
+              {
+                "answer": "lightdash_url"
+              },
+              "\""
+            ]
           ],
           "context_after": []
         }
