@@ -1,6 +1,6 @@
 {
   "title": "Code file explorer and file icons",
-  "description": "Adds <CodeFiles>, an explorer with the files of a change in a tree beside the selected file's code, stepping through the files and their highlights like tabs, and files fences, drawn as a tree with status letters (added, modified, deleted, renamed, untracked), notes, highlight steps and folders that fold, reading the output of tree, git status --short and git diff --name-status as is. Status words on a code fence give its title bar a badge, and every titled frame shows its file's icon from VS Code's Material Icon Theme, resolved when the deck builds. The README, the writing-slides skill and VS Code snippets document it.",
+  "description": "Adds <CodeFiles>, an explorer with the files of a change in a tree beside the selected file's code, stepping through the files and their highlights like tabs; lineNumbers on it, or on <CodeTabs>, numbers every file, and a file read with file= keeps its own numbers through its folds. files fences draw a tree with status letters (added, modified, deleted, renamed, untracked), notes, highlight steps and folders that fold, reading the output of tree, git status --short and git diff --name-status as is. Status words on a code fence give its title bar a badge, and every titled frame shows its file's icon from VS Code's Material Icon Theme, resolved when the deck builds. The README, the writing-slides skill and VS Code snippets document it.",
   "depends_on": [
     "export",
     "writing-slides"
@@ -82,7 +82,7 @@
             "```",
             "````",
             "",
-            "`<CodeFiles>` is an explorer: every file in a tree on the left, the code of one on the right. Use it to walk through a change set; each file is a step, and so is each of its highlight stops. A fence's `title=` or `file=` is its place in the tree, a `files` fence inside adds files without code, such as deleted ones, and a status word after the language gives a file its letter and badge. A `diff` without one counts as modified. The print view shows only the last step's file, so end on the file the headline is about.",
+            "`<CodeFiles>` is an explorer: every file in a tree on the left, the code of one on the right. Use it to walk through a change set; each file is a step, and so is each of its highlight stops. A fence's `title=` or `file=` is its place in the tree, a `files` fence inside adds files without code, such as deleted ones, and a status word after the language gives a file its letter and badge. A `diff` without one counts as modified. The print view shows only the last step's file, so end on the file the headline is about. `<CodeFiles lineNumbers>` numbers every file, and `<CodeTabs lineNumbers>` every tab; a `file=` snippet keeps its numbers in the file, and folds work as in a block, so fold what the change does not touch.",
             "",
             "`````mdx",
             "<CodeFiles>",
@@ -184,10 +184,10 @@
             "",
             "`title=\"…\"` gives the tree a title bar, and `{2|3-4|all}` lights the entries on those lines of the fence, a step each, as in code. Folders start expanded and fold on click; a folder holding changes has a dot in the colour of the most important (deleted, then modified, then added). The build reports a line it cannot read, such as a rename without its old path, and leaves it out.",
             "",
-            "`<CodeFiles>` around fences is an explorer: a tree of every file on the left, the selected file's code on the right. Each fence's `title=`, or the path `file=` reads, places it in the tree, and a `files` fence inside adds files without code, like a deleted one. Status words give a file its letter in the tree and its badge; a `diff` without one counts as modified, or as added or deleted when every line is. The files play in order like tabs, each highlight a step, and the tree follows the step, opening the file's folders. Clicking a file shows it until the next step; an entry without code only shows where it is. Print shows the last step's file.",
+            "`<CodeFiles>` around fences is an explorer: a tree of every file on the left, the selected file's code on the right. Each fence's `title=`, or the path `file=` reads, places it in the tree, and a `files` fence inside adds files without code, like a deleted one. Status words give a file its letter in the tree and its badge; a `diff` without one counts as modified, or as added or deleted when every line is. The files play in order like tabs, each highlight a step, and the tree follows the step, opening the file's folders. Clicking a file shows it until the next step; an entry without code only shows where it is. Print shows the last step's file. `<CodeFiles lineNumbers>` numbers every file, and `<CodeTabs lineNumbers>` every tab, as `lineNumbers` numbers one fence: a file read with `file=` keeps the numbers of its lines in the file, and a fold skips the numbers it hides.",
             "",
             "````md",
-            "<CodeFiles>",
+            "<CodeFiles lineNumbers>",
             "",
             "```files",
             "D src/legacy/poll.ts",
@@ -446,6 +446,26 @@
         },
         {
           "context_before": [
+            "    }",
+            "    meta.title ??= snippet.title"
+          ],
+          "removed": [
+            "    meta.startLine ??= meta.lineNumbers ? snippet.startLine : undefined",
+            "    meta.numbers = meta.lineNumbers ? snippet.numbers : undefined"
+          ],
+          "added": [
+            "    // The file's own numbers, even when the fence does not show them: tabs",
+            "    // and an explorer can number every block they hold.",
+            "    meta.startLine ??= snippet.startLine",
+            "    meta.numbers = snippet.numbers"
+          ],
+          "context_after": [
+            "  }",
+            "  const code = snippet?.code ?? node.value"
+          ]
+        },
+        {
+          "context_before": [
             "      lang: requested,",
             "      title: meta.title,"
           ],
@@ -520,7 +540,7 @@
           "added": [
             "## An explorer walks through a change, one file at a time",
             "",
-            "<CodeFiles>",
+            "<CodeFiles lineNumbers>",
             "",
             "```files",
             "D src/legacy/poll.ts",
@@ -535,10 +555,15 @@
             "+subscribe(\"/api/orders\", render)",
             "```",
             "",
-            "```ts title=\"src/live.ts\" added {3-4|all}",
+            "```ts title=\"src/live.ts\" added fold={4-8} {3|4-8|all}",
             "export function subscribe(url: string, on: Listen) {",
             "  const source = new EventSource(url)",
             "  source.onmessage = (e) => on(JSON.parse(e.data))",
+            "  source.onerror = () => {",
+            "    if (source.readyState === EventSource.CLOSED) {",
+            "      console.warn(\"live updates stopped\")",
+            "    }",
+            "  }",
             "  return () => source.close()",
             "}",
             "```",
@@ -558,6 +583,9 @@
             "Each fence's `title=` is its place in the tree, and a `files` fence adds",
             "files without code, like the deleted poller. Status words colour the tree;",
             "a `diff` counts as modified. Click a file to show it, a folder to fold it.",
+            "`lineNumbers` on `<CodeFiles>` numbers every file. `live.ts` folds its",
+            "error handling: its second step highlights inside the fold, which opens it,",
+            "and `all` shuts it again.",
             "",
             "</Notes>",
             "",
@@ -609,7 +637,7 @@
         {
           "context_before": [
             "import { spanOfLines, useFit, useFocusScroll } from \"./fit\"",
-            "import { foldLines, foldRows, openedBy, toggled } from \"./fold\""
+            "import { drawnNumbers, foldLines, foldRows, openedBy, toggled } from \"./fold\""
           ],
           "removed": [
             "import type { CodeLine, DiffView, Fold, SplitDiff } from \"./types\""
@@ -982,10 +1010,20 @@
         },
         {
           "context_before": [
-            "  children: ReactNode",
-            "}) {"
+            " * </CodeTabs>",
+            " * ````"
           ],
           "removed": [
+            " */",
+            "export function CodeTabs({",
+            "  maxLines,",
+            "  className,",
+            "  children,",
+            "}: {",
+            "  maxLines?: number",
+            "  className?: string",
+            "  children: ReactNode",
+            "}) {",
             "  const tabs = Children.toArray(children).filter(",
             "    (child): child is ReactElement<CodeBlockProps> =>",
             "      isValidElement(child) && child.type === CodeBlock",
@@ -1020,6 +1058,20 @@
             "  )"
           ],
           "added": [
+            " *",
+            " * `lineNumbers` numbers every tab, as it does on a fence.",
+            " */",
+            "export function CodeTabs({",
+            "  lineNumbers,",
+            "  maxLines,",
+            "  className,",
+            "  children,",
+            "}: {",
+            "  lineNumbers?: boolean",
+            "  maxLines?: number",
+            "  className?: string",
+            "  children: ReactNode",
+            "}) {",
             "  const tabs = codeBlocksIn(children)",
             "  const { ref, step, active, lit, pick } = useCodeSteps(tabs)",
             "  const clip = useRef<HTMLDivElement>(null)",
@@ -1093,6 +1145,7 @@
             "        active={active}",
             "        lit={lit}",
             "        step={step}",
+            "        lineNumbers={lineNumbers}",
             "        maxLines={maxLines}",
             "      />"
           ],
@@ -1912,12 +1965,17 @@
         " * ```",
         " * </CodeFiles>",
         " * ````",
+        " *",
+        " * `lineNumbers` numbers every file, as it does on a fence; a file read with",
+        " * `file=` keeps its own numbers.",
         " */",
         "export function CodeFiles({",
+        "  lineNumbers,",
         "  maxLines,",
         "  className,",
         "  children,",
         "}: {",
+        "  lineNumbers?: boolean",
         "  maxLines?: number",
         "  className?: string",
         "  children: ReactNode",
@@ -1979,6 +2037,7 @@
         "        active={active}",
         "        lit={lit}",
         "        step={step}",
+        "        lineNumbers={lineNumbers}",
         "        maxLines={maxLines}",
         "      />",
         "    </CodeFrame>",
@@ -2006,7 +2065,7 @@
         "import { CodeBlock, type CodeBlockProps } from \"./code-block\"",
         "import { CodeLines } from \"./code-lines\"",
         "import { spanOfLines, useFocusScroll } from \"./fit\"",
-        "import { foldLines, openedBy, toggled } from \"./fold\"",
+        "import { drawnNumbers, foldLines, openedBy, toggled } from \"./fold\"",
         "import type { Fold } from \"./types\"",
         "",
         "const EMPTY: ReadonlySet<number> = new Set()",
@@ -2070,6 +2129,7 @@
         "  active,",
         "  lit,",
         "  step,",
+        "  lineNumbers,",
         "  maxLines,",
         "}: {",
         "  ref: RefObject<HTMLDivElement | null>",
@@ -2078,6 +2138,8 @@
         "  lit: ReadonlySet<number>",
         "  /** The group's step, which a click on a fold lasts until. */",
         "  step: number",
+        "  /** Numbers every block, as `lineNumbers` on each of its fences would. */",
+        "  lineNumbers?: boolean",
         "  maxLines?: number",
         "}) {",
         "  useFocusScroll(",
@@ -2115,6 +2177,7 @@
         "          active={i === active}",
         "          lit={i === active ? lit : EMPTY}",
         "          step={step}",
+        "          lineNumbers={lineNumbers}",
         "        />",
         "      ))}",
         "    </div>",
@@ -2127,11 +2190,13 @@
         "  active,",
         "  lit,",
         "  step,",
+        "  lineNumbers,",
         "}: {",
         "  block: CodeBlockProps",
         "  active: boolean",
         "  lit: ReadonlySet<number>",
         "  step: number",
+        "  lineNumbers?: boolean",
         "}) {",
         "  const folds = block.folds ?? NO_FOLDS",
         "  const [clicks, setClicks] = useShared(",
@@ -2152,6 +2217,10 @@
         "  const drawnLit = useMemo(",
         "    () => new Set([...lit].map((line) => folded.at[line])),",
         "    [lit, folded]",
+        "  )",
+        "  const numbers = useMemo(",
+        "    () => block.numbers && drawnNumbers(block.numbers, folded.at),",
+        "    [block.numbers, folded]",
         "  )",
         "",
         "  const onClick = (event: MouseEvent<HTMLPreElement>) => {",
@@ -2180,9 +2249,9 @@
         "      <CodeLines",
         "        lines={folded.lines}",
         "        lit={drawnLit}",
-        "        lineNumbers={block.lineNumbers}",
+        "        lineNumbers={block.lineNumbers || lineNumbers}",
         "        startLine={block.startLine}",
-        "        numbers={folds.length > 0 ? undefined : block.numbers}",
+        "        numbers={numbers}",
         "      />",
         "    </pre>",
         "  )",
