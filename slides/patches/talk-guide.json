@@ -1,6 +1,6 @@
 {
   "title": "Talk-writing guide",
-  "description": "Adds a how-to guide that takes a person from the tour a new deck opens on to a talk they can present, and links it from the README's quick start. The README stays the reference, and the rules for a good talk, until now only in the writing-slides skill, get a short human-facing form that points back to the skill for the measured limits.",
+  "description": "Adds a how-to guide that takes a person from the tour a new deck opens on to a talk they can present, and links it from the README's quick start. The README stays the reference, and the rules for a good talk, until now only in the writing-slides skill, get a short human-facing form that points back to the skill for the measured limits. Its section on writing with an agent is an expr segment on commit_skills, left out when the skills stay out of git.",
   "depends_on": [
     "export",
     "writing-slides"
@@ -127,11 +127,12 @@
         "",
         "With `pnpm dev` running, open the deck in the browser you present from and press <kbd>F</kbd> for full screen. Press <kbd>P</kbd> to open the presenter view in a window of its own, with your notes, the next slide and a timer, and keep that window on your screen. <kbd>→</kbd>, <kbd>Space</kbd> or a clicker's Page Down moves on, and <kbd>?</kbd> lists every shortcut.",
         "",
-        "To hand the deck out, `pnpm export` writes `.tmp/export/slides.pdf`, a page per slide. To publish it, `pnpm build` writes `dist/`, a static site that any host serves, under any path.",
-        "",
-        "## Write with an agent",
-        "",
-        "Coding agents working in this repository load the `writing-slides` skill from `.agents/skills/writing-slides/` when you ask them to write, shorten, restructure or review the talk. It holds the rules this guide summarises, with the measured limits, and it runs `pnpm check` before it finishes. Its references are worth reading yourself: `talk-structure.md` on the arc and the timing, `code-slides.md` on how much code fits, and `failure-modes.md` on what goes wrong most often."
+        [
+          "To hand the deck out, `pnpm export` writes `.tmp/export/slides.pdf`, a page per slide. To publish it, `pnpm build` writes `dist/`, a static site that any host serves, under any path.",
+          {
+            "expr": "\"\\n\\n## Write with an agent\\n\\nCoding agents working in this repository load the `writing-slides` skill from `.agents/skills/writing-slides/` when you ask them to write, shorten, restructure or review the talk. It holds the rules this guide summarises, with the measured limits, and it runs `pnpm check` before it finishes. Its references are worth reading yourself: `talk-structure.md` on the arc and the timing, `code-slides.md` on how much code fits, and `failure-modes.md` on what goes wrong most often.\" if commit_skills else ''"
+          }
+        ]
       ],
       "mode": 420
     }

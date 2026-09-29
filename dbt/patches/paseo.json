@@ -1,6 +1,6 @@
 {
   "title": "Paseo worktree setup",
-  "description": "Adds paseo.json, whose setup readies each new Paseo worktree: it copies the gitignored personal files (.env files, mise.local.toml, .claude/settings.local.json) from the source checkout without overwriting tracked ones, then trusts and installs the mise toolchain. Stack templates append their own install steps after it.",
+  "description": "Adds paseo.json, whose setup readies each new Paseo worktree: it runs .agents/seed-worktree.sh from the source checkout, which copies the gitignored local files and whatever the commit_* answers keep out of git, then trusts and installs the mise toolchain. When any of that tooling is kept out of git, paseo.json is gitignored too and Paseo copies it from the source checkout into each new worktree; stack steps appended after it run through mise exec.",
   "ops": [
     {
       "op": "create_file",
@@ -9,7 +9,7 @@
         "{",
         "  \"worktree\": {",
         "    \"setup\": [",
-        "      \"cd \\\"$PASEO_SOURCE_CHECKOUT_PATH\\\" && for f in .env .env.* mise.local.toml .claude/settings.local.json; do [ ! -f \\\"$f\\\" ] || [ -e \\\"$PASEO_WORKTREE_PATH/$f\\\" ] || { mkdir -p \\\"$(dirname \\\"$PASEO_WORKTREE_PATH/$f\\\")\\\" && cp -p \\\"$f\\\" \\\"$PASEO_WORKTREE_PATH/$f\\\"; } || exit 1; done\",",
+        "      \"\\\"$PASEO_SOURCE_CHECKOUT_PATH/.agents/seed-worktree.sh\\\"\",",
         "      \"mise trust -q && mise install -y\"",
         "    ]",
         "  }",

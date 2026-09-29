@@ -12,6 +12,8 @@ weft new gh:SoheilSalmani/templates//slides my-talk
 
 Each template's `AGENTS.md` lists its questions and patches. A deck from `slides` opens on a tour of what it can do: its `docs/how-to-write-a-talk.md` turns that into your talk, and its README is the reference for the syntax.
 
+For a client's repository, answer no to the `commit_*` questions: the skills, MCP configuration, `mise.toml` and agent instructions are still rendered and kept current by `weft update`, but the committed `.gitignore` keeps them, `paseo.json` and `.weft/` out of git, and every new git worktree, Paseo's included, gets a copy from your main checkout.
+
 ## The portable set
 
 Every patch in `base/patches` except `base.json` is a portable patch: `create_file` ops only, depending on nothing outside the portable set (the gated skills patches depend on `skills`), copied byte-for-byte into every other template. Identical bytes mean an identical patch id everywhere, so `weft update` moves every scaffolded project together. Edit the donor copy in `base` only, then re-copy:
@@ -20,7 +22,7 @@ Every patch in `base/patches` except `base.json` is a portable patch: `create_fi
 scripts/sync-portable.sh                 # copy base's portable patches into every template, then weft check all
 scripts/sync-portable.sh ~/path/to/skills   # first re-record the skills patches from a checkout of SoheilSalmani/skills
 scripts/check-portable-drift.sh          # fail if any template's copy differs from base
-scripts/check-templates.sh               # weft check every template under the shared answer combinations
+scripts/check-templates.sh               # weft check every template under the shared answer combinations, then prove the commit_* answers on a real render
 ```
 
 CI (`.github/workflows/check.yml`) runs the last two, with `weft` built from source at the release its `WEFT_REF` names.

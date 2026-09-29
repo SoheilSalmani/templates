@@ -29,12 +29,16 @@ portable_patches() {
   done
 }
 
+# Keeps every piece of the agent tooling out of git; commit_instructions follows.
+PRIVATE_ANSWERS="--answer commit_skills=false --answer commit_mcp=false --answer commit_mise=false"
+
 # Answer combinations every template must pass `weft check` under. Each line
 # is a set of --answer flags; the template's own gates are its author's job.
 check_combinations() {
   printf '%s\n' \
     "" \
     "--answer use_linear=false --answer use_jira=true" \
-    "--answer use_github=false --answer use_linear=false" \
-    "--answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_meetings=true --answer use_weft=true"
+    "--answer use_github=false --answer use_linear=false --answer commit_skills=false --answer commit_mise=false" \
+    "--answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_meetings=true --answer use_weft=true" \
+    "$PRIVATE_ANSWERS"
 }

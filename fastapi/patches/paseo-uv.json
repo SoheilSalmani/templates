@@ -1,6 +1,6 @@
 {
   "title": "Python environment in Paseo worktrees",
-  "description": "Appends uv sync to the Paseo worktree setup, after the mise step, so each worktree starts with the Python environment synced from uv.lock, since .venv is gitignored.",
+  "description": "Appends uv sync to the Paseo worktree setup, after the mise step and through mise exec, so each worktree starts with the Python environment synced from uv.lock under its pinned uv and mise env vars, since .venv is gitignored.",
   "depends_on": [
     "paseo"
   ],
@@ -12,14 +12,14 @@
         {
           "context_before": [
             "    \"setup\": [",
-            "      \"cd \\\"$PASEO_SOURCE_CHECKOUT_PATH\\\" && for f in .env .env.* mise.local.toml .claude/settings.local.json; do [ ! -f \\\"$f\\\" ] || [ -e \\\"$PASEO_WORKTREE_PATH/$f\\\" ] || { mkdir -p \\\"$(dirname \\\"$PASEO_WORKTREE_PATH/$f\\\")\\\" && cp -p \\\"$f\\\" \\\"$PASEO_WORKTREE_PATH/$f\\\"; } || exit 1; done\","
+            "      \"\\\"$PASEO_SOURCE_CHECKOUT_PATH/.agents/seed-worktree.sh\\\"\","
           ],
           "removed": [
             "      \"mise trust -q && mise install -y\""
           ],
           "added": [
             "      \"mise trust -q && mise install -y\",",
-            "      \"uv sync\""
+            "      \"mise exec -- uv sync\""
           ],
           "context_after": [
             "    ]",

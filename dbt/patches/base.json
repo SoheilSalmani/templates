@@ -1,6 +1,6 @@
 {
   "title": "dbt project",
-  "description": "Adds dbt_project.yml with dbt_utils in packages.yml, a uv-managed pyproject.toml pinned to Python 3.13, the empty models, macros and seeds directories, the dbt VS Code extension recommendation, and the stack .gitignore.",
+  "description": "Adds dbt_project.yml with dbt_utils in packages.yml, a uv-managed pyproject.toml pinned to Python 3.13, the empty models, macros and seeds directories, the dbt VS Code extension recommendation, and the stack .gitignore. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/.",
   "ops": [
     {
       "op": "create_file",
@@ -40,7 +40,12 @@
         "mise.local.toml",
         "",
         "# Personal settings (Claude Code)",
-        ".claude/settings.local.json"
+        [
+          ".claude/settings.local.json",
+          {
+            "expr": "'' if commit_skills and commit_mcp and commit_mise and commit_instructions else '\\n\\n# Local tooling, kept out of git\\n' + '\\n'.join([p for p, kept_out in [('/.agents/', not commit_skills), ('/.claude/skills/', not commit_skills), ('/.mcp.json', not commit_mcp), ('/.codex/', not commit_mcp), ('/.omp/', not commit_mcp), ('/mise.toml', not commit_mise), ('/AGENTS.md', not commit_instructions), ('/CLAUDE.md', not commit_instructions), ('/paseo.json', True), ('/.weft/', True)] if kept_out])"
+          }
+        ]
       ],
       "mode": 420
     },

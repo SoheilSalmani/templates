@@ -64,3 +64,32 @@ kind = "bool"
 prompt = "Work on Weft or Weft templates in this project?"
 description = "Installs weft-conventions and the skills for creating, extracting and splitting Weft templates."
 default = "False"
+
+[[question]]
+id = "commit_skills"
+kind = "bool"
+prompt = "Commit the Agent Skills to git?"
+description = "When false, .agents/ and the .claude/skills/ links are gitignored; weft still renders and updates them, and every new git worktree, Paseo's included, gets a copy from the main checkout. Any false commit_* answer also gitignores paseo.json and .weft/, whose base.json holds a copy of every rendered file."
+default = "True"
+
+[[question]]
+id = "commit_mcp"
+kind = "bool"
+prompt = "Commit the MCP server configuration to git?"
+description = "When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Any false commit_* answer also gitignores paseo.json and .weft/."
+default = "True"
+when = "use_linear or use_jira"
+
+[[question]]
+id = "commit_mise"
+kind = "bool"
+prompt = "Commit mise.toml to git?"
+description = "When false, mise.toml is gitignored like mise.local.toml and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/."
+default = "True"
+
+[[question]]
+id = "commit_instructions"
+kind = "bool"
+prompt = "Commit AGENTS.md and CLAUDE.md to git?"
+description = "AGENTS.md documents the skills, MCP servers and mise setup, so it defaults to staying out of git whenever one of them does. When false, AGENTS.md and CLAUDE.md are gitignored and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/."
+default = "commit_skills and commit_mcp and commit_mise"
