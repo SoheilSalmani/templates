@@ -63,6 +63,7 @@ weft commit --name NAME [--title TEXT] [--describe TEXT] [--tag T]... [--when EX
 - `--tag` is repeatable on `commit`; `--tags a,b` in the docs is wrong.
 - `--yes` accepts every abstraction candidate. `--keep-literal` keeps one occurrence literal and implies `--yes` for the rest; the keys come from `weft diff --json` (`occurrences[].id/path/line/nth`).
 - `--depends-on` names must be in the session's base, and the patch must still apply with only their closure present. `--after NAME` is sugar for one parent.
+- `commit` ends the session, and a worktree weft created is deleted with it, so nothing later in the same shell command can run in it.
 
 ## Patches after the fact
 
@@ -77,7 +78,7 @@ weft patch detach NAME
 ```
 
 - `set` never changes an id. An empty string clears a field.
-- `amend` opens a session named after the patch (one per patch at a time) and prints its worktree path; `weft commit --yes` inside it rewrites the patch in place. The id changes, dependents replay, and a dependent whose anchors no longer match is named.
+- `amend` opens a session named after the patch (one per patch at a time) and prints its worktree path; `weft commit --yes` inside it rewrites the patch in place. The id changes and dependents replay. A dependent whose anchors no longer match is not named, the amend is written anyway, and `weft patch amend` on that dependent then fails to render (verified 2026-09-29). So before an amend that touches lines a dependent anchors on, move the dependent's JSON out and keep its title, description, `depends_on` and `when`; after the amend, re-record it in `weft session new NAME` with `weft commit --name NAME --depends-on … --when … --title … --describe …`.
 - `squash` members must be convex in the graph, share a gate, and be neither generator nor foreach patches.
 - `resync` refuses while any session is open. `amend` refuses a generator patch until `detach`.
 - Rename: `mv patches/old.json patches/new.json`, then edit every `"old"` in `depends_on` arrays. Delete: `rm`. Both followed by `weft check`.
@@ -143,6 +144,7 @@ weft hub search TEXT | info OWNER/NAME
 | `this patch is gated off under the session answers, so the session cannot continue on top of it` | `--when` false under the session's answers, with changes left | record with answers that make the gate true, or give the patch its own session |
 | `this patch does not apply with only `a` in the base` | `--depends-on` too narrow | declare the patch it anchors on too |
 | `replaying the recorded patch does not reproduce the worktree` | ambiguous hunk context | add a distinguishing line, or commit the file whole |
+| `a dependent patch no longer applies after the amend` | the amend changed lines a dependent's hunks anchor on; the amend is already written | restore the patch file from git, set the dependent aside, amend again, then re-record the dependent under its old name |
 | `--sibling` on an adopted session (refused with an error) | adopted worktrees always stack | use `--depends-on base` on later commits to keep them independent |
 | `destination … is not empty` | `weft new` into a used directory | pick an empty directory; adopt the existing one instead |
 | `base state hash changed since the session started` / `pinned base patch … no longer exists` | the template moved under an open session | copy the worktree files out, `weft session end NAME --discard`, start again |
