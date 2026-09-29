@@ -1,7 +1,7 @@
 [template]
 name = "slides"
 weft-version = "0.1"
-description = "A slide deck written in MDX on Vite and React, styled by Tailwind CSS and shadcn/ui and animated with Motion. Code is highlighted at build time by Shiki, with highlight steps, diffs, magic moves, tabs, a file explorer with file-type icons and snippets read from real files, and optionally type-checked by Twoslash; Mermaid diagrams are drawn at build time, and optionally diagrams and dbt lineage graphs that change from step to step, drawn by React Flow; the slides are type-checked, and pnpm check renders every slide to catch content that does not fit. Ships the writing-slides Agent Skill, optional GitHub Actions and Pages workflows, and the house editor, git, mise, Paseo, agent-instruction, skill and MCP configuration."
+description = "A slide deck written in MDX on Vite and React, styled by Tailwind CSS and shadcn/ui and animated with Motion. Code is highlighted at build time by Shiki, with highlight steps, folds, diffs that switch between one column and side by side, magic moves, tabs, a file explorer with file-type icons and snippets read from real files, and optionally type-checked by Twoslash; Mermaid diagrams are drawn at build time, and optionally diagrams and dbt lineage graphs that change from step to step, drawn by React Flow; the slides are type-checked, and pnpm check renders every step of every slide to catch content that does not fit. Ships the writing-slides Agent Skill, optional GitHub Actions and Pages workflows, and the house editor, git, mise, Paseo, agent-instruction, skill and MCP configuration."
 
 [[question]]
 id = "project_name"

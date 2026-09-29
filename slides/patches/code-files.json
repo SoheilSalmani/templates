@@ -250,11 +250,7 @@
             "import type { VFile } from \"vfile\"",
             "import type {",
             "  CodeLine,",
-            "  CodeToken,",
-            "  LineMark,",
-            "  MagicMoveStep,",
-            "} from \"../src/code/types.ts\"",
-            "import { addDependency } from \"./dependencies.ts\""
+            "  CodeToken,"
           ],
           "added": [
             "import type { MdxJsxFlowElement, MdxjsEsm } from \"mdast-util-mdx\"",
@@ -262,10 +258,22 @@
             "import type {",
             "  CodeLine,",
             "  CodeToken,",
-            "  FileStatus,",
-            "  LineMark,",
-            "  MagicMoveStep,",
-            "} from \"../src/code/types.ts\"",
+            "  FileStatus,"
+          ],
+          "context_after": [
+            "  Fold,",
+            "  LineMark,"
+          ]
+        },
+        {
+          "context_before": [
+            "  SplitDiff,",
+            "} from \"../src/code/types.ts\""
+          ],
+          "removed": [
+            "import { addDependency } from \"./dependencies.ts\""
+          ],
+          "added": [
             "import { isShell } from \"../src/code/shells.ts\"",
             "import { addDependency } from \"./dependencies.ts\"",
             "import { fileIcon } from \"./file-icons.ts\"",
@@ -299,10 +307,10 @@
             "interface Replacement {"
           ],
           "removed": [
-            "  name: \"CodeBlock\" | \"CodeSplit\" | \"MagicMove\""
+            "  name: \"CodeBlock\" | \"MagicMove\""
           ],
           "added": [
-            "  name: \"CodeBlock\" | \"CodeSplit\" | \"MagicMove\" | \"FileTree\""
+            "  name: \"CodeBlock\" | \"MagicMove\" | \"FileTree\""
           ],
           "context_after": [
             "  props: Record<string, unknown>",
@@ -322,8 +330,8 @@
             " *   `<CodeFiles>`, the fences become one tree beside the code of each file"
           ],
           "context_after": [
-            " * - ` ```ts diff ` → lines starting with `+` or `-` shown as a diff;",
-            " *   ` ```ts diff split ` shows before and after side by side"
+            " * - ` ```ts diff ` → lines starting with `+` or `-` shown as a diff, with a",
+            " *   switch to before and after side by side; ` ```ts diff split ` starts there"
           ]
         },
         {
@@ -365,20 +373,26 @@
             "    const constants: MdxjsEsm[] = []"
           ],
           "removed": [
+            "    // Clicks on a block (a fold, the diff view) are shared between the",
+            "    // audience and presenter windows under an id both builds agree on.",
+            "    const source = file.path ? path.relative(process.cwd(), file.path) : \"deck\"",
             "    for (const { node, parent, index } of found) {",
             "      const { name, props } = await transform(node, file)"
           ],
           "added": [
+            "    // Clicks on a block (a fold, a tab, the diff view) are shared between",
+            "    // the audience and presenter windows under an id both builds agree on.",
+            "    const source = file.path ? path.relative(process.cwd(), file.path) : \"deck\"",
             "    const hoist = (name: string, props: Record<string, unknown>) => {"
           ],
           "context_after": [
-            "      const [element, constant] = hoisted(",
-            "        name,"
+            "      const id = `${source}:${constants.length}`",
+            "      const [element, constant] = hoisted("
           ]
         },
         {
           "context_before": [
-            "        props",
+            "        name === \"MagicMove\" ? props : { ...props, id }",
             "      )"
           ],
           "removed": [
@@ -594,18 +608,25 @@
       "hunks": [
         {
           "context_before": [
-            "import { CodeLines } from \"./code-lines\"",
-            "import { spanOfLines, useFit, useFocusScroll } from \"./fit\""
+            "import { spanOfLines, useFit, useFocusScroll } from \"./fit\"",
+            "import { foldLines, foldRows, openedBy, toggled } from \"./fold\""
           ],
           "removed": [
-            "import type { CodeLine } from \"./types\""
+            "import type { CodeLine, DiffView, Fold, SplitDiff } from \"./types\""
           ],
           "added": [
-            "import type { CodeLine, FileIcon, FileStatus } from \"./types\""
+            "import type {",
+            "  CodeLine,",
+            "  DiffView,",
+            "  FileIcon,",
+            "  FileStatus,",
+            "  Fold,",
+            "  SplitDiff,",
+            "} from \"./types\""
           ],
           "context_after": [
-            "import \"./code.css\"",
-            ""
+            "import { ViewSwitch } from \"./view-switch\"",
+            "import \"./code.css\""
           ]
         },
         {
@@ -697,8 +718,9 @@
             "}",
             "",
             "/**",
-            " * The window around code: a title bar (or editor tabs), a copy button, the",
-            " * font and the colours. It can shrink with the slide; see `useFit`."
+            " * The window around code: a title bar (or editor tabs), a copy button and",
+            " * any `controls` beside it, the font and the colours. It can shrink with the",
+            " * slide; see `useFit`."
           ],
           "added": [
             "/** A terminal for a shell session, else the file's icon or a generic one. */",
@@ -717,9 +739,9 @@
             "",
             "/**",
             " * The window around code: a title bar (or editor tabs) with the file's",
-            " * icon and status, a copy button, the font and the colours. A `sidebar`",
-            " * sits to the left of the title bar and the code. It can shrink with the",
-            " * slide; see `useFit`."
+            " * icon and status, a copy button and any `controls` beside it, the font and",
+            " * the colours. A `sidebar` sits to the left of the title bar and the code.",
+            " * It can shrink with the slide; see `useFit`."
           ],
           "context_after": [
             " */",
@@ -731,20 +753,24 @@
             "  title,",
             "  lang,"
           ],
-          "removed": [
-            "  tabs,",
-            "  active = 0,",
-            "  onTab,",
-            "  code,"
-          ],
+          "removed": [],
           "added": [
             "  icon,",
             "  status,",
-            "  from,",
+            "  from,"
+          ],
+          "context_after": [
             "  tabs,",
-            "  active = 0,",
-            "  onTab,",
+            "  active = 0,"
+          ]
+        },
+        {
+          "context_before": [
             "  code,",
+            "  controls,"
+          ],
+          "removed": [],
+          "added": [
             "  sidebar,"
           ],
           "context_after": [
@@ -763,6 +789,8 @@
             "  active?: number",
             "  onTab?: (index: number) => void",
             "  code: string",
+            "  /** Buttons for the code, before the copy button: a diff's view switch. */",
+            "  controls?: ReactNode",
             "  className?: string",
             "  children: ReactNode",
             "}) {",
@@ -783,6 +811,8 @@
             "  onTab?: (index: number) => void",
             "  /** What the copy button copies; without it, there is no button. */",
             "  code?: string",
+            "  /** Buttons for the code, before the copy button: a diff's view switch. */",
+            "  controls?: ReactNode",
             "  sidebar?: ReactNode",
             "  className?: string",
             "  children: ReactNode",
@@ -805,9 +835,10 @@
             "          {tab.status && <StatusLetter status={tab.status} />}",
             "        </button>",
             "      ))}",
-            "      {code !== undefined && (",
-            "        <span className=\"ml-auto flex items-center\">",
-            "          <CopyButton code={code} />",
+            "      {(controls || code !== undefined) && (",
+            "        <span className=\"ml-auto flex items-center gap-2\">",
+            "          {controls}",
+            "          {code !== undefined && <CopyButton code={code} />}",
             "        </span>",
             "      )}",
             "    </Caption>",
@@ -823,16 +854,18 @@
             "          {status}",
             "        </span>",
             "      )}",
-            "      {code !== undefined && (",
+            "      {(controls || code !== undefined) && (",
             "        <span className=\"ml-auto flex items-center gap-2\">",
-            "          <CopyButton code={code} />",
+            "          {controls}",
+            "          {code !== undefined && <CopyButton code={code} />}",
             "        </span>",
             "      )}",
             "    </Caption>",
             "  ) : (",
-            "    code !== undefined && (",
-            "      <div className=\"absolute top-2 right-2 z-20\">",
-            "        <CopyButton code={code} />",
+            "    (controls || code !== undefined) && (",
+            "      <div className=\"absolute top-2 right-2 z-20 flex items-center gap-2\">",
+            "        {controls}",
+            "        {code !== undefined && <CopyButton code={code} />}",
             "      </div>",
             "    )",
             "  )"
@@ -876,11 +909,13 @@
             "            {title}",
             "          </span>",
             "          <span className=\"ml-auto flex items-center gap-2\">",
+            "            {controls}",
             "            <CopyButton code={code} />",
             "          </span>",
             "        </figcaption>",
             "      ) : (",
-            "        <div className=\"absolute top-2 right-2 z-20\">",
+            "        <div className=\"absolute top-2 right-2 z-20 flex items-center gap-2\">",
+            "          {controls}",
             "          <CopyButton code={code} />",
             "        </div>",
             "      )}",
@@ -905,76 +940,6 @@
           "context_after": [
             "    </figure>",
             "  )"
-          ]
-        }
-      ]
-    },
-    {
-      "op": "modify_file",
-      "path": "src/code/code-split.tsx",
-      "hunks": [
-        {
-          "context_before": [
-            "import { CodeLines } from \"./code-lines\"",
-            "import { useFit } from \"./fit\""
-          ],
-          "removed": [
-            "import type { CodeLine } from \"./types\""
-          ],
-          "added": [
-            "import type { CodeLine, FileIcon, FileStatus } from \"./types\""
-          ],
-          "context_after": [
-            "",
-            "const EMPTY: ReadonlySet<number> = new Set()"
-          ]
-        },
-        {
-          "context_before": [
-            "  lang,",
-            "  title,"
-          ],
-          "removed": [],
-          "added": [
-            "  icon,",
-            "  status,",
-            "  renamedFrom,"
-          ],
-          "context_after": [
-            "  left,",
-            "  right,"
-          ]
-        },
-        {
-          "context_before": [
-            "  lang: string",
-            "  title?: string"
-          ],
-          "removed": [],
-          "added": [
-            "  icon?: FileIcon",
-            "  status?: FileStatus",
-            "  renamedFrom?: string"
-          ],
-          "context_after": [
-            "  left: CodeLine[]",
-            "  right: CodeLine[]"
-          ]
-        },
-        {
-          "context_before": [
-            "      ref={ref}",
-            "      title={title}"
-          ],
-          "removed": [],
-          "added": [
-            "      icon={icon}",
-            "      status={status}",
-            "      from={renamedFrom}"
-          ],
-          "context_after": [
-            "      lang={lang}",
-            "      code={code}"
           ]
         }
       ]
@@ -1056,7 +1021,7 @@
           ],
           "added": [
             "  const tabs = codeBlocksIn(children)",
-            "  const { ref, active, lit, pick } = useCodeSteps(tabs)",
+            "  const { ref, step, active, lit, pick } = useCodeSteps(tabs)",
             "  const clip = useRef<HTMLDivElement>(null)",
             "  useFit(ref, clip, { height: !maxLines, key: tabs })"
           ],
@@ -1127,6 +1092,7 @@
             "        blocks={tabs}",
             "        active={active}",
             "        lit={lit}",
+            "        step={step}",
             "        maxLines={maxLines}",
             "      />"
           ],
@@ -1308,12 +1274,10 @@
             "import { CodeBlock } from \"@/code/code-block\""
           ],
           "removed": [
-            "import { CodeSplit } from \"@/code/code-split\"",
             "import { CodeTabs } from \"@/code/code-tabs\""
           ],
           "added": [
             "import { CodeFiles } from \"@/code/code-files\"",
-            "import { CodeSplit } from \"@/code/code-split\"",
             "import { CodeTabs } from \"@/code/code-tabs\"",
             "import { FileTree } from \"@/code/file-tree\""
           ],
@@ -1333,8 +1297,8 @@
             "  FileTree,"
           ],
           "context_after": [
-            "  CodeSplit,",
-            "  CodeTabs,"
+            "  CodeTabs,",
+            "  MagicMove,"
           ]
         }
       ]
@@ -1651,7 +1615,7 @@
         "      warn(",
         "        file,",
         "        node,",
-        "        \"<CodeFiles> shows code blocks and files fences; this split diff or magic move is left out\"",
+        "        \"<CodeFiles> shows code blocks and files fences; this magic move is left out\"",
         "      )",
         "      continue",
         "    }",
@@ -1901,20 +1865,17 @@
         "  isValidElement,",
         "  useMemo,",
         "  useRef,",
-        "  useState,",
         "  type ReactElement,",
         "  type ReactNode,",
         "} from \"react\"",
+        "import { useShared } from \"@/deck/shared\"",
         "import { CodeFrame } from \"./code-frame\"",
         "import { CodePanes, codeBlocksIn, useCodeSteps } from \"./code-panes\"",
-        "import {",
-        "  FileTree,",
-        "  TreeView,",
-        "  type Collapsed,",
-        "  type FileTreeProps,",
-        "} from \"./file-tree\"",
+        "import { FileTree, TreeView, type FileTreeProps } from \"./file-tree\"",
         "import { useFit } from \"./fit\"",
         "import type { FileTreeEntry } from \"./types\"",
+        "",
+        "const NO_PATHS: string[] = []",
         "",
         "/** Each code block's entry in the tree, with its path, by block. */",
         "function codeEntries(",
@@ -1971,22 +1932,18 @@
         "  const files = useMemo(() => codeEntries(entries ?? []), [entries])",
         "  const shown = files.get(active)",
         "",
-        "  // The tree follows the steps: every step opens the folders of the file",
-        "  // shown, even ones collapsed by hand.",
-        "  const [collapsed, setCollapsed] = useState<Collapsed>(() => new Set())",
-        "  const position = `${step}:${active}`",
-        "  const [followed, setFollowed] = useState(position)",
-        "  if (followed !== position) {",
-        "    setFollowed(position)",
+        "  // Folders collapsed by hand, in every window. The folders of the file",
+        "  // shown stay open, so the tree follows the steps.",
+        "  const [folded, setFolded] = useShared(",
+        "    blocks[0]?.id && `${blocks[0].id}:collapsed`,",
+        "    NO_PATHS",
+        "  )",
+        "  const collapsed = useMemo(() => {",
         "    const folders = (shown?.path.split(\"/\") ?? [])",
         "      .slice(0, -1)",
         "      .map((_, i, names) => names.slice(0, i + 1).join(\"/\"))",
-        "    if (folders.some((folder) => collapsed.has(folder))) {",
-        "      setCollapsed(",
-        "        new Set([...collapsed].filter((path) => !folders.includes(path)))",
-        "      )",
-        "    }",
-        "  }",
+        "    return new Set(folded.filter((path) => !folders.includes(path)))",
+        "  }, [folded, shown])",
         "",
         "  // The tree is outside the code's box, so the whole frame is fitted.",
         "  useFit(ref, ref, { height: !maxLines, key: blocks })",
@@ -2010,7 +1967,7 @@
         "          entries={tree.entries}",
         "          icons={tree.icons}",
         "          collapsed={collapsed}",
-        "          onCollapse={setCollapsed}",
+        "          onCollapse={(next) => setFolded([...next])}",
         "          selected={active}",
         "          onSelect={pick}",
         "        />",
@@ -2021,6 +1978,7 @@
         "        blocks={blocks}",
         "        active={active}",
         "        lit={lit}",
+        "        step={step}",
         "        maxLines={maxLines}",
         "      />",
         "    </CodeFrame>",
@@ -2037,18 +1995,24 @@
         "  Children,",
         "  isValidElement,",
         "  useMemo,",
-        "  useState,",
+        "  type MouseEvent,",
         "  type ReactElement,",
         "  type ReactNode,",
         "  type RefObject,",
         "} from \"react\"",
+        "import { useShared } from \"@/deck/shared\"",
         "import { useSteps } from \"@/deck/steps\"",
         "import { cn } from \"@/lib/utils\"",
         "import { CodeBlock, type CodeBlockProps } from \"./code-block\"",
         "import { CodeLines } from \"./code-lines\"",
         "import { spanOfLines, useFocusScroll } from \"./fit\"",
+        "import { foldLines, openedBy, toggled } from \"./fold\"",
+        "import type { Fold } from \"./types\"",
         "",
         "const EMPTY: ReadonlySet<number> = new Set()",
+        "const NO_FOLDS: Fold[] = []",
+        "const NO_PICK = { block: -1, at: -1 }",
+        "const NO_CLICKS = { at: -1, folds: [] as number[] }",
         "",
         "/** The props of the `<CodeBlock>`s among `children`, in order. */",
         "export function codeBlocksIn(children: ReactNode) {",
@@ -2064,7 +2028,7 @@
         " * Steps through code blocks shown one at a time, as `<CodeTabs>` and",
         " * `<CodeFiles>` do: each block is a step, and so is each of its highlight",
         " * stops. `active` is the block shown and `lit` its highlighted lines;",
-        " * `pick` shows a block by hand until the next step.",
+        " * `pick` shows a block by hand until the next step, in every window.",
         " */",
         "export function useCodeSteps(blocks: CodeBlockProps[]) {",
         "  const stops = blocks.flatMap(({ highlights }, block) =>",
@@ -2079,8 +2043,10 @@
         "    block: 0,",
         "    lines: [],",
         "  }",
-        "  const [picked, setPicked] = useState<{ block: number; at: number }>()",
-        "  const active = picked?.at === step ? picked.block : current.block",
+        "  // Named after the first block, which no other group holds.",
+        "  const key = blocks[0]?.id",
+        "  const [picked, setPicked] = useShared(key && `${key}:pick`, NO_PICK)",
+        "  const active = picked.at === step ? picked.block : current.block",
         "  const shown = active === current.block ? current.lines : undefined",
         "  const lit = useMemo(() => (shown ? new Set(shown) : EMPTY), [shown])",
         "",
@@ -2103,19 +2069,27 @@
         "  blocks,",
         "  active,",
         "  lit,",
+        "  step,",
         "  maxLines,",
         "}: {",
         "  ref: RefObject<HTMLDivElement | null>",
         "  blocks: CodeBlockProps[]",
         "  active: number",
         "  lit: ReadonlySet<number>",
+        "  /** The group's step, which a click on a fold lasts until. */",
+        "  step: number",
         "  maxLines?: number",
         "}) {",
         "  useFocusScroll(",
         "    ref,",
         "    (box) => {",
         "      const pane = box.children[active]",
-        "      return pane instanceof HTMLElement ? spanOfLines(pane, lit) : undefined",
+        "      if (!(pane instanceof HTMLElement)) return undefined",
+        "      const shown = pane.querySelectorAll<HTMLElement>(\"[data-lit]\")",
+        "      return spanOfLines(",
+        "        pane,",
+        "        [...shown].map((row) => Number(row.dataset.line))",
+        "      )",
         "    },",
         "    `${active}:${[...lit].join()}`,",
         "    Boolean(maxLines)",
@@ -2134,25 +2108,83 @@
         "          : undefined",
         "      }",
         "    >",
-        "      {blocks.map((props, i) => (",
-        "        <pre",
+        "      {blocks.map((block, i) => (",
+        "        <Pane",
         "          key={i}",
-        "          aria-hidden={i !== active}",
-        "          className={cn(",
-        "            \"code-pane relative transition-opacity duration-300\",",
-        "            i !== active && \"pointer-events-none opacity-0\"",
-        "          )}",
-        "        >",
-        "          <CodeLines",
-        "            lines={props.lines}",
-        "            lit={i === active ? lit : EMPTY}",
-        "            lineNumbers={props.lineNumbers}",
-        "            startLine={props.startLine}",
-        "            numbers={props.numbers}",
-        "          />",
-        "        </pre>",
+        "          block={block}",
+        "          active={i === active}",
+        "          lit={i === active ? lit : EMPTY}",
+        "          step={step}",
+        "        />",
         "      ))}",
         "    </div>",
+        "  )",
+        "}",
+        "",
+        "/** One block's code, with its folds, which a click opens until the next step. */",
+        "function Pane({",
+        "  block,",
+        "  active,",
+        "  lit,",
+        "  step,",
+        "}: {",
+        "  block: CodeBlockProps",
+        "  active: boolean",
+        "  lit: ReadonlySet<number>",
+        "  step: number",
+        "}) {",
+        "  const folds = block.folds ?? NO_FOLDS",
+        "  const [clicks, setClicks] = useShared(",
+        "    block.id && `${block.id}:folds`,",
+        "    NO_CLICKS",
+        "  )",
+        "  const clicked = clicks.at === step ? clicks.folds : NO_CLICKS.folds",
+        "  const folded = useMemo(",
+        "    () =>",
+        "      foldLines(",
+        "        block.lines,",
+        "        folds,",
+        "        toggled(openedBy(folds, lit), clicked),",
+        "        new Set(clicked)",
+        "      ),",
+        "    [block.lines, folds, lit, clicked]",
+        "  )",
+        "  const drawnLit = useMemo(",
+        "    () => new Set([...lit].map((line) => folded.at[line])),",
+        "    [lit, folded]",
+        "  )",
+        "",
+        "  const onClick = (event: MouseEvent<HTMLPreElement>) => {",
+        "    const target = event.target instanceof Element ? event.target : null",
+        "    const row = target?.closest<HTMLElement>('[data-marks~=\"fold-summary\"]')",
+        "    const fold = row && folded.summaries.get(Number(row.dataset.line))",
+        "    if (fold === undefined || fold === null) return",
+        "    setClicks({",
+        "      at: step,",
+        "      folds: clicked.includes(fold)",
+        "        ? clicked.filter((other) => other !== fold)",
+        "        : [...clicked, fold],",
+        "    })",
+        "  }",
+        "",
+        "  return (",
+        "    <pre",
+        "      aria-hidden={!active}",
+        "      className={cn(",
+        "        \"code-pane relative transition-opacity duration-300\",",
+        "        !active && \"pointer-events-none opacity-0\"",
+        "      )}",
+        "      data-folds={folds.length > 0 || undefined}",
+        "      onClick={folds.length > 0 ? onClick : undefined}",
+        "    >",
+        "      <CodeLines",
+        "        lines={folded.lines}",
+        "        lit={drawnLit}",
+        "        lineNumbers={block.lineNumbers}",
+        "        startLine={block.startLine}",
+        "        numbers={folds.length > 0 ? undefined : block.numbers}",
+        "      />",
+        "    </pre>",
         "  )",
         "}"
       ],
@@ -2228,13 +2260,8 @@
       "path": "src/code/file-tree.tsx",
       "content": [
         "import { ChevronRight } from \"lucide-react\"",
-        "import {",
-        "  useMemo,",
-        "  useRef,",
-        "  useState,",
-        "  type CSSProperties,",
-        "  type ReactNode,",
-        "} from \"react\"",
+        "import { useMemo, useRef, type CSSProperties, type ReactNode } from \"react\"",
+        "import { useShared } from \"@/deck/shared\"",
         "import { useSteps } from \"@/deck/steps\"",
         "import { cn } from \"@/lib/utils\"",
         "import { CodeFrame } from \"./code-frame\"",
@@ -2247,6 +2274,8 @@
         "",
         "export interface FileTreeProps {",
         "  title?: string",
+        "  /** Names the tree's clicks in every window; the build sets it. */",
+        "  id?: string",
         "  /** The key in `icons` of the title bar's icon. */",
         "  titleIcon?: string",
         "  entries: FileTreeEntry[]",
@@ -2256,6 +2285,8 @@
         "  highlights?: number[][]",
         "  className?: string",
         "}",
+        "",
+        "const NO_PATHS: string[] = []",
         "",
         "/** The paths of the folders collapsed by hand; the rest are expanded. */",
         "export type Collapsed = ReadonlySet<string>",
@@ -2272,6 +2303,7 @@
         "  entries,",
         "  icons,",
         "  highlights = [],",
+        "  id,",
         "  className,",
         "}: FileTreeProps) {",
         "  const { ref, step } = useSteps<HTMLElement>(",
@@ -2279,7 +2311,8 @@
         "  )",
         "  const stop = highlights[Math.min(step, highlights.length - 1)]",
         "  const lit = useMemo(() => new Set(stop), [stop])",
-        "  const [collapsed, setCollapsed] = useState<Collapsed>(() => new Set())",
+        "  const [folded, setFolded] = useShared(id && `${id}:collapsed`, NO_PATHS)",
+        "  const collapsed = useMemo(() => new Set(folded), [folded])",
         "  const clip = useRef<HTMLDivElement>(null)",
         "  useFit(ref, clip, { key: entries })",
         "",
@@ -2295,7 +2328,7 @@
         "          entries={entries}",
         "          icons={icons}",
         "          collapsed={collapsed}",
-        "          onCollapse={setCollapsed}",
+        "          onCollapse={(next) => setFolded([...next])}",
         "          lit={lit}",
         "        />",
         "      </div>",
