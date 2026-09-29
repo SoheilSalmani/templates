@@ -1,7 +1,7 @@
 [template]
 name = "base"
 weft-version = "0.1"
-description = "The root every repository starts from: editor and git configuration, a mise toolchain, agent instructions, the house Agent Skills, and MCP connections for the trackers the project uses, for Claude Code, Codex and oh-my-pi. Every patch except base is portable into the stack templates."
+description = "The root every repository starts from: editor and git configuration, a mise toolchain, a Paseo worktree setup, agent instructions, the house Agent Skills, and MCP connections for the trackers the project uses, for Claude Code, Codex and oh-my-pi. Every patch except base is portable into the stack templates."
 
 [[question]]
 id = "project_name"

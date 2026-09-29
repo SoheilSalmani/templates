@@ -1,7 +1,7 @@
 [template]
 name = "fastapi"
 weft-version = "0.1"
-description = "A FastAPI service on Python 3.13 managed by uv, with the house editor, git, mise, agent-instruction, skill and MCP configuration."
+description = "A FastAPI service on Python 3.13 managed by uv, with the house editor, git, mise, Paseo, agent-instruction, skill and MCP configuration."
 
 [[question]]
 id = "project_name"

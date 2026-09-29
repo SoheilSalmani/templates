@@ -31,6 +31,7 @@ Secrets are never passed as answers — they resolve from their source
 - **instructions**: Adds AGENTS.md as the single instruction file, read by Codex and oh-my-pi directly and by Claude Code through a CLAUDE.md that imports it. It records only what is true for every scaffold: mise setup, where skills live, and how MCP servers are declared.
 - **mcp** _(when `use_linear or use_jira`)_: Declares the remote MCP servers for the trackers in use, identically in .mcp.json (Claude Code), .codex/config.toml (Codex) and .omp/mcp.json (oh-my-pi). Definitions only: each person authorises with OAuth. The entries are expr segments on use_linear and use_jira because one file cannot be shared by two sibling patches.
 - **mise**: Adds mise.toml pinning Node 24 for skill scripts and MCP servers; stack templates add their runtime under [tools], and personal overrides go in the gitignored mise.local.toml.
+- **paseo**: Adds paseo.json, whose setup readies each new Paseo worktree: it copies the gitignored personal files (.env files, mise.local.toml, .claude/settings.local.json) from the source checkout without overwriting tracked ones, then trusts and installs the mise toolchain. Stack templates append their own install steps after it.
 - **skills**: Installs the house Agent Skills that apply to any repository under .agents/skills, the canonical location read by Codex and oh-my-pi; Claude Code reaches them through the symlink farm the sync-claude-skills hook rebuilds.
 - **anki** _(when `use_anki`)_: Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.
 - **dbt-skills**: Installs the house SQL and dbt Agent Skills under .agents/skills: the general SQL rules, writing and documenting models, adding unit tests and the tag conventions, next to the general skills the skills patch provides.
@@ -40,6 +41,7 @@ Secrets are never passed as answers — they resolve from their source
 - **meetings** _(when `use_meetings`)_: Installs preparing-client-meetings, which turns pull requests and tracker tickets into what to say at dailies and weeklies, in a weekly note in the user's Obsidian vault. The vault is found on the local filesystem and the trackers are read through the MCP servers the project already has.
 - **mise-uv**: Pins uv 0.12 in mise.toml so mise install provides the uv that locks and syncs the dbt environment.
 - **obsidian** _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
+- **paseo-dbt**: Appends uv sync and dbt deps to the Paseo worktree setup, after the mise step, so each worktree starts with the Python environment and the dbt packages, since .venv and dbt_packages/ are gitignored.
 
 ## Hooks (side-effects, in run order)
 

@@ -1,7 +1,7 @@
 [template]
 name = "scala"
 weft-version = "0.1"
-description = "A Scala 3 (or 2.13) hello world on scala-cli with scalafmt, optionally as an sbt build with a ZIO entry point, on a JDK 25 mise toolchain with the house editor and git configuration, agent instructions, skills and MCP connections."
+description = "A Scala 3 (or 2.13) hello world on scala-cli with scalafmt, optionally as an sbt build with a ZIO entry point, on a JDK 25 mise toolchain with the house editor and git configuration, Paseo worktree setup, agent instructions, skills and MCP connections."
 
 [[question]]
 id = "project_name"
