@@ -46,10 +46,10 @@
             ""
           ],
           "removed": [
-            "The `flow` fence of this deck: when to use it over `mermaid`, its syntax, what its badges mean, and how much fits."
+            "The `flow` fence of this deck: when to use it over `mermaid`, its syntax, how its edges are drawn, what its badges mean, and how much fits."
           ],
           "added": [
-            "The `flow` fence of this deck: when to use it over `mermaid`, its syntax, what its badges mean, and how much fits. Then the `dbt` fence, a flow of a dbt project's lineage."
+            "The `flow` fence of this deck: when to use it over `mermaid`, its syntax, how its edges are drawn, what its badges mean, and how much fits. Then the `dbt` fence, a flow of a dbt project's lineage."
           ],
           "context_after": [
             "",
@@ -97,7 +97,7 @@
             "- A model's layer comes from its prefix, `stg_`, `int_`, or `fct_`, `dim_` and the like, and colours its left edge. Keep the project's own names; do not rename models for the slide.",
             "- In brackets, on any mention of a node: its materialization (`view`, `table`, `incremental`, `ephemeral`, `materialized_view`, `dynamic_table`), `contract`, and `was old_name` for a rename. Write a rename with `was`, never as a removal and an addition: the node then moves as itself, marked Renamed, with its old name under the new one.",
             "- Changed covers a new materialization, drawn as `table → incremental`, and a contract added or dropped. Moved means a model stopped reading from a node that is still there.",
-            "- `#` starts a comment. `direction=` and `duration=` work as in `flow`.",
+            "- `#` starts a comment. `direction=`, `duration=` and `edges=` work as in `flow`.",
             "",
             "Model names are wider than flowchart labels, so a lineage fits less:",
             "",
@@ -148,7 +148,7 @@
             "| `(was orders)`                       | Renamed from `orders`: it moves as the same node, marked Renamed       |",
             "| `# text`                             | A comment                                                              |",
             "",
-            "Annotations can go on any mention of a node and combine: `(incremental, contract)`. Changed covers a new materialization, shown as `table → incremental`, and a contract added or dropped. Moved means a model no longer reads from a node that is still there, as `fct_orders` above stops reading `stg_payments`. Three ranks of model names fit side by side, and four or five models stacked in one. In VS Code, typing `dbt` in a slide offers a fence to start from.",
+            "Annotations can go on any mention of a node and combine: `(incremental, contract)`. Changed covers a new materialization, shown as `table → incremental`, and a contract added or dropped. Moved means a model no longer reads from a node that is still there, as `fct_orders` above stops reading `stg_payments`. `direction=`, `duration=` and `edges=` after the language work as in a `flow` fence. Three ranks of model names fit side by side, and four or five models stacked in one. In VS Code, typing `dbt` in a slide offers a fence to start from.",
             ""
           ],
           "context_after": [
@@ -164,7 +164,7 @@
       "hunks": [
         {
           "context_before": [
-            "  FlowTone,",
+            "  type FlowTone,",
             "} from \"../src/flow/types.ts\""
           ],
           "removed": [],
