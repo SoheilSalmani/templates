@@ -5,6 +5,10 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DONOR="$ROOT/base"
 RECORD_ANSWER="project_name=Demo Service"
+# Skills patches get their own project name: the Weft skills quote
+# "Demo Service" in their examples, and recorded under it that prose would
+# become project_name references. No skill may contain this value.
+SKILLS_RECORD_ANSWER="project_name=Skills Recording"
 
 # Every template directory except the donor: a directory holding weft.toml.
 templates() {
@@ -32,5 +36,5 @@ check_combinations() {
     "" \
     "--answer use_linear=false --answer use_jira=true" \
     "--answer use_github=false --answer use_linear=false" \
-    "--answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_meetings=true"
+    "--answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_meetings=true --answer use_weft=true"
 }

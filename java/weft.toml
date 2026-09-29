@@ -96,3 +96,10 @@ kind = "bool"
 prompt = "Prepare client meetings from this project?"
 description = "Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo."
 default = "False"
+
+[[question]]
+id = "use_weft"
+kind = "bool"
+prompt = "Work on Weft or Weft templates in this project?"
+description = "Installs weft-conventions and the skills for creating, extracting and splitting Weft templates."
+default = "False"

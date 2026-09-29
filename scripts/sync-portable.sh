@@ -43,7 +43,7 @@ refresh_skills() {
     skills="$(owned_skills "$p")"
     [ -n "$skills" ] || continue
     gate="$(gate_of "$p")"
-    set -- --answer "$RECORD_ANSWER"
+    set -- --answer "$SKILLS_RECORD_ANSWER"
     [ -n "$gate" ] && set -- "$@" --answer "$gate=true"
     before="$(mktemp)"; cp "$p" "$before"
     worktree="$(cd "$DONOR" && weft patch amend "$name" "$@")"
@@ -62,7 +62,7 @@ refresh_skills() {
     # Abstraction only matches answer values; a bool gate can never leak, but
     # a distinctive project_name in skill prose would. Refuse that outright.
     if grep -q '"answer"' "$p"; then
-      printf 'error: %s now carries an answer reference; a skill mentioned "%s"\n' "$name" "${RECORD_ANSWER#*=}" >&2
+      printf 'error: %s now carries an answer reference; a skill mentioned "%s"\n' "$name" "${SKILLS_RECORD_ANSWER#*=}" >&2
       exit 1
     fi
   done

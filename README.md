@@ -14,7 +14,7 @@ Each template's `AGENTS.md` lists its questions and patches. A deck from `slides
 
 ## The portable set
 
-Every patch in `base/patches` except `base.json` is a portable patch: a root with `create_file` ops only, copied byte-for-byte into every other template. Identical bytes mean an identical patch id everywhere, so `weft update` moves every scaffolded project together. Edit the donor copy in `base` only, then re-copy:
+Every patch in `base/patches` except `base.json` is a portable patch: `create_file` ops only, depending on nothing outside the portable set (the gated skills patches depend on `skills`), copied byte-for-byte into every other template. Identical bytes mean an identical patch id everywhere, so `weft update` moves every scaffolded project together. Edit the donor copy in `base` only, then re-copy:
 
 ```sh
 scripts/sync-portable.sh                 # copy base's portable patches into every template, then weft check all

@@ -23,6 +23,7 @@ For the full machine-readable contract run `weft describe --json` here.
 | `use_anki` | bool | no | False | Installs anki-flashcards and remembering-what-you-built. AnkiConnect is per machine, so its MCP server stays in user-level config. |
 | `use_obsidian` | bool | no | False | Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config. |
 | `use_meetings` | bool | no | False | Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo. |
+| `use_weft` | bool | no | False | Installs weft-conventions and the skills for creating, extracting and splitting Weft templates. |
 
 Secrets are never passed as answers — they resolve from their source
 (`env:`/`cmd:`/`prompt`) at render time.
@@ -45,6 +46,7 @@ Secrets are never passed as answers — they resolve from their source
 - **mise-java**: Pins Java 25 in mise.toml so mise install provides the JDK that scala-cli and sbt run on.
 - **obsidian** _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
 - **sbt** _(when `use_sbt`)_: Replaces the scala-cli entry point with an sbt build: build.sbt named after the project, a pinned sbt launcher, and the hello-world source under src/main/scala.
+- **weft** _(when `use_weft`)_: Installs weft-conventions, the house conventions for Weft templates, and the skills for creating a template, extracting one from a working project and splitting one in two.
 - **zio** _(when `use_zio`)_: Replaces the hello-world entry point with a ZIO 2.1 ZIOAppDefault and adds the zio library to build.sbt.
 
 ## Hooks (side-effects, in run order)

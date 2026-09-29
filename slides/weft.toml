@@ -59,6 +59,13 @@ description = "Installs preparing-client-meetings, which prepares what to say at
 default = "False"
 
 [[question]]
+id = "use_weft"
+kind = "bool"
+prompt = "Work on Weft or Weft templates in this project?"
+description = "Installs weft-conventions and the skills for creating, extracting and splitting Weft templates."
+default = "False"
+
+[[question]]
 id = "use_twoslash"
 kind = "bool"
 prompt = "Type-check TypeScript on the slides with Twoslash?"
