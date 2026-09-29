@@ -62,9 +62,9 @@ default = "False"
 [[question]]
 id = "stack_skills"
 kind = "multichoice"
-choices = ["dbt", "slides"]
+choices = ["dbt", "lightdash", "slides"]
 prompt = "Stack skills"
-description = "Installs the Agent Skills written for one stack: the five dbt skills, or writing-slides for a slide deck. Each stack template offers only its own, and the dbt and slides templates select theirs."
+description = "Installs the Agent Skills written for one stack: the five dbt skills, Lightdash's three for a dbt project on Lightdash, or writing-slides for a slide deck. Each stack template offers only its own: dbt selects its skills and offers Lightdash's, and slides always installs writing-slides."
 default = "[]"
 
 [[question]]

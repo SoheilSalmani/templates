@@ -1,7 +1,7 @@
 [template]
 name = "dbt"
 weft-version = "0.1"
-description = "A dbt project on uv-managed Python 3.13 with dbt_utils, the house Agent Skills including the dbt ones, and an opinionated mise toolchain (Node 24, uv)."
+description = "A dbt project on uv-managed Python 3.13 with dbt_utils, the house Agent Skills including the dbt ones, an opinionated mise toolchain (Node 24, uv), and optionally Lightdash: its CLI pinned by mise and its Agent Skills."
 extends = "../base"
 
 [[question]]
@@ -18,9 +18,16 @@ description = "The profiles.yml entry dbt_project.yml points at; defaults to the
 example = "demo_warehouse"
 default = "package_name"
 
+[[question]]
+id = "use_lightdash"
+kind = "bool"
+prompt = "Explore the models in Lightdash?"
+description = "Pins the Lightdash CLI in mise.toml. Lightdash's Agent Skills, for building the semantic layer in the models' YAML, come with `lightdash` in `stack_skills`, which also turns this on by default. Each person logs in to their own Lightdash instance with `lightdash login`, so nothing about it is stored in the repo."
+default = "'lightdash' in stack_skills"
+
 [refine.project_name]
 description = "Human-facing name; its snake_case slug names the dbt project and the Python package."
 
 [refine.stack_skills]
-choices = ["dbt"]
+choices = ["dbt", "lightdash"]
 default = "['dbt']"

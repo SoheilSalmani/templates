@@ -1,0 +1,27 @@
+{
+  "title": "Lightdash CLI via mise",
+  "description": "Pins the Lightdash CLI 2.361.0 in mise.toml as the self-contained release binary, verified against its GitHub attestations, rather than the npm package that mise's embedded installer rejects; Lightdash publishes that binary for macOS and Linux x64 only. Base's lightdash-skills runs the same version, so bump both, then resync that patch in base.",
+  "depends_on": [
+    "mise-uv"
+  ],
+  "when": "use_lightdash",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "mise.toml",
+      "hunks": [
+        {
+          "context_before": [
+            "node = \"24\"",
+            "uv = \"0.12\""
+          ],
+          "removed": [],
+          "added": [
+            "\"github:lightdash/lightdash\" = { version = \"2.361.0\", rename_exe = \"lightdash\" }"
+          ],
+          "context_after": []
+        }
+      ]
+    }
+  ]
+}
