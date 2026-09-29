@@ -1,22 +1,22 @@
 ---
 name: splitting-weft-templates
-description: Decides whether a Weft template should become two, and does the move by hand because weft has no split command. Covers the three outcomes: a subtree that other templates would mount becomes a child template behind [[include]]; root-level scaffolding several templates share (agent skills, editor config, CI) travels as a portable patch file, since includes cannot mount at the root; variants of one project stay as gated patches plus presets. Size alone is never a reason. Use when a template feels too big, a second template wants part of it, or a request mentions base templates, includes, reuse across templates, a workspace of parts, or a fleet. For first-time authoring use creating-weft-templates. Load weft-conventions alongside it.
+description: "Decides whether a Weft template should become two, and does the move by hand because weft has no split command. Covers the three outcomes: a subtree that other templates would mount becomes a child template behind [[include]]; root-level scaffolding several templates share (agent skills, editor config, CI) travels as the house's portable patch files; variants of one project stay as gated patches plus presets. Size alone is never a reason. Use when a template feels too big, a second template wants part of it, or a request mentions base templates, extends, includes, reuse across templates, a workspace of parts, or a fleet. For first-time authoring use creating-weft-templates. Load weft-conventions alongside it."
 ---
 
 # Splitting a Weft template
 
-Weft has exactly one composition mechanism: `[[include]]` mounts a whole child template under a non-empty path prefix, the child knows nothing of the parent, and the parent cannot edit files under the mount. There is no inheritance, no overlay, and no root mount (verified in the engine: an empty or `.` mount path is rejected). So "split" means one of three different things, and the first job is to say which.
+Weft composes templates in two ways. `extends` imports a base template as it is, keeping its patches' names and ids, and the extender builds on it without changing it. `[[include]]` mounts a whole child template under a path: the child knows nothing of the parent, and a parent patch may edit files under a single mount only by depending on the child's patch that owns them. Nothing overrides a patch; there is no overlay. So "split" means one of three different things, and the first job is to say which.
 
 ## Decide
 
 Ask, in this order:
 
-1. **Is the part a subtree another template would mount, or that one project wants N times?** `apps/api`, `services/{key}`, `packages/ui`, `connectors/{key}`. Yes: a child template plus `[[include]]`, `repeat = true` for the fleet. This is the only real split.
-2. **Is it root-level scaffolding several templates share?** Agent skills under `.agents/skills/`, `.editorconfig`, a CI workflow, Renovate, a `.gitignore` stanza. Yes: it cannot be an include. Make it a **portable patch**: no `depends_on`, only `create_file` ops at paths nothing else touches, copied as a file into every template that wants it. Same id everywhere, and `weft check` proves it commutes.
+1. **Is the part a subtree another template would mount, or that one project wants N times?** `apps/api`, `services/{key}`, `packages/ui`, `connectors/{key}`. Yes: a child template plus `[[include]]`, `repeat = true` for the fleet.
+2. **Is it root-level scaffolding several templates share?** Agent skills under `.agents/skills/`, `.editorconfig`, a CI workflow, Renovate, a `.gitignore` stanza. Yes: do what the house does. Its stack templates carry the `base` template's **portable patches**, as the house-stack survey in weft-conventions records: no `depends_on`, only `create_file` ops at paths nothing else touches, copied as a file into every template that wants it. Same id everywhere, and `weft check` proves it commutes. `extends` is the engine's own mechanism for a shared base, but the house templates had not moved to it on 2026-09-27; propose it rather than migrating them.
 3. **Is it a variant of the same project?** Postgres or SQLite, Docker or not, Maven or Gradle. Yes: gated patches under one `when` each, presets to name the bundles, and `weft check --preset` per bundle. One template.
 4. **Is it just big?** Not a reason. `weft patch squash` for patches that always travel together, `weft patch amend` to trim, titles and descriptions for the rest.
 
-The trigger for the first outcome is external: a second template wants the subtree, or a project wants several of it. Cost side, said before starting: two directories to version, `weft.lock` if the child goes through the hub, updates per instance, and no parent patch may touch the child's files, so any glue lives in the parent as a normal patch (a single mount) or a `foreach` patch (a repeated mount).
+The trigger for the first outcome is external: a second template wants the subtree, or a project wants several of it. Cost side, said before starting: two directories to version, `weft.lock` if the child comes from git or the hub, updates per instance, and glue kept in the parent, as a patch that depends on the child's node when it edits the child's files (a single mount) or a `foreach` patch (a repeated mount).
 
 ## The include split, by hand
 
@@ -48,13 +48,13 @@ cp ~/Desktop/Projects/templates/skills/patches/base.json ~/Desktop/Projects/temp
 weft check ~/Desktop/Projects/templates/java --answer project_name=x
 ```
 
-Verified: a rootless `create_file`-only patch dropped into two different templates kept the same id in both and passed commutation. Constraints: it may reference only answers every host declares (best: none), and it may not carry a hunk on a shared file such as `.gitignore`; that hunk belongs to each host's `base`. Updating means re-copying; every project picks the change up on `weft update`. A hook on the patch travels with it (`sync-claude-skills` with `glob:.agents/skills/**`).
+Verified: a rootless `create_file`-only patch dropped into two different templates kept the same id in both and passed commutation. Constraints: it may reference only answers every host declares (best: none), and it may not carry a hunk on a shared file such as `.gitignore`. Lines it needs there go either into each host's `base` or, on a weft built after 0.1.0, into a slot every host's `base` declares under one name, which the portable patch fills with `"depends_on": ["base"]`; it then checks in every host but is no longer a root, so its id differs per host (`patch-format.md` in weft-conventions). Updating means re-copying; every project picks the change up on `weft update`. A hook on the patch travels with it (`sync-claude-skills` with `glob:.agents/skills/**`).
 
 ## Do not
 
 - Split because the file count is high.
-- Promise a root mount, an overlay, or a parent patch that edits the child's files.
-- Move a patch without its dependency closure, or leave a parent patch anchoring on a file that moved.
+- Promise an overlay, or a parent patch that edits a mounted child's files without depending on the child's patch that owns them.
+- Move a patch without its dependency closure, or leave a parent patch anchoring on a moved file without depending on the child's patch that owns it.
 - Rename answers in the moved ops without declaring them in the child's `weft.toml`.
 - Split the variants of one project into sibling templates; that is what gates and presets are for.
 
@@ -62,6 +62,6 @@ Verified: a rootless `create_file`-only patch dropped into two different templat
 
 - The outcome was named (include, portable patch, gates and presets, or no change) with the reason.
 - For an include: the child checks on its own, the parent checks, and the before/after renders differ only where intended.
-- For a portable patch: no `depends_on`, only new files at untouched paths, checked in every host.
+- For a portable patch: no `depends_on` (or only `base`, to fill a slot every host declares), only new files at untouched paths, checked in every host.
 - Every moved path, glob and `cd` lost its mount prefix; every renamed answer exists in the child.
 - Titles and descriptions were carried over, and both templates' `AGENTS.md` were regenerated.

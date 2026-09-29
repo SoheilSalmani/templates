@@ -1,12 +1,13 @@
 # The patch file, for the times a hand edit is right
 
-Patches are normally written by `weft commit`. Open this when you need to read one, fix a typo in `added` lines, add an `{"expr"}` segment (commit never emits one), write a fixture, or move a patch between templates. After any hand edit, `weft check` with answers: ids are recomputed from content, so nothing else needs updating, but a broken hunk only shows up at render.
+Patches are normally written by `weft commit`. Open this when you need to read one, fix a typo in `added` lines, add an `{"expr"}` segment or declare a slot (commit emits neither), write a fixture, or move a patch between templates. After any hand edit, `weft check` with answers: ids are recomputed from content, so nothing else needs updating, but a broken hunk only shows up at render.
 
 ## Contents
 
 - Top level
 - Ops
 - Segments and hunks
+- Slots
 - What is hashed
 - Portable patches
 - A recorded patch, verbatim
@@ -42,17 +43,20 @@ The `title` field is absent from the docs' field table but present in every reco
 
 ```json
 { "op": "create_file", "path": "README.md", "content": ["# hello", ["Project: ", { "answer": "project_name" }]], "mode": 420 }
+{ "op": "create_file", "path": ".mcp.json", "omit_when_empty": ["servers"], "content": ["{", "  \"mcpServers\": {", { "slot": "servers", "separator": "," }, "  }", "}"] }
 { "op": "create_binary_file", "path": "app/favicon.ico", "data": "<base64>", "mode": 420 }
 { "op": "modify_file", "path": "README.md", "hunks": [ { "context_before": ["Scaffolded by weft."], "removed": [], "added": ["", "Ships with Docker."], "context_after": [] } ] }
 { "op": "delete_file", "path": "old.txt" }
 { "op": "rename_path", "from": "a.txt", "to": "b.txt" }
 { "op": "set_mode", "path": "scripts/run.sh", "mode": 493 }
+{ "op": "fill_slot", "path": ".mcp.json", "slot": "servers", "key": "linear", "lines": ["    \"linear\": { \"url\": \"https://mcp.linear.app/mcp\" }"] }
 ```
 
 - Paths are tree-relative, `/`-separated, never `..` or absolute. A path may itself be a segment array: `["src/main/java/", {"answer": "package_path"}, "/App.java"]`.
 - `mode` is optional: `420` is `0o644`, `493` is `0o755`. Recording writes it on every file op.
 - `create_file` errors if the path exists; `modify_file`, `delete_file`, `rename_path`, `set_mode` error if it does not. Weft picks `create_binary_file` for any file whose bytes are not UTF-8; you never mark it by hand, and binary content is never abstracted or hunk-merged.
 - Content is an array of lines; a fully literal line is a plain string. Output ends with exactly one newline.
+- `fill_slot` errors when the file does not exist on top of the patch's dependencies, so a filler always depends on the patch that creates the file.
 
 ## Segments and hunks
 
@@ -66,20 +70,47 @@ A list never renders. Project it: `{"expr": "', '.join(components)"}`.
 
 A hunk's `context_before + removed + context_after` must match at exactly one position. Zero matches means the file diverged; two means the context is ambiguous. Both are clean errors. An empty pattern appends at end of file. Context lines carry abstraction too, which is why a hunk recorded under `Demo Service` still matches a file rendered under `Orders`.
 
+Commit takes context only from lines that render the same under other answers: never a line an `expr` rendered, never slot content. Context stops at the first such line, so a hunk may carry one line or none; a group of changes is split at one. A change with nothing to anchor on that is not at the end of the file is refused, naming the segments around it. A hunk written by hand, or by an older weft, that anchors on `expr` output fails `weft check` under other answers:
+
+```text
+error: patch `old` does not apply under these answers: hunk 0 does not match `mise.toml`: it expects `linear = "1"` before the change, where line 4 is empty, rendered from an `expr` segment of patch `base` (`'linear = "1"' if use_linear else ''`); context taken from an expression's output only holds under the answers it was recorded with, so re-record the hunk with context that avoids that line
+```
+
+## Slots
+
+Siblings that insert after the same line do not commute. A file several patches add to declares a slot instead, and each contributor fills it.
+
+- **Declaring.** A slot is a line of its own, `{"slot": "servers", "separator": ","}`, in `create_file` `content` or in a hunk's `added` lines (a patch that edits a file can offer a place, such as `[env]` in `mise.toml`). `separator` is optional. The name is ASCII letters, digits, `-`, `_` and `.`, unique within the file. A slot inside a segment array does not parse, and a slot anywhere else, including inside a fill, is an error: slots do not nest.
+- **`omit_when_empty: ["servers"]`** on `create_file` leaves the file out of the render while every listed slot is empty. A patch that changes that file by anything but a fill, while nothing it depends on fills a slot, fails: ``patch `header` does not apply under these answers: it changes `.mcp.json`, which patch `mcp` leaves out while its slots are empty (`omit_when_empty`), and nothing it depends on fills them; …``.
+- **Filling.** `{"op": "fill_slot", "path", "slot", "key", "lines"}`. `key` is one non-empty line, a string or a segment array; `lines` holds at least one line. Commit keys a fill by the patch name; a foreach patch's key is `["<name>/", {"answer": "key"}]`, and amend and resync keep the key a patch already used.
+- **Rendering.** Contributions sort by key; the separator is appended to the last line of every contribution but the final one; an empty slot renders no lines. No hunk sees slot content, so fill-only patches commute in any order and `weft check` does not render their pairs.
+- **Errors.** Two fills with one key in one slot (``patches `linear` and `twin` both fill slot `servers` of `.mcp.json` under key `linear` ``), an unknown slot, a fill on a missing file, an empty fill, a bad or duplicate slot name.
+
+Declaring a slot in an owner that already ships is a hand edit: `weft patch amend` refuses a patch that declares a slot, and `weft patch resync` skips one with an issue (``it declares slot(s) `notes` in `README.md`, which regenerating from the command would drop; move the slot to a hand-written patch, or `weft patch detach base` and edit it by hand``). So declare slots in hand-written owner patches, never in a generator patch; a slot offered in a generated file goes in a hunk's `added` lines of the patch after it.
+
+1. In the owner, replace the lines several patches add to with the slot line, and add `omit_when_empty` if the file means nothing empty (`.mcp.json` with no servers).
+2. Move each entry into a `fill_slot` in the patch that should own it (a new patch gated on the bool, where the entry was an `expr` line), keyed by that patch's name, its lines without the trailing separator, and `depends_on` the owner only.
+3. Delete the `expr` lines, complementary gated copies or chain-only dependencies the slot replaces, and rewrite any hunk that anchored on the old lines.
+4. `weft check` under every answer combination that turns a filler on or off, then `weft new` one project and compare it with the old render.
+
+Later fillers are recorded, not hand-written: `weft session new lightdash --base mcp`, type the entry where its key sorts, then `weft commit --name lightdash --depends-on mcp`. Where the owner has `omit_when_empty` and nothing else fills the slot, the worktree has no such file: write it whole, the owner's lines around your entry. `weft diff` shows it as created with the fill note, and commit still records one `fill_slot`; amending the only filler of such a file stays a `fill_slot` too.
+
 ## What is hashed
 
 Canonical form is compact JSON in the order `depends_on` (sorted), `when`, `foreach` (omitted when absent), `ops`, and the dependency names are replaced by the dependencies' ids. So two patches with the same behaviour and parents have the same id in any template, and metadata can be rewritten freely.
 
 ## Portable patches
 
-Verified 2026-09-25: a patch with no `depends_on` and only `create_file` ops at paths no other patch touches can be copied unchanged between templates. It becomes a second root, `weft check` proves it commutes with everything, and it keeps the same id in every template it lives in. This is the house mechanism for root-level scaffolding that several templates share (agent skills under `.agents/skills/`, editor config, CI workflows), because `[[include]]` cannot mount at the root.
+Verified 2026-09-25: a patch with no `depends_on` and only `create_file` ops at paths no other patch touches can be copied unchanged between templates. It becomes a second root, `weft check` proves it commutes with everything, and it keeps the same id in every template it lives in. This is the house mechanism for root-level scaffolding that several templates share (agent skills under `.agents/skills/`, editor config, CI workflows). It predates `extends`, which shares a base inside the engine; the house templates had not moved to it on 2026-09-27.
 
 ```sh
 cp ~/templates/skills/patches/skills.json ~/templates/java/patches/skills.json
-weft check ~/templates/java --answer project_name=x
+weft check ~/templates/java --answer "project_name=Demo Service"
 ```
 
-Constraints: the patch may reference only answers every host template declares (best: none). To update, re-copy; projects pick the change up on `weft update`. A portable patch that also needs a hunk in a shared file such as `.gitignore` is no longer portable; give the hunk to the host template's `base` or accept a per-template copy.
+Constraints: the patch may reference only answers every host template declares (best: none). To update, re-copy; projects pick the change up on `weft update`.
+
+A portable patch that also needs lines in a shared file such as `.gitignore` fills a slot there. Every host's owner (its `base`) declares the slot under the same name, say `{"slot": "ignores"}` in `.gitignore`, and the portable patch carries `"depends_on": ["base"]` and a `fill_slot` keyed by its own name. Verified 2026-09-29 on a weft built after 0.1.0: the same file checks in two hosts whose `base` differ, but it is no longer a root, so its id differs per host. On weft 0.1.0 there are no slots; give the hunk to each host's `base` instead.
 
 ## A recorded patch, verbatim
 

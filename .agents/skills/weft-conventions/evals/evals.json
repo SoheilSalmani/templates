@@ -38,11 +38,11 @@
     {
       "id": 4,
       "prompt": "The docker and ci patches both append to README.md and weft check says they don't commute. Fix it.",
-      "expected_output": "Either one patch is re-recorded against the other (weft session new ci --base docker, or weft commit --depends-on docker) so the dependency is explicit, or the two hunks are moved at least three lines apart so they anchor on different context. The agent explains that independent patches must commute and that the context radius is two lines.",
+      "expected_output": "If README.md holds a list several patches add to, the owner (base) declares a slot there by hand and docker and ci are re-recorded as fill_slot fillers with --depends-on base, which commute by construction (this needs a weft built after 0.1.0). Otherwise one patch is re-recorded against the other (weft session new ci --base docker, or weft commit --depends-on docker) so the dependency is explicit, or the two hunks are moved at least three lines apart so they anchor on different context. The agent explains that independent patches must commute and that the context radius is two lines.",
       "assertions": [
         "Explains the commutation rule and why two appends to the same spot conflict",
-        "Offers the dependency fix with the correct flags (--base or --depends-on)",
-        "Offers the alternative of separating the hunks so they stay independent",
+        "Offers a slot the owner declares, filled by both patches, when the additions are entries of one list, and says it needs a weft newer than 0.1.0",
+        "Offers the dependency fix with the correct flags (--base or --depends-on) or separating the hunks, and does not suggest expr lines to merge the two",
         "Runs weft check again after the fix"
       ]
     },
@@ -127,10 +127,10 @@
     {
       "id": 13,
       "prompt": "Can I put this patch that installs our agent skills into both the java and the fastapi templates?",
-      "expected_output": "Yes, as a portable patch: if it has no depends_on and only create_file ops at paths nothing else touches, copy the JSON file into each template's patches/; it becomes a second root, keeps the same id everywhere, and weft check proves it commutes. Includes cannot mount at the root, so this is the mechanism.",
+      "expected_output": "Yes, as a portable patch, which is how the house shares root-level files today: if it has no depends_on and only create_file ops at paths nothing else touches, copy the JSON file into each template's patches/; it becomes a second root, keeps the same id everywhere, and weft check proves it commutes. The agent may mention that extends is the engine's mechanism for a shared base, without migrating the templates.",
       "assertions": [
         "States the two constraints (no depends_on, only new files at untouched paths)",
-        "Explains why [[include]] is not the answer for root-level files",
+        "Does not claim that weft has no way to share a base or to mount at the root",
         "Runs weft check in each template after copying"
       ]
     },

@@ -1,6 +1,6 @@
 {
   "skill_name": "splitting-weft-templates",
-  "notes": "Score the decision first: the agent must name which of the three outcomes applies (include, portable patch, gates and presets) or that nothing should change, with the reason. Promising a root mount, an overlay, or a parent patch editing child files fails. For an include split, both templates must be checked and the before/after renders diffed. For a portable patch, the two constraints must be stated and checked in every host.",
+  "notes": "Score the decision first: the agent must name which of the three outcomes applies (include, portable patch, gates and presets) or that nothing should change, with the reason. Promising an overlay, or a parent patch that edits a mounted child's files without depending on the child node that owns them, fails. So does claiming that weft has no root mount or no base-template mechanism. For an include split, both templates must be checked and the before/after renders diffed. For a portable patch, the two constraints must be stated and checked in every host.",
   "evals": [
     {
       "id": 1,
@@ -15,12 +15,13 @@
     {
       "id": 2,
       "prompt": "I want the skills patch and the editorconfig from the java template in the fastapi and dbt templates too, like a shared base template.",
-      "expected_output": "The agent explains includes cannot mount at the root, so there is no base template; the answer is portable patches. It confirms each patch has no depends_on and only create_file ops at untouched paths, copies the JSON files into the other templates, runs weft check in each, and notes that updating means re-copying. Any hunk on a shared file such as .gitignore is handed to each host's base instead.",
+      "expected_output": "The house shares root-level scaffolding as portable patches, so the agent does that: it confirms each patch has no depends_on and only create_file ops at untouched paths, copies the JSON files into the other templates, runs weft check in each, and notes that updating means re-copying. Lines needed in a shared file such as .gitignore are handed to each host's base, or, on a weft built after 0.1.0, filled into a slot every host's base declares, which makes the patch depend on base and gives it a different id per host. It may name extends as the engine's mechanism for a shared base, as a proposal, without migrating the templates.",
       "assertions": [
-        "Says explicitly that a root-level include does not exist",
+        "Follows the house practice of portable patches for root-level files",
         "States the two portability constraints and verifies them on the actual patch files",
         "Copies the files and runs weft check in every host template",
-        "Does not promise a mechanism weft lacks"
+        "Does not claim that weft cannot mount at the root or has no base-template mechanism",
+        "Does not migrate the templates to extends without being asked"
       ]
     },
     {
@@ -58,10 +59,11 @@
     {
       "id": 6,
       "prompt": "Let the parent template override the child's Dockerfile after mounting it.",
-      "expected_output": "Not possible: a parent patch cannot edit files under a mount. The options are a child question that changes the Dockerfile inside the child, a gated child patch, or keeping the Dockerfile in the parent outside the mount. No workaround that edits mounted files is invented.",
+      "expected_output": "Possible for a single include, as an edit rather than an override: the agent records the change in a session on the parent, where the composed base already contains the child's Dockerfile, and weft commit makes the patch depend on the child node that owns it and says so on stderr. If that child patch is gated off, the parent's edit is off too, and the hunk can reference only the parent's answers. For a repeat include the edit needs a foreach patch. No overlay or post-render step is invented.",
       "assertions": [
-        "States the mount rule plainly",
-        "Offers child-side alternatives",
+        "States the mount rule: a parent patch may edit files under a single mount only by depending on the child node that owns them",
+        "Records the edit in a session so the dependency is inferred, or adds it to depends_on by hand",
+        "Notes that the edit switches off with the child patch it depends on",
         "Does not invent an overlay or post-render edit"
       ]
     },
@@ -77,7 +79,7 @@
     {
       "id": 8,
       "prompt": "The java template is a six-deep chain: base, gradle, gradle-wrapper, testing, formatter, linter. Split it up.",
-      "expected_output": "Not a template split but a graph repair inside one template: the agent explains chains come from recording on latest, checks which links anchor on the previous patch's lines (the build.gradle.kts edits), and re-parents the independent ones by editing their depends_on to base by hand (there is no weft patch rebase), or re-records them with --base base, leaving the legitimate chain. weft check proves the render and commutation afterwards.",
+      "expected_output": "Not a template split but a graph repair inside one template: the agent explains chains come from recording on latest, checks which links anchor on the previous patch's lines (the build.gradle.kts edits), and re-parents the independent ones by editing their depends_on to base by hand (there is no weft patch rebase), or re-records them with --base base. Links that exist only to order lines in the plugins and dependencies blocks can become fillers of slots the build file's owner declares, on a weft built after 0.1.0; otherwise the chain stays. weft check proves the render and commutation afterwards.",
       "assertions": [
         "Identifies this as a dependency-shape problem, not a composition problem",
         "Distinguishes links that anchor on the previous patch from links recorded on latest by habit",
