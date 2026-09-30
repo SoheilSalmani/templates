@@ -1,6 +1,6 @@
 {
   "title": "MDX slide deck",
-  "description": "Turns the app into a slide deck written in slides.mdx: top-level --- separates slides, layouts, reveal steps, speaker notes, shadcn/ui components sized for slides and Motion need no import, <Include> pulls in slides from other files, and <Slide hidden> drafts show only on the dev server. The deck scales its canvas to any screen with Motion transitions, an overview, a go-to palette, a presenter view kept in sync across windows, clicks on a slide shared between those windows, and a print view for PDF, a page per slide or per step; every slide reports content that does not fit. Slide and step live in the URL, so a reload or a hot update keeps the place.",
+  "description": "Turns the app into a slide deck written in slides.mdx, which opens by including a tour of the deck from chapters/tour.mdx, so a talk written in its place is left alone when the template changes the tour: top-level --- separates slides, layouts, reveal steps, speaker notes, shadcn/ui components sized for slides and Motion need no import, <Include> pulls in slides from other files, and <Slide hidden> drafts show only on the dev server. The deck scales its canvas to any screen with Motion transitions, an overview, a go-to palette, a presenter view kept in sync across windows, clicks on a slide shared between those windows, and a print view for PDF, a page per slide or per step; every slide reports content that does not fit. Slide and step live in the URL, so a reload or a hot update keeps the place.",
   "depends_on": [
     "shadcn-alert",
     "shadcn-badge",
@@ -47,7 +47,7 @@
           ],
           "removed": [],
           "added": [
-            "Slides written in MDX and rendered with React, Tailwind CSS, shadcn/ui and Motion. The deck is `slides.mdx`; `pnpm dev` shows it, and every save updates the slide you are on.",
+            "Slides written in MDX and rendered with React, Tailwind CSS, shadcn/ui and Motion. The deck is `slides.mdx`; `pnpm dev` shows it, and every save updates the slide you are on. A new deck's `slides.mdx` includes a tour of what it can do from `chapters/tour.mdx`: replace that line with your talk, and updates from the template change the tour, not your slides.",
             ""
           ],
           "context_after": [
@@ -348,8 +348,8 @@
       "content": [
         "## A long talk can live in several files",
         "",
-        "This slide is `chapters/example.mdx`, and `slides.mdx` puts it here with",
-        "`<Include src=\"./chapters/example.mdx\" />`.",
+        "This slide is `chapters/example.mdx`, and the tour, `chapters/tour.mdx`,",
+        "puts it here with `<Include src=\"./example.mdx\" />`.",
         "",
         "<Notes>",
         "",
@@ -786,6 +786,16 @@
         "transition: slide",
         "---",
         "",
+        "{/* A tour of what the deck can do. Replace this line with your talk. */}",
+        "",
+        "<Include src=\"./chapters/tour.mdx\" />"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "chapters/tour.mdx",
+      "content": [
         "<Cover>",
         "",
         [
@@ -986,7 +996,7 @@
         "",
         "---",
         "",
-        "<Include src=\"./chapters/example.mdx\" />",
+        "<Include src=\"./example.mdx\" />",
         "",
         "---",
         "",
@@ -1011,7 +1021,7 @@
         "",
         "<Statement>",
         "",
-        "Now make it yours: edit `slides.mdx`.",
+        "Now make it yours: in `slides.mdx`, replace the tour with your talk.",
         "",
         "</Statement>"
       ],

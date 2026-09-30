@@ -341,7 +341,7 @@
     },
     {
       "op": "modify_file",
-      "path": "slides.mdx",
+      "path": "chapters/tour.mdx",
       "hunks": [
         {
           "context_before": [

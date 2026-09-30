@@ -158,7 +158,7 @@
     },
     {
       "op": "modify_file",
-      "path": "slides.mdx",
+      "path": "chapters/tour.mdx",
       "hunks": [
         {
           "context_before": [
@@ -200,12 +200,12 @@
             "",
             "## Code can come from a real file, which still compiles",
             "",
-            "```ts file=\"./snippets/counter.ts#L10-18\" lineNumbers {6-8|all}",
+            "```ts file=\"../snippets/counter.ts#L10-18\" lineNumbers {6-8|all}",
             "```",
             "",
             "<Notes>",
             "",
-            "`file=\"./snippets/counter.ts#L10-18\"` reads those lines, and",
+            "`file=\"../snippets/counter.ts#L10-18\"` reads those lines, and",
             "`#increment` reads a `// #region increment`. The slide updates when the file",
             "changes, and `pnpm typecheck` checks the file with the rest of the deck.",
             "",
@@ -217,7 +217,7 @@
             "",
             "<CodeTabs>",
             "",
-            "```ts file=\"./snippets/counter.ts#increment\" {2|3|all}",
+            "```ts file=\"../snippets/counter.ts#increment\" {2|3|all}",
             "```",
             "",
             "```ts title=\"main.ts\"",
@@ -354,7 +354,7 @@
             "",
             "## Long code scrolls to what is highlighted",
             "",
-            "```ts file=\"./snippets/counter.ts\" lineNumbers maxLines=9 {4-8|10-12|14-17|all}",
+            "```ts file=\"../snippets/counter.ts\" lineNumbers maxLines=9 {4-8|10-12|14-17|all}",
             "```",
             "",
             "<Notes>",

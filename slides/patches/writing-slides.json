@@ -29,7 +29,7 @@
         "- **The big idea**, one sentence with a verb and a stake: what the audience should remember if they remember nothing else. Every slide supports it, and material that does not is cut.",
         "- **The arc**: the problem and the promise in the first two or three slides, the argument, and a last slide that restates the big idea.",
         "",
-        "The deck a project starts with is a tour of the template: a real talk replaces `slides.mdx`, and deletes `chapters/example.mdx` and `snippets/counter.ts` once nothing uses them.",
+        "The deck a project starts with includes a tour of the template from `chapters/tour.mdx`: a real talk replaces that `<Include>` in `slides.mdx` with its own slides, and deletes `chapters/tour.mdx`, `chapters/example.mdx` and `snippets/counter.ts` once nothing uses them. Never write the talk into the tour's files: `weft update` changes them.",
         "",
         "Then **write every headline first, in order, and read them as a paragraph.** If they do not make the argument on their own, no slide body will fix it. No agenda before the problem is stated, and no \"Questions?\" or \"Thank you\" as the last slide; the takeaway stays up during questions. `references/talk-structure.md` has the arc, signposting and timing in detail: read it when outlining a new talk or restructuring one.",
         "",

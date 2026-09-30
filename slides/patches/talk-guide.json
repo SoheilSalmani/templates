@@ -47,7 +47,7 @@
         "",
         "## Replace the tour",
         "",
-        "A new deck opens on a tour of what it can do. Page through it once with <kbd>→</kbd>, then replace everything in `slides.mdx` with your talk. When nothing includes them any more, delete `chapters/example.mdx` and `snippets/counter.ts`, the chapter and the sample code the tour uses. Git keeps the tour in the scaffold commit if you want to look at it again.",
+        "A new deck opens on a tour of what it can do, which `slides.mdx` includes from `chapters/tour.mdx`. Page through it once with <kbd>→</kbd>, then replace that `<Include>` line in `slides.mdx` with your talk, and delete `chapters/tour.mdx`, `chapters/example.mdx` and `snippets/counter.ts`: the tour, its chapter and its sample code. Updates from the template change the tour, not your talk, and leave a file you deleted deleted. Git keeps the tour in the scaffold commit if you want to look at it again.",
         "",
         "## Outline the talk first",
         "",
