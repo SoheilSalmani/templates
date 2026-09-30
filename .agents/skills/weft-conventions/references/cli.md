@@ -133,6 +133,8 @@ weft instance add INCLUDE KEY [--answer ID=V]... | list | remove INCLUDE KEY
 
 `DEST` must be empty or absent; two templates cannot be scaffolded into one directory. `--skip-tasks` renders without running hooks.
 
+`update` merges each file three ways: the template's last render, the project's copy and the new render. A file the project deleted stays deleted when the new render changes it (`chapters/tour.mdx: kept it deleted: you deleted it, and the new render changes it`). A file the project rewrote, such as starter content replaced by the user's own, takes every template change to it as a conflict, and the post hooks wait until it is resolved. So starter content a user is meant to replace goes in files of its own, which they delete, never in the file they write in (verified 2026-09-30 on `slides`).
+
 ## Composition and hub
 
 ```text
