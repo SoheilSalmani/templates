@@ -1,53 +1,46 @@
 {
   "title": "dbt project",
-  "description": "Adds dbt_project.yml with dbt_utils in packages.yml, a uv-managed pyproject.toml pinned to Python 3.13, the empty models, macros and seeds directories, the dbt VS Code extension recommendation, and the stack .gitignore. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/.",
+  "description": "Adds dbt_project.yml with dbt_utils in packages.yml, a uv-managed pyproject.toml pinned to Python 3.13, the empty models, macros and seeds directories, and the dbt VS Code extension recommendation on top of base, whose README the project keeps. The dbt and Python stanzas go at the top of base's .gitignore, and the uv-sync and dbt-deps hooks run before base's git-commit.",
+  "depends_on": [
+    "base"
+  ],
   "ops": [
     {
-      "op": "create_file",
+      "op": "modify_file",
       "path": ".gitignore",
-      "content": [
-        "# Compiled files (dbt)",
-        "target/",
-        "",
-        "# Internal packages (dbt)",
-        "dbt_internal_packages/",
-        "",
-        "# Logs (dbt)",
-        "logs/",
-        "",
-        "# Third-party packages (dbt)",
-        "dbt_packages/",
-        "",
-        "# Cache folders (Python)",
-        "__pycache__/",
-        "",
-        "# Virtual environments (Python)",
-        ".venv/",
-        "",
-        "# Configuration and data (Rope)",
-        ".ropeproject/",
-        "",
-        "# Operating system",
-        ".DS_Store",
-        "Thumbs.db",
-        "",
-        "# Environment files",
-        ".env",
-        ".env.*",
-        "!.env.example",
-        "",
-        "# Personal toolchain overrides (mise)",
-        "mise.local.toml",
-        "",
-        "# Personal settings (Claude Code)",
-        [
-          ".claude/settings.local.json",
-          {
-            "expr": "'' if commit_skills and commit_mcp and commit_mise and commit_instructions else '\\n\\n# Local tooling, kept out of git\\n' + '\\n'.join([p for p, kept_out in [('/.agents/', not commit_skills), ('/.claude/skills/', not commit_skills), ('/.mcp.json', not commit_mcp), ('/.codex/', not commit_mcp), ('/.omp/', not commit_mcp), ('/mise.toml', not commit_mise), ('/AGENTS.md', not commit_instructions), ('/CLAUDE.md', not commit_instructions), ('/paseo.json', True), ('/.weft/', True)] if kept_out])"
-          }
-        ]
-      ],
-      "mode": 420
+      "hunks": [
+        {
+          "context_before": [],
+          "removed": [],
+          "added": [
+            "# Compiled files (dbt)",
+            "target/",
+            "",
+            "# Internal packages (dbt)",
+            "dbt_internal_packages/",
+            "",
+            "# Logs (dbt)",
+            "logs/",
+            "",
+            "# Third-party packages (dbt)",
+            "dbt_packages/",
+            "",
+            "# Cache folders (Python)",
+            "__pycache__/",
+            "",
+            "# Virtual environments (Python)",
+            ".venv/",
+            "",
+            "# Configuration and data (Rope)",
+            ".ropeproject/",
+            ""
+          ],
+          "context_after": [
+            "# Operating system",
+            ".DS_Store"
+          ]
+        }
+      ]
     },
     {
       "op": "create_file",
@@ -179,13 +172,6 @@
       "action": "command -v uv"
     },
     {
-      "id": "git-init",
-      "phase": "post",
-      "effect": "setup",
-      "label": "Initialise the git repository",
-      "action": "git init -q -b main"
-    },
-    {
       "id": "uv-sync",
       "phase": "post",
       "effect": "setup",
@@ -193,6 +179,9 @@
       "action": "uv lock && uv sync",
       "after": [
         "mise-install"
+      ],
+      "before": [
+        "git-commit"
       ],
       "inputs": [
         "glob:pyproject.toml"
@@ -207,23 +196,11 @@
       "after": [
         "uv-sync"
       ],
+      "before": [
+        "git-commit"
+      ],
       "inputs": [
         "glob:packages.yml"
-      ]
-    },
-    {
-      "id": "git-commit",
-      "phase": "post",
-      "effect": "setup",
-      "label": "Commit the scaffold",
-      "description": "First commit after every setup hook that may exist has run.",
-      "action": "git add -A && git commit -q -m 'Scaffold repository'",
-      "after": [
-        "git-init",
-        "mise-install",
-        "sync-claude-skills",
-        "uv-sync",
-        "dbt-deps"
       ]
     }
   ]

@@ -101,11 +101,11 @@ Canonical form is compact JSON in the order `depends_on` (sorted), `when`, `fore
 
 ## Portable patches
 
-Verified 2026-09-25: a patch with no `depends_on` and only `create_file` ops at paths no other patch touches can be copied unchanged between templates. It becomes a second root, `weft check` proves it commutes with everything, and it keeps the same id in every template it lives in. This is the house mechanism for root-level scaffolding that several templates share (agent skills under `.agents/skills/`, editor config, CI workflows). It predates `extends`, which shares a base inside the engine; the house templates had not moved to it on 2026-09-27.
+Verified 2026-09-25: a patch with no `depends_on` and only `create_file` ops at paths no other patch touches can be copied unchanged between templates. It becomes a second root, `weft check` proves it commutes with everything, and it keeps the same id in every template it lives in. The house shared its skills and editor config this way until 2026-09-30, when every stack template moved to `extends = "../base"` (`house-stack.md`); copying is now for templates that share no base. Never copy a patch into a template that already inherits it: names are one namespace across `extends`, and the template stops loading with an error naming the clash.
 
 ```sh
-cp ~/templates/skills/patches/skills.json ~/templates/java/patches/skills.json
-weft check ~/templates/java --answer "project_name=Demo Service"
+cp ~/templates/one/patches/editorconfig.json ~/templates/other/patches/editorconfig.json
+weft check ~/templates/other --answer "project_name=Demo Service"
 ```
 
 Constraints: the patch may reference only answers every host template declares (best: none). To update, re-copy; projects pick the change up on `weft update`.

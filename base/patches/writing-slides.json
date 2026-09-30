@@ -4,6 +4,7 @@
   "depends_on": [
     "skills"
   ],
+  "when": "'slides' in stack_skills",
   "ops": [
     {
       "op": "create_file",

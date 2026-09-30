@@ -1,8 +1,10 @@
 name: Check templates
 
-# The job builds weft from source at WEFT_REF, a release tag of the public
-# SoheilSalmani/weft repository, so no token is needed to check it out. Bump
-# WEFT_REF to move every check to a newer weft.
+# The job builds weft from source at WEFT_REF, a release tag or commit of the
+# public SoheilSalmani/weft repository, so no token is needed to check it out.
+# Bump WEFT_REF to move every check to a newer weft. The templates need weft
+# 0fd2753 or later: stacks narrow base's questions with [refine] and order
+# their hooks with `before`, which the 0.1.0 release ignores and rejects.
 
 on:
   push:
@@ -10,7 +12,7 @@ on:
   pull_request:
 
 env:
-  WEFT_REF: v0.1.0
+  WEFT_REF: 0fd27538f5d7d14d3f2254c430807b38befd0fe7
 
 jobs:
   check:
@@ -34,9 +36,6 @@ jobs:
 
       - name: Install weft
         run: cargo install --path .weft-src/crates/weft-cli --locked
-
-      - name: Portable patches match base
-        run: scripts/check-portable-drift.sh
 
       - name: weft check every template
         run: scripts/check-templates.sh

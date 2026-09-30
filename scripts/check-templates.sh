@@ -1,14 +1,14 @@
 #!/bin/sh
-# Runs `weft check` on base and every stack template under the answer
-# combinations the portable set introduces, then renders each template to prove
-# what the commit_* answers promise. Templates whose own gates need more
+# Runs `weft check` on base and every template that extends it under the
+# answer combinations base's questions introduce, then renders each template to
+# prove what the commit_* answers promise. Templates whose own gates need more
 # combinations run those in their own proof; this is the floor.
 #
 #   scripts/check-templates.sh
 . "$(dirname "$0")/lib.sh"
 
 status=0
-for t in "$DONOR" $(templates); do
+for t in "$BASE" $(templates); do
   name="$(basename "$t")"
   check_combinations | while IFS= read -r combo; do
     # shellcheck disable=SC2086  # the combination is a list of flags
@@ -20,6 +20,15 @@ for t in "$DONOR" $(templates); do
     fi
   done || status=1
 done
+
+# Each stack offers only its own stack skills, so only base can switch them
+# all on at once, and prove the stack skills patches commute with the rest.
+if out="$(weft check "$BASE" --answer "$RECORD_ANSWER" --answer stack_skills=dbt,slides 2>&1)"; then
+  printf 'ok    %-10s %s\n' base "--answer stack_skills=dbt,slides"
+else
+  printf 'FAIL  %-10s %s\n%s\n' base "--answer stack_skills=dbt,slides" "$out"
+  status=1
+fi
 
 # The commit_* answers reach .gitignore, the README and slides' talk guide
 # through hand-written expr segments, which `weft patch amend` flattens into
@@ -36,12 +45,11 @@ render() {
 }
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT
-for t in "$DONOR" $(templates); do
+for t in "$BASE" $(templates); do
   name="$(basename "$t")"
   private="$scratch/$name-private" committed="$scratch/$name-committed"
-  # use_github=false turns off the workflows that would pin commit_mise to true.
   # shellcheck disable=SC2086  # PRIVATE_ANSWERS is a list of flags
-  if ! render "$t" "$private" --answer use_github=false $PRIVATE_ANSWERS || ! render "$t" "$committed"; then
+  if ! render "$t" "$private" $PRIVATE_ANSWERS || ! render "$t" "$committed"; then
     printf 'FAIL  %-10s could not render\n' "$name"
     status=1
     continue

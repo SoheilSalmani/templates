@@ -1,0 +1,113 @@
+{
+  "title": "scala-cli hello world",
+  "description": "Adds a scala-cli entry point pinned to the chosen Scala release, a matching .scalafmt.conf, and its own README with a mise setup recipe in place of base's, left out when mise.toml is kept out of git. The Scala tooling stanzas go at the top of base's .gitignore.",
+  "depends_on": [
+    "base"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": ".gitignore",
+      "hunks": [
+        {
+          "context_before": [],
+          "removed": [],
+          "added": [
+            "# Configuration directory (Bloop)",
+            ".bloop/",
+            "",
+            "# Connection files (Build Server Protocol)",
+            ".bsp/",
+            "",
+            "# Workspace data (Metals)",
+            ".metals/",
+            "",
+            "# Build outputs & caches (Scala CLI)",
+            ".scala-build/",
+            ""
+          ],
+          "context_after": [
+            "# Operating system",
+            ".DS_Store"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": ".scalafmt.conf",
+      "content": [
+        "version = \"3.11.4\"",
+        [
+          "runner.dialect = ",
+          {
+            "answer": "scalafmt_runner_dialect"
+          }
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "Main.scala",
+      "content": [
+        [
+          "//> using scala ",
+          {
+            "answer": "scala_version"
+          }
+        ],
+        "",
+        "@main",
+        "def hello(): Unit =",
+        "  println(\"Hello, World!\")"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "delete_file",
+      "path": "README.md"
+    },
+    {
+      "op": "create_file",
+      "path": "README.md",
+      "content": [
+        [
+          "# ",
+          {
+            "answer": "project_name"
+          }
+        ],
+        "",
+        [
+          "A Scala application.",
+          {
+            "expr": "'\\n\\n## Setup\\n\\n```sh\\nmise install\\n```' if commit_mise else ''"
+          }
+        ]
+      ],
+      "mode": 420
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-scala",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify the correct Scala version is installed",
+      "action": [
+        "scala -version | grep -q ",
+        {
+          "answer": "scala_version"
+        }
+      ]
+    },
+    {
+      "id": "verify-scalafmt",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify correct version of `scalafmt` is installed",
+      "action": "scalafmt --version | grep 3.11.4"
+    }
+  ]
+}

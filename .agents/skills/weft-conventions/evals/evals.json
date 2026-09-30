@@ -127,11 +127,12 @@
     {
       "id": 13,
       "prompt": "Can I put this patch that installs our agent skills into both the java and the fastapi templates?",
-      "expected_output": "Yes, as a portable patch, which is how the house shares root-level files today: if it has no depends_on and only create_file ops at paths nothing else touches, copy the JSON file into each template's patches/; it becomes a second root, keeps the same id everywhere, and weft check proves it commutes. The agent may mention that extends is the engine's mechanism for a shared base, without migrating the templates.",
+      "expected_output": "No copy is needed: java and fastapi both extend base, which installs the agent skills, so the patch is already part of both under its own name and id. The agent checks each template's weft.toml for extends = \"../base\" rather than copying, because a copied patch file clashes with the inherited one and the template stops loading. A skill for one stack goes into base behind a stack_skills choice, which that stack offers through [refine.stack_skills].",
       "assertions": [
-        "States the two constraints (no depends_on, only new files at untouched paths)",
-        "Does not claim that weft has no way to share a base or to mount at the root",
-        "Runs weft check in each template after copying"
+        "Finds that both templates extend base, which already carries the skills patch",
+        "Does not copy a patch file into a template that inherits it",
+        "Puts a skill for one stack in base behind stack_skills rather than in the stack template",
+        "Does not claim that weft has no way to share a base or to mount at the root"
       ]
     },
     {

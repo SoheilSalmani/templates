@@ -1,6 +1,8 @@
 # Templates
 
-Weft templates, one directory each. `base` is the root every repository starts from; the stack templates (`java`, `fastapi`, `dbt`, `airflow`, `scala`, `slides`) carry copies of its portable patches plus their own stack.
+Weft templates, one directory each. `base` is the root every repository starts from; the stack templates (`java`, `fastapi`, `dbt`, `airflow`, `scala`, `slides`) extend it and add their own stack.
+
+The templates need a `weft` built from source at the `WEFT_REF` of `.github/workflows/check.yml` or later. The 0.1.0 release ignores the `[refine]` tables and rejects the hooks' `before` field.
 
 ## Starting a project
 
@@ -14,15 +16,17 @@ Each template's `AGENTS.md` lists its questions and patches. A deck from `slides
 
 For a client's repository, answer no to the `commit_*` questions: the skills, MCP configuration, `mise.toml` and agent instructions are still rendered and kept current by `weft update`, but the committed `.gitignore` keeps them, `paseo.json` and `.weft/` out of git, and every new git worktree, Paseo's included, gets a copy from your main checkout.
 
-## The portable set
+## The base template
 
-Every patch in `base/patches` except `base.json` is a portable patch: `create_file` ops only, depending on nothing outside the portable set (the gated skills patches depend on `skills`), copied byte-for-byte into every other template. Identical bytes mean an identical patch id everywhere, so `weft update` moves every scaffolded project together. Edit the donor copy in `base` only, then re-copy:
+Every stack template declares `extends = "../base"`, so base's questions, patches and hooks are part of it under their own names and ids: one change to base reaches every template and, through `weft update`, every scaffolded project. Change shared scaffolding in `base` only; `weft patch amend` refuses an inherited patch in a stack.
+
+All the Agent Skills live in base. The ones for one stack are behind the `stack_skills` question: `dbt-skills` behind `dbt`, `writing-slides` behind `slides`. A stack narrows base's questions with `[refine.<id>]` tables in its `weft.toml`: dbt offers and selects its skills, slides fixes its own (its features extend `writing-slides`), and the other stacks offer none. The same tables reword a question for the stack, such as `project_name`'s description.
+
+A stack's first patch, named after the template, builds on base's root: it adds the stack's ignores to the top of base's `.gitignore`, replaces base's README where the stack has its own, and orders its setup hooks `before` base's `git-commit`, so the first commit includes what they produce.
 
 ```sh
-scripts/sync-portable.sh                 # copy base's portable patches into every template, then weft check all
-scripts/sync-portable.sh ~/path/to/skills   # first re-record the skills patches from a checkout of SoheilSalmani/skills
-scripts/check-portable-drift.sh          # fail if any template's copy differs from base
-scripts/check-templates.sh               # weft check every template under the shared answer combinations, then prove the commit_* answers on a real render
+scripts/sync-skills.sh ~/path/to/skills   # re-record base's skills patches from a checkout of SoheilSalmani/skills, then check every template
+scripts/check-templates.sh                # weft check every template under base's answer combinations, then prove the commit_* answers on a real render
 ```
 
-CI (`.github/workflows/check.yml`) runs the last two, with `weft` built from source at the release its `WEFT_REF` names.
+CI (`.github/workflows/check.yml`) runs `check-templates.sh`, with `weft` built from source at the release or commit its `WEFT_REF` names.

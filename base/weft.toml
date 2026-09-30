@@ -60,6 +60,14 @@ description = "Installs weft-conventions and the skills for creating, extracting
 default = "False"
 
 [[question]]
+id = "stack_skills"
+kind = "multichoice"
+choices = ["dbt", "slides"]
+prompt = "Stack skills"
+description = "Installs the Agent Skills written for one stack: the five dbt skills, or writing-slides for a slide deck. Each stack template offers only its own, and the dbt and slides templates select theirs."
+default = "[]"
+
+[[question]]
 id = "commit_skills"
 kind = "bool"
 prompt = "Commit the Agent Skills to git?"

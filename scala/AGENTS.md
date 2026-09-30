@@ -3,6 +3,8 @@
 
 A Scala 3 (or 2.13) hello world on scala-cli with scalafmt, optionally as an sbt build with a ZIO entry point, on a JDK 25 mise toolchain with the house editor and git configuration, Paseo worktree setup, agent instructions, skills and MCP connections.
 
+Extends: `../base` (its questions and patches are part of this template)
+
 This directory is a [weft](https://github.com/SoheilSalmani/weft) template.
 For the full machine-readable contract run `weft describe --json` here.
 
@@ -11,12 +13,6 @@ For the full machine-readable contract run `weft describe --json` here.
 | id | kind | required | default | description |
 | --- | --- | --- | --- | --- |
 | `project_name` | string | **yes** | — | Human-facing name; becomes the README title and the sbt project name. (e.g. `Demo Service`) |
-| `scala_version` | choice: 3.8.4 / 3.3.8 / 2.13.18 | no | 3.8.4 | Scala release pinned in the scala-cli directive (or scalaVersion in build.sbt); the scalafmt dialect follows it. |
-| `scalafmt_runner_dialect` | choice: scala3 / Scala33 / scala213 | no | scala3 |  |
-| `use_sbt` | bool | no | True | Replaces the scala-cli entry point with an sbt build (build.sbt, project/build.properties, src/main/scala). |
-| `project_version` | string | no | 0.1.0 | Initial version written to build.sbt. (e.g. `0.1.0`) — only asked when `use_sbt` |
-| `project_organization` | string | no | com.example | Organization written to build.sbt, usually a reverse domain name. (e.g. `com.example`) — only asked when `use_sbt` |
-| `use_zio` | bool | no | False | Replaces the sbt hello-world entry point with a ZIOAppDefault application. — only asked when `use_sbt` |
 | `use_github` | bool | no | True | Installs the skills for issues, pull requests, README and repository metadata. They drive gh; no MCP server is added. |
 | `use_linear` | bool | no | True | Installs the Linear skills and the Linear remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. |
 | `use_jira` | bool | no | False | Installs the Jira skills and the Atlassian remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. |
@@ -24,34 +20,44 @@ For the full machine-readable contract run `weft describe --json` here.
 | `use_obsidian` | bool | no | False | Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config. |
 | `use_meetings` | bool | no | False | Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo. |
 | `use_weft` | bool | no | False | Installs weft-conventions and the skills for creating, extracting and splitting Weft templates. |
+| `stack_skills` | choice:  | no |  | Installs the Agent Skills written for one stack: the five dbt skills, or writing-slides for a slide deck. Each stack template offers only its own, and the dbt and slides templates select theirs. |
 | `commit_skills` | bool | no | True | When false, .agents/ and the .claude/skills/ links are gitignored; weft still renders and updates them, and every new git worktree, Paseo's included, gets a copy from the main checkout. Any false commit_* answer also gitignores paseo.json and .weft/, whose base.json holds a copy of every rendered file. |
 | `commit_mcp` | bool | no | True | When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Any false commit_* answer also gitignores paseo.json and .weft/. — only asked when `use_linear or use_jira` |
 | `commit_mise` | bool | no | True | When false, mise.toml is gitignored like mise.local.toml and copied into every new git worktree, and the README leaves out its mise install step. Any false commit_* answer also gitignores paseo.json and .weft/. |
 | `commit_instructions` | bool | no | True | AGENTS.md documents the skills, MCP servers and mise setup, so it defaults to staying out of git whenever one of them does. When false, AGENTS.md and CLAUDE.md are gitignored and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/. |
+| `scala_version` | choice: 3.8.4 / 3.3.8 / 2.13.18 | no | 3.8.4 | Scala release pinned in the scala-cli directive (or scalaVersion in build.sbt); the scalafmt dialect follows it. |
+| `scalafmt_runner_dialect` | choice: scala3 / Scala33 / scala213 | no | scala3 |  |
+| `use_sbt` | bool | no | True | Replaces the scala-cli entry point with an sbt build (build.sbt, project/build.properties, src/main/scala). |
+| `project_version` | string | no | 0.1.0 | Initial version written to build.sbt. (e.g. `0.1.0`) — only asked when `use_sbt` |
+| `project_organization` | string | no | com.example | Organization written to build.sbt, usually a reverse domain name. (e.g. `com.example`) — only asked when `use_sbt` |
+| `use_zio` | bool | no | False | Replaces the sbt hello-world entry point with a ZIOAppDefault application. — only asked when `use_sbt` |
 
 Secrets are never passed as answers — they resolve from their source
 (`env:`/`cmd:`/`prompt`) at render time.
 
 ## Patches
 
-- **base**: Adds a scala-cli entry point pinned to the chosen Scala release, a matching .scalafmt.conf, the README with a mise setup recipe, and the .gitignore for Scala tooling, OS junk, environment files, mise.local.toml and Claude Code local settings. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/, and leave the mise recipe out when mise.toml is kept out too.
-- **editorconfig**: Adds the house .editorconfig: UTF-8, LF, final newline, four-space indentation with two spaces for YAML, JSON and TOML, and trailing whitespace kept in Markdown.
-- **gitattributes**: Adds a .gitattributes that stores and checks out every text file with LF line endings.
-- **instructions**: Adds AGENTS.md as the single instruction file, read by Codex and oh-my-pi directly and by Claude Code through a CLAUDE.md that imports it. It records only what is true for every scaffold: mise setup, where skills live, and how MCP servers are declared.
-- **mcp** _(when `use_linear or use_jira`)_: Declares the remote MCP servers for the trackers in use, identically in .mcp.json (Claude Code), .codex/config.toml (Codex) and .omp/mcp.json (oh-my-pi). Definitions only: each person authorises with OAuth. The entries are expr segments on use_linear and use_jira because one file cannot be shared by two sibling patches.
-- **mise**: Adds mise.toml pinning Node 24 for skill scripts and MCP servers; stack templates add their runtime under [tools], and personal overrides go in the gitignored mise.local.toml.
-- **paseo**: Adds paseo.json, whose setup readies each new Paseo worktree: it runs .agents/seed-worktree.sh from the source checkout, which copies the gitignored local files and whatever the commit_* answers keep out of git, then trusts and installs the mise toolchain. When any of that tooling is kept out of git, paseo.json is gitignored too and Paseo copies it from the source checkout into each new worktree; stack steps appended after it run through mise exec.
-- **skills**: Installs the house Agent Skills that apply to any repository under .agents/skills, the canonical location read by Codex and oh-my-pi; Claude Code reaches them through the symlink farm the sync-claude-skills hook rebuilds.
-- **worktree-seed**: Adds .agents/seed-worktree.sh and links it as git's post-checkout hook, so git worktree add copies the untracked, gitignored local files (.env files, mise.local.toml, Claude Code local settings, and whatever the commit_* answers keep out of git) from the main checkout before any agent starts in the new worktree. It never replaces a file, so paseo.json can run it again as a fallback.
-- **anki** _(when `use_anki`)_: Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.
-- **github** _(when `use_github`)_: Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata. They drive gh; no MCP server is added.
-- **jira** _(when `use_jira`)_: Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.
-- **linear** _(when `use_linear`)_: Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.
-- **meetings** _(when `use_meetings`)_: Installs preparing-client-meetings, which turns pull requests and tracker tickets into what to say at dailies and weeklies, in a weekly note in the user's Obsidian vault. The vault is found on the local filesystem and the trackers are read through the MCP servers the project already has.
+- **base** (inherited): Adds the README with a mise setup recipe and the house .gitignore stanzas for OS junk, editors, environment files, mise.local.toml and Claude Code local settings. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/, and leave the mise recipe out when mise.toml is kept out too.
+- **editorconfig** (inherited): Adds the house .editorconfig: UTF-8, LF, final newline, four-space indentation with two spaces for YAML, JSON and TOML, and trailing whitespace kept in Markdown.
+- **gitattributes** (inherited): Adds a .gitattributes that stores and checks out every text file with LF line endings.
+- **instructions** (inherited): Adds AGENTS.md as the single instruction file, read by Codex and oh-my-pi directly and by Claude Code through a CLAUDE.md that imports it. It records only what is true for every scaffold: mise setup, where skills live, and how MCP servers are declared.
+- **mcp** (inherited) _(when `use_linear or use_jira`)_: Declares the remote MCP servers for the trackers in use, identically in .mcp.json (Claude Code), .codex/config.toml (Codex) and .omp/mcp.json (oh-my-pi). Definitions only: each person authorises with OAuth. The entries are expr segments on use_linear and use_jira because one file cannot be shared by two sibling patches.
+- **mise** (inherited): Adds mise.toml pinning Node 24 for skill scripts and MCP servers; stack templates add their runtime under [tools], and personal overrides go in the gitignored mise.local.toml.
+- **paseo** (inherited): Adds paseo.json, whose setup readies each new Paseo worktree: it runs .agents/seed-worktree.sh from the source checkout, which copies the gitignored local files and whatever the commit_* answers keep out of git, then trusts and installs the mise toolchain. When any of that tooling is kept out of git, paseo.json is gitignored too and Paseo copies it from the source checkout into each new worktree; stack steps appended after it run through mise exec.
+- **skills** (inherited): Installs the house Agent Skills that apply to any repository under .agents/skills, the canonical location read by Codex and oh-my-pi; Claude Code reaches them through the symlink farm the sync-claude-skills hook rebuilds.
+- **worktree-seed** (inherited): Adds .agents/seed-worktree.sh and links it as git's post-checkout hook, so git worktree add copies the untracked, gitignored local files (.env files, mise.local.toml, Claude Code local settings, and whatever the commit_* answers keep out of git) from the main checkout before any agent starts in the new worktree. It never replaces a file, so paseo.json can run it again as a fallback.
+- **anki** (inherited) _(when `use_anki`)_: Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.
+- **dbt-skills** (inherited) _(when `'dbt' in stack_skills`)_: Installs the house SQL and dbt Agent Skills under .agents/skills: the general SQL rules, writing and documenting models, adding unit tests and the tag conventions, next to the general skills the skills patch provides.
+- **github** (inherited) _(when `use_github`)_: Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata. They drive gh; no MCP server is added.
+- **jira** (inherited) _(when `use_jira`)_: Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.
+- **linear** (inherited) _(when `use_linear`)_: Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.
+- **meetings** (inherited) _(when `use_meetings`)_: Installs preparing-client-meetings, which turns pull requests and tracker tickets into what to say at dailies and weeklies, in a weekly note in the user's Obsidian vault. The vault is found on the local filesystem and the trackers are read through the MCP servers the project already has.
+- **obsidian** (inherited) _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
+- **weft** (inherited) _(when `use_weft`)_: Installs weft-conventions, the house conventions for Weft templates, and the skills for creating a template, extracting one from a working project and splitting one in two.
+- **writing-slides** (inherited) _(when `'slides' in stack_skills`)_: Installs the writing-slides Agent Skill under .agents/skills: how to turn material into a talk of one-idea slides with sentence headlines, visual evidence, builds, code that fits and steps through, and speaker notes, with this deck's syntax and measured limits, its failure modes, and pnpm check followed by a look at every slide, next to the general skills the skills patch provides.
 - **mise-java**: Pins Java 25 in mise.toml so mise install provides the JDK that scala-cli and sbt run on.
-- **obsidian** _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
+- **scala**: Adds a scala-cli entry point pinned to the chosen Scala release, a matching .scalafmt.conf, and its own README with a mise setup recipe in place of base's, left out when mise.toml is kept out of git. The Scala tooling stanzas go at the top of base's .gitignore.
 - **sbt** _(when `use_sbt`)_: Replaces the scala-cli entry point with an sbt build: build.sbt named after the project, a pinned sbt launcher, and the hello-world source under src/main/scala.
-- **weft** _(when `use_weft`)_: Installs weft-conventions, the house conventions for Weft templates, and the skills for creating a template, extracting one from a working project and splitting one in two.
 - **zio** _(when `use_zio`)_: Replaces the hello-world entry point with a ZIO 2.1 ZIOAppDefault and adds the zio library to build.sbt.
 
 ## Hooks (side-effects, in run order)
@@ -62,9 +68,9 @@ idempotent local, **deploy** = external/irreversible (confirm first).
 
 | phase | effect | label | patch | command | when |
 | --- | --- | --- | --- | --- | --- |
-| pre | check | Verify the correct Scala version is installed | `base` | `scala -version | grep -q ${scala_version}` | — |
-| pre | check | Verify correct version of `scalafmt` is installed | `base` | `scalafmt --version | grep 3.11.4` | — |
 | pre | check | Verify mise is installed | `mise` | `command -v mise` | — |
+| pre | check | Verify the correct Scala version is installed | `scala` | `scala -version | grep -q ${scala_version}` | — |
+| pre | check | Verify correct version of `scalafmt` is installed | `scala` | `scalafmt --version | grep 3.11.4` | — |
 | post | setup | Initialise the git repository | `base` | `git init -q -b main` | — |
 | post | setup | Install the pinned toolchain | `mise` | `mise trust -q && mise install -y` | — |
 | post | setup | Mirror .agents/skills into .claude/skills as symlinks | `skills` | `mkdir -p .claude/skills && for d in .agents/skills/*/; do name=$(basename "$d"); ln -sfn "../../.agents/skills/$name" ".claude/skills/$name"; done && find .claude/skills -maxdepth 1 -type l ! -exec test -e {} \; -delete` | — |
@@ -86,9 +92,9 @@ weft new scala <dest> --answers-json '{"project_name":"Demo Service"}'
 ## Evolve this template
 
 ```sh
-weft record --template scala <answers…>   # base worktree is printed
+cd "$(weft session new <patch> --template scala --answer "project_name=Demo Service" --non-interactive)"
 … edit the worktree files with concrete values …
-weft commit --template scala --name <patch> --describe "what it does" --yes
+weft commit --name <patch> --describe "what it does" --yes
 ```
 
 Run `weft check --json` after any change; independent patches must

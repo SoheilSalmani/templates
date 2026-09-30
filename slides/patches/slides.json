@@ -1,43 +1,31 @@
 {
   "title": "Vite + React app",
-  "description": "Adds a Vite 8 and React 19 app in TypeScript, styled by Tailwind CSS 4 with the shadcn/ui radix-nova tokens and Geist fonts, a light and dark theme provider, Prettier with the Tailwind plugin, the README and the house .gitignore stanzas; the build uses relative paths so dist/ runs from any host or sub-path. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/, and drop mise install from the README when mise.toml is kept out too.",
+  "description": "Adds a Vite 8 and React 19 app in TypeScript, styled by Tailwind CSS 4 with the shadcn/ui radix-nova tokens and Geist fonts, a light and dark theme provider, Prettier with the Tailwind plugin, and its own README in place of base's, which drops mise install when mise.toml is kept out of git; the build uses relative paths so dist/ runs from any host or sub-path. Its stanza goes at the top of base's .gitignore, and the pnpm-install hook runs before base's git-commit.",
+  "depends_on": [
+    "base"
+  ],
   "ops": [
     {
-      "op": "create_file",
+      "op": "modify_file",
       "path": ".gitignore",
-      "content": [
-        "# Dependencies and build output",
-        "node_modules/",
-        "dist/",
-        "*.tsbuildinfo",
-        "*.log",
-        "",
-        "# Operating system",
-        ".DS_Store",
-        "Thumbs.db",
-        "",
-        "# Editors",
-        ".idea/",
-        "*.swp",
-        ".tmp/",
-        "",
-        "# Environment files",
-        ".env",
-        ".env.*",
-        "!.env.example",
-        "",
-        "# Personal toolchain overrides (mise)",
-        "mise.local.toml",
-        "",
-        "# Personal settings (Claude Code)",
-        [
-          ".claude/settings.local.json",
-          {
-            "expr": "'' if commit_skills and commit_mcp and commit_mise and commit_instructions else '\\n\\n# Local tooling, kept out of git\\n' + '\\n'.join([p for p, kept_out in [('/.agents/', not commit_skills), ('/.claude/skills/', not commit_skills), ('/.mcp.json', not commit_mcp), ('/.codex/', not commit_mcp), ('/.omp/', not commit_mcp), ('/mise.toml', not commit_mise), ('/AGENTS.md', not commit_instructions), ('/CLAUDE.md', not commit_instructions), ('/paseo.json', True), ('/.weft/', True)] if kept_out])"
-          }
-        ]
-      ],
-      "mode": 420
+      "hunks": [
+        {
+          "context_before": [],
+          "removed": [],
+          "added": [
+            "# Dependencies and build output",
+            "node_modules/",
+            "dist/",
+            "*.tsbuildinfo",
+            "*.log",
+            ""
+          ],
+          "context_after": [
+            "# Operating system",
+            ".DS_Store"
+          ]
+        }
+      ]
     },
     {
       "op": "create_file",
@@ -75,6 +63,10 @@
         "}"
       ],
       "mode": 420
+    },
+    {
+      "op": "delete_file",
+      "path": "README.md"
     },
     {
       "op": "create_file",
@@ -707,13 +699,6 @@
       "action": "command -v pnpm"
     },
     {
-      "id": "git-init",
-      "phase": "post",
-      "effect": "setup",
-      "label": "Initialise the git repository",
-      "action": "git init -q -b main"
-    },
-    {
       "id": "pnpm-install",
       "phase": "post",
       "effect": "setup",
@@ -723,22 +708,11 @@
       "after": [
         "mise-install"
       ],
+      "before": [
+        "git-commit"
+      ],
       "inputs": [
         "glob:package.json"
-      ]
-    },
-    {
-      "id": "git-commit",
-      "phase": "post",
-      "effect": "setup",
-      "label": "Commit the scaffold",
-      "description": "First commit after every setup hook that may exist has run.",
-      "action": "git add -A && git commit -q -m 'Scaffold repository'",
-      "after": [
-        "git-init",
-        "mise-install",
-        "sync-claude-skills",
-        "pnpm-install"
       ]
     }
   ]

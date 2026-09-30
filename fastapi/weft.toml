@@ -2,13 +2,7 @@
 name = "fastapi"
 weft-version = "0.1"
 description = "A FastAPI service on Python 3.13 managed by uv, with the house editor, git, mise, Paseo, agent-instruction, skill and MCP configuration."
-
-[[question]]
-id = "project_name"
-kind = "string"
-prompt = "Project name"
-description = "Human-facing name; becomes the README title and, slugified, the package name in pyproject.toml."
-example = "Demo Service"
+extends = "../base"
 
 [[question]]
 id = "package_name"
@@ -16,80 +10,8 @@ kind = "string"
 computed = true
 default = "project_name.lower().replace(' ', '-')"
 
-[[question]]
-id = "use_github"
-kind = "bool"
-prompt = "Hosted on GitHub?"
-description = "Installs the skills for issues, pull requests, README and repository metadata. They drive gh; no MCP server is added."
-default = "True"
+[refine.project_name]
+description = "Human-facing name; becomes the README title and, slugified, the package name in pyproject.toml."
 
-[[question]]
-id = "use_linear"
-kind = "bool"
-prompt = "Track work in Linear?"
-description = "Installs the Linear skills and the Linear remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
-default = "True"
-
-[[question]]
-id = "use_jira"
-kind = "bool"
-prompt = "Track work in Jira?"
-description = "Installs the Jira skills and the Atlassian remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
-default = "False"
-
-[[question]]
-id = "use_anki"
-kind = "bool"
-prompt = "Write Anki flashcards about this project?"
-description = "Installs anki-flashcards and remembering-what-you-built. AnkiConnect is per machine, so its MCP server stays in user-level config."
-default = "False"
-
-[[question]]
-id = "use_obsidian"
-kind = "bool"
-prompt = "Keep this project's ideas in an Obsidian vault?"
-description = "Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config."
-default = "False"
-
-[[question]]
-id = "use_meetings"
-kind = "bool"
-prompt = "Prepare client meetings from this project?"
-description = "Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo."
-default = "False"
-
-[[question]]
-id = "use_weft"
-kind = "bool"
-prompt = "Work on Weft or Weft templates in this project?"
-description = "Installs weft-conventions and the skills for creating, extracting and splitting Weft templates."
-default = "False"
-
-[[question]]
-id = "commit_skills"
-kind = "bool"
-prompt = "Commit the Agent Skills to git?"
-description = "When false, .agents/ and the .claude/skills/ links are gitignored; weft still renders and updates them, and every new git worktree, Paseo's included, gets a copy from the main checkout. Any false commit_* answer also gitignores paseo.json and .weft/, whose base.json holds a copy of every rendered file."
-default = "True"
-
-[[question]]
-id = "commit_mcp"
-kind = "bool"
-prompt = "Commit the MCP server configuration to git?"
-description = "When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Any false commit_* answer also gitignores paseo.json and .weft/."
-default = "True"
-when = "use_linear or use_jira"
-
-[[question]]
-id = "commit_mise"
-kind = "bool"
-prompt = "Commit mise.toml to git?"
-description = "When false, mise.toml is gitignored like mise.local.toml and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/."
-default = "True"
-
-[[question]]
-id = "commit_instructions"
-kind = "bool"
-prompt = "Commit AGENTS.md and CLAUDE.md to git?"
-description = "AGENTS.md documents the skills, MCP servers and mise setup, so it defaults to staying out of git whenever one of them does. When false, AGENTS.md and CLAUDE.md are gitignored and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/."
-default = "commit_skills and commit_mcp and commit_mise"
+[refine.stack_skills]
+choices = []

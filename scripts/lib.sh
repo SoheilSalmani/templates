@@ -3,29 +3,20 @@
 set -eu
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DONOR="$ROOT/base"
+BASE="$ROOT/base"
 RECORD_ANSWER="project_name=Demo Service"
 # Skills patches get their own project name: the Weft skills quote
 # "Demo Service" in their examples, and recorded under it that prose would
 # become project_name references. No skill may contain this value.
 SKILLS_RECORD_ANSWER="project_name=Skills Recording"
 
-# Every template directory except the donor: a directory holding weft.toml.
+# Every template directory except base, which each of them extends: a
+# directory holding weft.toml.
 templates() {
   for t in "$ROOT"/*/weft.toml; do
     d="$(dirname "$t")"
-    [ "$d" = "$DONOR" ] && continue
+    [ "$d" = "$BASE" ] && continue
     printf '%s\n' "$d"
-  done
-}
-
-# The portable set: every patch in base except its root, which is the one
-# patch that is not copied out (it owns README.md, .gitignore and the git hooks).
-portable_patches() {
-  for p in "$DONOR"/patches/*.json; do
-    n="$(basename "$p" .json)"
-    [ "$n" = "base" ] && continue
-    printf '%s\n' "$n"
   done
 }
 

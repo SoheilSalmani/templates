@@ -2,7 +2,7 @@
   "title": "sbt build",
   "description": "Replaces the scala-cli entry point with an sbt build: build.sbt named after the project, a pinned sbt launcher, and the hello-world source under src/main/scala.",
   "depends_on": [
-    "base"
+    "scala"
   ],
   "when": "use_sbt",
   "ops": [

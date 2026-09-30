@@ -1,6 +1,9 @@
 {
   "title": "Astro CLI project",
-  "description": "Adds the Astro CLI project layout: Dockerfile on Astro Runtime, the example DAG with its DAG-integrity tests, requirements.txt, packages.txt and the house .gitignore stanzas. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/.",
+  "description": "Adds the Astro CLI project layout on top of base: Dockerfile on Astro Runtime, the example DAG with its DAG-integrity tests, requirements.txt, packages.txt, and Astro's own README in place of base's. The Astro and Python ignores go at the top of base's .gitignore.",
+  "depends_on": [
+    "base"
+  ],
   "ops": [
     {
       "op": "create_file",
@@ -214,44 +217,33 @@
       "mode": 420
     },
     {
-      "op": "create_file",
+      "op": "modify_file",
       "path": ".gitignore",
-      "content": [
-        ".git",
-        ".env",
-        "airflow_settings.yaml",
-        "__pycache__/",
-        "astro",
-        ".venv",
-        ".astro/standalone/",
-        "airflow-webserver.pid",
-        "webserver_config.py",
-        "airflow.cfg",
-        "airflow.db",
-        ".astro/*.local.yml",
-        ".astro/*.local.yaml",
-        "",
-        "# Operating system",
-        ".DS_Store",
-        "Thumbs.db",
-        "",
-        "# Environment files",
-        ".env",
-        ".env.*",
-        "!.env.example",
-        "",
-        "# Personal toolchain overrides (mise)",
-        "mise.local.toml",
-        "",
-        "# Personal settings (Claude Code)",
-        [
-          ".claude/settings.local.json",
-          {
-            "expr": "'' if commit_skills and commit_mcp and commit_mise and commit_instructions else '\\n\\n# Local tooling, kept out of git\\n' + '\\n'.join([p for p, kept_out in [('/.agents/', not commit_skills), ('/.claude/skills/', not commit_skills), ('/.mcp.json', not commit_mcp), ('/.codex/', not commit_mcp), ('/.omp/', not commit_mcp), ('/mise.toml', not commit_mise), ('/AGENTS.md', not commit_instructions), ('/CLAUDE.md', not commit_instructions), ('/paseo.json', True), ('/.weft/', True)] if kept_out])"
-          }
-        ]
-      ],
-      "mode": 420
+      "hunks": [
+        {
+          "context_before": [],
+          "removed": [],
+          "added": [
+            ".git",
+            "airflow_settings.yaml",
+            "__pycache__/",
+            "astro",
+            ".venv",
+            ".astro/standalone/",
+            "airflow-webserver.pid",
+            "webserver_config.py",
+            "airflow.cfg",
+            "airflow.db",
+            ".astro/*.local.yml",
+            ".astro/*.local.yaml",
+            ""
+          ],
+          "context_after": [
+            "# Operating system",
+            ".DS_Store"
+          ]
+        }
+      ]
     },
     {
       "op": "create_file",
@@ -260,6 +252,10 @@
         "FROM astrocrpublic.azurecr.io/runtime:3.3-2"
       ],
       "mode": 420
+    },
+    {
+      "op": "delete_file",
+      "path": "README.md"
     },
     {
       "op": "create_file",
@@ -536,26 +532,6 @@
       "effect": "check",
       "label": "Verify the Astro CLI is installed",
       "action": "command -v astro"
-    },
-    {
-      "id": "git-init",
-      "phase": "post",
-      "effect": "setup",
-      "label": "Initialise the git repository",
-      "action": "git init -q -b main"
-    },
-    {
-      "id": "git-commit",
-      "phase": "post",
-      "effect": "setup",
-      "label": "Commit the scaffold",
-      "description": "First commit after every setup hook that may exist has run.",
-      "action": "git add -A && git commit -q -m 'Scaffold repository'",
-      "after": [
-        "git-init",
-        "mise-install",
-        "sync-claude-skills"
-      ]
     }
   ]
 }

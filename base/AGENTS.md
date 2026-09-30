@@ -18,6 +18,7 @@ For the full machine-readable contract run `weft describe --json` here.
 | `use_obsidian` | bool | no | False | Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config. |
 | `use_meetings` | bool | no | False | Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo. |
 | `use_weft` | bool | no | False | Installs weft-conventions and the skills for creating, extracting and splitting Weft templates. |
+| `stack_skills` | choice: dbt / slides | no |  | Installs the Agent Skills written for one stack: the five dbt skills, or writing-slides for a slide deck. Each stack template offers only its own, and the dbt and slides templates select theirs. |
 | `commit_skills` | bool | no | True | When false, .agents/ and the .claude/skills/ links are gitignored; weft still renders and updates them, and every new git worktree, Paseo's included, gets a copy from the main checkout. Any false commit_* answer also gitignores paseo.json and .weft/, whose base.json holds a copy of every rendered file. |
 | `commit_mcp` | bool | no | True | When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Any false commit_* answer also gitignores paseo.json and .weft/. — only asked when `use_linear or use_jira` |
 | `commit_mise` | bool | no | True | When false, mise.toml is gitignored like mise.local.toml and copied into every new git worktree, and the README leaves out its mise install step. Any false commit_* answer also gitignores paseo.json and .weft/. |
@@ -38,12 +39,14 @@ Secrets are never passed as answers — they resolve from their source
 - **skills**: Installs the house Agent Skills that apply to any repository under .agents/skills, the canonical location read by Codex and oh-my-pi; Claude Code reaches them through the symlink farm the sync-claude-skills hook rebuilds.
 - **worktree-seed**: Adds .agents/seed-worktree.sh and links it as git's post-checkout hook, so git worktree add copies the untracked, gitignored local files (.env files, mise.local.toml, Claude Code local settings, and whatever the commit_* answers keep out of git) from the main checkout before any agent starts in the new worktree. It never replaces a file, so paseo.json can run it again as a fallback.
 - **anki** _(when `use_anki`)_: Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.
+- **dbt-skills** _(when `'dbt' in stack_skills`)_: Installs the house SQL and dbt Agent Skills under .agents/skills: the general SQL rules, writing and documenting models, adding unit tests and the tag conventions, next to the general skills the skills patch provides.
 - **github** _(when `use_github`)_: Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata. They drive gh; no MCP server is added.
 - **jira** _(when `use_jira`)_: Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.
 - **linear** _(when `use_linear`)_: Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.
 - **meetings** _(when `use_meetings`)_: Installs preparing-client-meetings, which turns pull requests and tracker tickets into what to say at dailies and weeklies, in a weekly note in the user's Obsidian vault. The vault is found on the local filesystem and the trackers are read through the MCP servers the project already has.
 - **obsidian** _(when `use_obsidian`)_: Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.
 - **weft** _(when `use_weft`)_: Installs weft-conventions, the house conventions for Weft templates, and the skills for creating a template, extracting one from a working project and splitting one in two.
+- **writing-slides** _(when `'slides' in stack_skills`)_: Installs the writing-slides Agent Skill under .agents/skills: how to turn material into a talk of one-idea slides with sentence headlines, visual evidence, builds, code that fits and steps through, and speaker notes, with this deck's syntax and measured limits, its failure modes, and pnpm check followed by a look at every slide, next to the general skills the skills patch provides.
 
 ## Hooks (side-effects, in run order)
 
@@ -63,21 +66,21 @@ idempotent local, **deploy** = external/irreversible (confirm first).
 ## Scaffold
 
 ```sh
-weft new . <dest> --answer "project_name=Demo Service" --non-interactive
+weft new base <dest> --answer "project_name=Demo Service" --non-interactive
 ```
 
 Agents can pass answers as JSON instead of flags:
 
 ```sh
-weft new . <dest> --answers-json '{"project_name":"Demo Service"}'
+weft new base <dest> --answers-json '{"project_name":"Demo Service"}'
 ```
 
 ## Evolve this template
 
 ```sh
-weft record --template . <answers…>   # base worktree is printed
+cd "$(weft session new <patch> --template base --answer "project_name=Demo Service" --non-interactive)"
 … edit the worktree files with concrete values …
-weft commit --template . --name <patch> --describe "what it does" --yes
+weft commit --name <patch> --describe "what it does" --yes
 ```
 
 Run `weft check --json` after any change; independent patches must
