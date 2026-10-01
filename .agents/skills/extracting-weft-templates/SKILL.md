@@ -37,6 +37,7 @@ weft session adopt /tmp/proj-extract -n base --template ~/Desktop/Projects/templ
   --answer "project_name=Payments" --answer use_docker=true --answer use_ci=true \
   --scope pyproject.toml --scope main.py --scope README.md --scope .gitignore \
   --scope Dockerfile --scope '.github/**'
+cd /tmp/proj-extract
 weft status
 ```
 
@@ -89,9 +90,9 @@ The project's own setup is written down somewhere: `make setup`, the CI workflow
 | `make deploy`, `flyctl deploy` | `deploy-<target>`, post, deploy, `--when deploy_to_<target>` on an explicit bool defaulting to False |
 
 ```sh
-weft hook add base --id verify-uv --phase pre --effect check --label "Verify uv is installed" --action "command -v uv" --no-tui
+weft hook add base --id verify-uv --phase pre --effect check --label "Verify uv is installed" --action "command -v uv"
 weft hook add base --id uv-sync --phase post --effect setup --label "Lock and sync the Python environment" \
-  --action "uv lock && uv sync" --input "glob:pyproject.toml" --no-tui
+  --action "uv lock && uv sync" --input "glob:pyproject.toml"
 ```
 
 ## Finish and prove

@@ -1,6 +1,6 @@
 # The patch file, for the times a hand edit is right
 
-Patches are normally written by `weft commit`. Open this when you need to read one, fix a typo in `added` lines, add an `{"expr"}` segment or declare a slot (commit emits neither), write a fixture, or move a patch between templates. After any hand edit, `weft check` with answers: ids are recomputed from content, so nothing else needs updating, but a broken hunk only shows up at render.
+Patches are normally written by `weft commit`, and slots by `weft share`. Open this when you need to read one, fix a typo in `added` lines, add an `{"expr"}` segment (commit never emits one), write a fixture, or move a patch between templates. After any hand edit, `weft check` with answers: ids are recomputed from content, so nothing else needs updating, but a broken hunk only shows up at render.
 
 ## Contents
 
@@ -78,22 +78,30 @@ error: patch `old` does not apply under these answers: hunk 0 does not match `mi
 
 ## Slots
 
-Siblings that insert after the same line do not commute. A file several patches add to declares a slot instead, and each contributor fills it.
+Siblings that insert after the same line do not commute, and siblings that create the same file clash. Where several independent patches each create one file, `weft share` gives the file an owner with a slot, and each of them fills it.
 
-- **Declaring.** A slot is a line of its own, `{"slot": "servers", "separator": ","}`, in `create_file` `content` or in a hunk's `added` lines (a patch that edits a file can offer a place, such as `[env]` in `mise.toml`). `separator` is optional. The name is ASCII letters, digits, `-`, `_` and `.`, unique within the file. A slot inside a segment array does not parse, and a slot anywhere else, including inside a fill, is an error: slots do not nest.
+- **The slot line.** A slot is a line of its own, `{"slot": "servers", "separator": ","}`, in `create_file` `content` or in a hunk's `added` lines. `separator` is optional. The name is ASCII letters, digits, `-`, `_` and `.`, unique within the file. A slot inside a segment array does not parse, and a slot anywhere else, including inside a fill, is an error: slots do not nest.
 - **`omit_when_empty: ["servers"]`** on `create_file` leaves the file out of the render while every listed slot is empty. A patch that changes that file by anything but a fill, while nothing it depends on fills a slot, fails: ``patch `header` does not apply under these answers: it changes `.mcp.json`, which patch `mcp` leaves out while its slots are empty (`omit_when_empty`), and nothing it depends on fills them; …``.
 - **Filling.** `{"op": "fill_slot", "path", "slot", "key", "lines"}`. `key` is one non-empty line, a string or a segment array; `lines` holds at least one line. Commit keys a fill by the patch name; a foreach patch's key is `["<name>/", {"answer": "key"}]`, and amend and resync keep the key a patch already used.
 - **Rendering.** Contributions sort by key; the separator is appended to the last line of every contribution but the final one; an empty slot renders no lines. No hunk sees slot content, so fill-only patches commute in any order and `weft check` does not render their pairs.
 - **Errors.** Two fills with one key in one slot (``patches `linear` and `twin` both fill slot `servers` of `.mcp.json` under key `linear` ``), an unknown slot, a fill on a missing file, an empty fill, a bad or duplicate slot name.
 
-Declaring a slot in an owner that already ships is a hand edit: `weft patch amend` refuses a patch that declares a slot, and `weft patch resync` skips one with an issue (``it declares slot(s) `notes` in `README.md`, which regenerating from the command would drop; move the slot to a hand-written patch, or `weft patch detach base` and edit it by hand``). So declare slots in hand-written owner patches, never in a generator patch; a slot offered in a generated file goes in a hunk's `added` lines of the patch after it.
+### Where slots come from
 
-1. In the owner, replace the lines several patches add to with the slot line, and add `omit_when_empty` if the file means nothing empty (`.mcp.json` with no servers).
-2. Move each entry into a `fill_slot` in the patch that should own it (a new patch gated on the bool, where the entry was an `expr` line), keyed by that patch's name, its lines without the trailing separator, and `depends_on` the owner only.
-3. Delete the `expr` lines, complementary gated copies or chain-only dependencies the slot replaces, and rewrite any hunk that anchored on the old lines.
-4. `weft check` under every answer combination that turns a filler on or off, then `weft new` one project and compare it with the old render.
+Nobody writes a slot by hand. `weft share PATH --name NAME` (or `weft commit --share NAME`, or answering yes when commit asks) takes a file that two or more independent patches each create and writes a new patch NAME that creates it with the lines they all share around a slot `entries`, `omit_when_empty: ["entries"]` and no gate. Each creator's `create_file` becomes a `fill_slot` keyed by its name, with `depends_on` NAME added. Recorded on a scratch template with `linear` and `jira` each creating `.mcp.json`:
 
-Later fillers are recorded, not hand-written: `weft session new lightdash --base mcp`, type the entry where its key sorts, then `weft commit --name lightdash --depends-on mcp`. Where the owner has `omit_when_empty` and nothing else fills the slot, the worktree has no such file: write it whole, the owner's lines around your entry. `weft diff` shows it as created with the fill note, and commit still records one `fill_slot`; amending the only filler of such a file stays a `fill_slot` too.
+```json
+{ "op": "create_file", "path": ".mcp.json", "omit_when_empty": ["entries"], "content": ["{", "  \"mcpServers\": {", { "slot": "entries", "separator": "," }, "  }", "}"], "mode": 420 }
+{ "op": "fill_slot", "path": ".mcp.json", "slot": "entries", "key": "linear", "lines": ["    \"linear\": { \"url\": \"https://mcp.linear.app/mcp\" }"] }
+```
+
+`share` handles only files the patches create. A file one patch creates and others change by hunks (a Gradle `dependencies {}` block in `build.gradle.kts`, a line several siblings add to `README.md`) is refused: ``patch `ci` changes `README.md`; weft shares a file that patches only create``. Those patches stay a chain, or keep their hunks at least three lines apart.
+
+To replace `expr` lines that let several bools add to one file, record one patch per bool that creates the whole file with its own entry, delete the `expr` version, and share the file. On a scratch copy of the house `base` template, replacing the `expr`-line `mcp` with `linear-mcp` (when `use_linear`) and `jira-mcp` (when `use_jira`), each creating `.mcp.json`, `.codex/config.toml` and `.omp/mcp.json`, then `weft share .mcp.json .codex/config.toml .omp/mcp.json --name mcp`, kept Linear only, Jira only and neither byte-identical, and `weft check` passed under all four combinations.
+
+Later fillers are recorded, not hand-written: `weft session new lightdash --base mcp`, type the entry where its key sorts, then `weft commit --name lightdash --depends-on mcp`. Where the owner has `omit_when_empty` and nothing else fills the slot, the worktree has no such file: write it whole, the owner's lines around your entry. `weft diff` shows it as created with the fill note, and commit still records one `fill_slot`; amending the only filler of such a file stays a `fill_slot` too. `weft share` refuses a file a patch already fills (``patch `jira` adds lines to a slot of `.mcp.json`; weft shares a file that patches only create``), so a late creator is re-recorded this way.
+
+`weft patch amend` on the owner shows every filler's lines in the slot, or `⟪slot entries: other patches add their lines here⟫` for an empty slot; edit the lines around them and commit writes the slot back in place. `weft patch resync` still skips a generated patch that declares a slot; `share` never produces one, because it refuses a generated creator until `weft patch detach`.
 
 ## What is hashed
 
@@ -110,7 +118,7 @@ weft check ~/templates/other --answer "project_name=Demo Service"
 
 Constraints: the patch may reference only answers every host template declares (best: none). To update, re-copy; projects pick the change up on `weft update`.
 
-A portable patch that also needs lines in a shared file such as `.gitignore` fills a slot there. Every host's owner (its `base`) declares the slot under the same name, say `{"slot": "ignores"}` in `.gitignore`, and the portable patch carries `"depends_on": ["base"]` and a `fill_slot` keyed by its own name. Verified 2026-09-29 on a weft built after 0.1.0: the same file checks in two hosts whose `base` differ, but it is no longer a root, so its id differs per host. On weft 0.1.0 there are no slots; give the hunk to each host's `base` instead.
+A portable patch that also needs lines in a shared file such as `.gitignore` creates that file with only its own lines, and each host shares it with the host's `base`: copy the patch in, then `weft share .gitignore --name gitignore`. Verified 2026-09-30 on two scratch hosts whose `base` wrote different `.gitignore` lines: in each, the owner `gitignore` held only the slot (nothing was shared, so no separator), `base` and the portable patch became fillers of it, `weft check` passed, and the rewritten portable patch came out byte-identical in both hosts. It is no longer a root, so a host that has not shared the file needs the original, file-creating version. On weft 0.1.0 there are no slots; give the lines to each host's `base` instead.
 
 ## A recorded patch, verbatim
 

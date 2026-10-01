@@ -78,7 +78,7 @@
     {
       "id": 8,
       "prompt": "The java template is a six-deep chain: base, gradle, gradle-wrapper, testing, formatter, linter. Split it up.",
-      "expected_output": "Not a template split but a graph repair inside one template: the agent explains chains come from recording on latest, checks which links anchor on the previous patch's lines (the build.gradle.kts edits), and re-parents the independent ones by editing their depends_on to base by hand (there is no weft patch rebase), or re-records them with --base base. Links that exist only to order lines in the plugins and dependencies blocks can become fillers of slots the build file's owner declares, on a weft built after 0.1.0; otherwise the chain stays. weft check proves the render and commutation afterwards.",
+      "expected_output": "Not a template split but a graph repair inside one template: the agent explains chains come from recording on latest, checks which links anchor on the previous patch's lines (the build.gradle.kts edits), and re-parents the independent ones by editing their depends_on to base by hand (there is no weft patch rebase), or re-records them with --base base. Links that anchor on the previous patch's lines in the plugins and dependencies blocks stay: weft share does not apply, because one patch creates build.gradle.kts and the others change it. weft check proves the render and commutation afterwards.",
       "assertions": [
         "Identifies this as a dependency-shape problem, not a composition problem",
         "Distinguishes links that anchor on the previous patch from links recorded on latest by habit",
