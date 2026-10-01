@@ -1,6 +1,6 @@
 {
   "title": "Jira skills",
-  "description": "Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the mcp patch declares.",
+  "description": "Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the jira-mcp patch declares.",
   "depends_on": [
     "skills"
   ],

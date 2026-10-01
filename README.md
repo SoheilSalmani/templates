@@ -2,7 +2,7 @@
 
 Weft templates, one directory each. `base` is the root every repository starts from; the stack templates (`java`, `fastapi`, `dbt`, `airflow`, `scala`, `slides`) extend it and add their own stack.
 
-The templates need a `weft` built from source at the `WEFT_REF` of `.github/workflows/check.yml` or later. The 0.1.0 release ignores the `[refine]` tables and rejects the hooks' `before` field.
+The templates need a `weft` built from source at the `WEFT_REF` of `.github/workflows/check.yml` or later. The 0.1.0 release ignores the `[refine]` tables and rejects the hooks' `before` field, and only builds from `116e293` on can `weft patch amend` base's `mcp`.
 
 ## Starting a project
 
@@ -23,6 +23,8 @@ Every stack template declares `extends = "../base"`, so base's questions, patche
 All the Agent Skills live in base. The ones for one stack are behind the `stack_skills` question: `dbt-skills` behind `dbt`, `writing-slides` behind `slides`. A stack narrows base's questions with `[refine.<id>]` tables in its `weft.toml`: dbt offers and selects its skills, slides fixes its own (its features extend `writing-slides`), and the other stacks offer none. The same tables reword a question for the stack, such as `project_name`'s description.
 
 A stack's first patch, named after the template, builds on base's root: it adds the stack's ignores to the top of base's `.gitignore`, replaces base's README where the stack has its own, and orders its setup hooks `before` base's `git-commit`, so the first commit includes what they produce.
+
+Base's MCP files are shared. `mcp`, which `weft share` wrote, creates `.mcp.json`, `.codex/config.toml` and `.omp/mcp.json` around a slot, and each server is a patch that fills it: `linear-mcp` when `use_linear`, `jira-mcp` when `use_jira`. A file stays out of the project while no server fills it. A stack adds a server the same way: record it in a session on `mcp`, typing the entry where its patch name sorts, and commit with `--depends-on mcp`. `weft share` takes only files that several patches create, so a stack still reaches base's `.gitignore`, `.gitattributes`, `mise.toml` and `paseo.json` with hunks.
 
 ```sh
 scripts/sync-skills.sh ~/path/to/skills   # re-record base's skills patches from a checkout of SoheilSalmani/skills, then check every template

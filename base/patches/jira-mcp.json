@@ -1,0 +1,37 @@
+{
+  "title": "Atlassian MCP server",
+  "description": "Declares Atlassian's remote MCP server for Jira, atlassian at https://mcp.atlassian.com/v2/mcp, for Claude Code, Codex and oh-my-pi. Definition only: each person authorises with OAuth, so nothing is stored in the repository.",
+  "depends_on": [
+    "mcp"
+  ],
+  "when": "use_jira",
+  "ops": [
+    {
+      "op": "fill_slot",
+      "path": ".codex/config.toml",
+      "slot": "entries",
+      "key": "jira-mcp",
+      "lines": [
+        "atlassian = { url = \"https://mcp.atlassian.com/v2/mcp\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".mcp.json",
+      "slot": "entries",
+      "key": "jira-mcp",
+      "lines": [
+        "    \"atlassian\": { \"type\": \"http\", \"url\": \"https://mcp.atlassian.com/v2/mcp\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".omp/mcp.json",
+      "slot": "entries",
+      "key": "jira-mcp",
+      "lines": [
+        "    \"atlassian\": { \"type\": \"http\", \"url\": \"https://mcp.atlassian.com/v2/mcp\" }"
+      ]
+    }
+  ]
+}

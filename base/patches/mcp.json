@@ -1,62 +1,59 @@
 {
   "title": "MCP connections",
-  "description": "Declares the remote MCP servers for the trackers in use, identically in .mcp.json (Claude Code), .codex/config.toml (Codex) and .omp/mcp.json (oh-my-pi). Definitions only: each person authorises with OAuth. The entries are expr segments on use_linear and use_jira because one file cannot be shared by two sibling patches.",
+  "description": "Holds the lines .mcp.json (Claude Code), .codex/config.toml (Codex) and .omp/mcp.json (oh-my-pi) share around the slot each MCP server's patch fills, and leaves a file out while no server fills it. Written by weft share from linear-mcp and jira-mcp; change it with weft patch amend.",
   "ops": [
     {
       "op": "create_file",
-      "path": ".codex/config.toml",
+      "path": ".mcp.json",
+      "omit_when_empty": [
+        "entries"
+      ],
       "content": [
-        "# Project-scoped Codex configuration. Codex reads it only after `codex` has marked this project as trusted.",
-        "",
-        "[mcp_servers]",
-        [
-          {
-            "expr": "'linear-server = { url = \"https://mcp.linear.app/mcp\" }' if use_linear else ''"
-          }
-        ],
-        [
-          {
-            "expr": "'atlassian = { url = \"https://mcp.atlassian.com/v2/mcp\" }' if use_jira else ''"
-          }
-        ]
+        "{",
+        "  \"mcpServers\": {",
+        {
+          "slot": "entries",
+          "separator": ","
+        },
+        "  }",
+        "}"
       ],
       "mode": 420
     },
     {
       "op": "create_file",
-      "path": ".mcp.json",
+      "path": ".codex/config.toml",
+      "omit_when_empty": [
+        "entries"
+      ],
       "content": [
-        "{",
-        "  \"mcpServers\": {",
-        [
-          "    ",
-          {
-            "expr": "', '.join([e for e, on in [('\"linear-server\": { \"type\": \"http\", \"url\": \"https://mcp.linear.app/mcp\" }', use_linear), ('\"atlassian\": { \"type\": \"http\", \"url\": \"https://mcp.atlassian.com/v2/mcp\" }', use_jira)] if on])"
-          }
-        ],
-        "  }",
-        "}"
+        "# Project-scoped Codex configuration. Codex reads it only after `codex` has marked this project as trusted.",
+        "",
+        "[mcp_servers]",
+        {
+          "slot": "entries"
+        }
       ],
       "mode": 420
     },
     {
       "op": "create_file",
       "path": ".omp/mcp.json",
+      "omit_when_empty": [
+        "entries"
+      ],
       "content": [
         "{",
         "  \"$schema\": \"https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json\",",
         "  \"mcpServers\": {",
-        [
-          "    ",
-          {
-            "expr": "', '.join([e for e, on in [('\"linear-server\": { \"type\": \"http\", \"url\": \"https://mcp.linear.app/mcp\" }', use_linear), ('\"atlassian\": { \"type\": \"http\", \"url\": \"https://mcp.atlassian.com/v2/mcp\" }', use_jira)] if on])"
-          }
-        ],
+        {
+          "slot": "entries",
+          "separator": ","
+        },
         "  }",
         "}"
       ],
       "mode": 420
     }
-  ],
-  "when": "use_linear or use_jira"
+  ]
 }

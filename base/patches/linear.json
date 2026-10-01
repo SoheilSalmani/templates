@@ -1,6 +1,6 @@
 {
   "title": "Linear skills",
-  "description": "Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the mcp patch.",
+  "description": "Installs the Linear conventions and the skills for tracking work, reviewing a team's items and writing project updates. The Linear MCP server itself is declared by the linear-mcp patch.",
   "depends_on": [
     "skills"
   ],

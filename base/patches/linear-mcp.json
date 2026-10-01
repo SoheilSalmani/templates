@@ -1,0 +1,37 @@
+{
+  "title": "Linear MCP server",
+  "description": "Declares Linear's remote MCP server, linear-server at https://mcp.linear.app/mcp, for Claude Code, Codex and oh-my-pi. Definition only: each person authorises with OAuth, so nothing is stored in the repository.",
+  "depends_on": [
+    "mcp"
+  ],
+  "when": "use_linear",
+  "ops": [
+    {
+      "op": "fill_slot",
+      "path": ".codex/config.toml",
+      "slot": "entries",
+      "key": "linear-mcp",
+      "lines": [
+        "linear-server = { url = \"https://mcp.linear.app/mcp\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".mcp.json",
+      "slot": "entries",
+      "key": "linear-mcp",
+      "lines": [
+        "    \"linear-server\": { \"type\": \"http\", \"url\": \"https://mcp.linear.app/mcp\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".omp/mcp.json",
+      "slot": "entries",
+      "key": "linear-mcp",
+      "lines": [
+        "    \"linear-server\": { \"type\": \"http\", \"url\": \"https://mcp.linear.app/mcp\" }"
+      ]
+    }
+  ]
+}
