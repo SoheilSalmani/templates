@@ -4,6 +4,12 @@ Weft templates, one directory each. `base` is the root every repository starts f
 
 The templates need a `weft` built from source at the `WEFT_REF` of `.github/workflows/check.yml` or later. The 0.1.0 release ignores the `[refine]` tables and rejects the hooks' `before` field, and only builds from `116e293` on can `weft patch amend` base's `mcp`.
 
+## Setup
+
+```sh
+mise install
+```
+
 ## Starting a project
 
 `weft new` renders a template into a new directory, asking the template's questions on the way. Give it a directory of this checkout, or the repository on GitHub without cloning it:

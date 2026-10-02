@@ -1,0 +1,46 @@
+[state]
+template = "gh:SoheilSalmani/templates//base"
+commit = "89d4d515c6d108379869ecfb5f441feb3be6a810"
+base = [
+    "ecb1f656596aa6d46a393392bbb2a9abab14aee41486a9a928e3a702b4693fcf",
+    "fb3843bc6e78691ca9217b6270355a8d9defc43d247d37760580e238ebab3253",
+    "ea96114ddb8c334000c30d6750d5cdaf47a3707057aa3aeccab95c640a3434c6",
+    "acd01f0f1a7cd77a249e9ec45b7066e4ef72bc577ebfbc603f68940fc1642846",
+    "61862dff02513d3c8046078274aeafde24deef6525204e5a66197a14daff2529",
+    "778ce9b2f212956a0516adfacd3c149eb64f1d4ad1664e6cbace42803390a718",
+    "43de40300a58165bcc12ef20da5d77ffb90518e5bc872b8a4c666589c40a0c49",
+    "796d4f0269324ecbc9d2a1094e943d5bb76c645f4071be7f6151cd84103e7ce9",
+    "028bc97f6f3cde2cd5a41e3656213deb98366cdadbd5647802f22a687c393de2",
+    "7f3c4bedf69f244afc8f3c5b981235101d0214debd6ab59ec1b03b5e2748d419",
+    "d235b4e380137285466d645c63146acf2df989634247592ba374f377e460b118",
+    "a89dc3aebe29ffca0de987e1ffa571a3d042da72655bcf2f118a4447c05a47e5",
+    "e14f4e002e0122cd8e14c8e3b26124d8e500af1c0948689496fbe506a6fe6175",
+    "4ccd2eb3babfadd7468b934f9d3d6ad52a0cb9835272f41d6715c44d08c9c919",
+    "5372595c8c390738a196522c3866ab5451eaa1a0c39e2f804756845c04b28de2",
+    "44d02f72b35a2a2819f710a94ac79e2e6f8843971acfc0f661d15a28c29a494b",
+    "b22abde4e6ef4087f73c650868f925ab499025f7984b538762c6285f760acae8",
+    "9d2bf4c2d7dafb83705eca87cf4940922b3f6bd419977b5dfa834fd3fea39b88",
+    "3c755296b8e9bf8bea4b6e400d0d65e5f206bc0bb4f7c0a89360513207aff7bf",
+    "0736e7169e54667ae8e8d8e88f3e17baeac36086da45a863533ba9515ab8647a",
+    "21f8d4b6fba03410e84a1241ddc9e5b45506c723cbec9b61b5090656a0ab7014",
+]
+tree_hash = "b6d3116fbf36378795adc7916405670887eeeebf9ee8ee48019a6d384bb18c89"
+
+[answers]
+project_name = "Templates"
+use_linear = false
+use_weft = true
+
+[derived]
+commit_instructions = true
+commit_mcp = true
+commit_mise = true
+commit_skills = true
+stack_skills = []
+use_anki = false
+use_github = true
+use_jira = false
+use_meetings = false
+use_obsidian = false
+
+[secrets]

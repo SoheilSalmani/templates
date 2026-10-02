@@ -1,0 +1,216 @@
+{
+  "skill_name": "writing-exercises",
+  "notes": "Score the exercises a learner would get, not how much method the reply describes. A set fails outright if any item gives its answer's code or steps in the prompt, if an item has no check the learner can run without the solution, if a solution contradicts its item, if a command, flag or API was neither run nor checked against current docs, if an item asks only for a fact, or if a readiness set contains anything from the repository or was written into it. A set also fails if it skipped the coverage check without saying so. A review fails if it rewrites items that were already fine, or renumbers or changes the meaning of an item that has an Exercise N commit. Score each output against a run without the skill: a set that does not beat that baseline on these points is not finished.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to learn DuckDB properly. Write the activities for it.",
+      "expected_output": "A duckdb-activities README in the activities format, built on one dataset, ordered so each idea is introduced, reused and mixed, with every command checked against the current DuckDB docs.",
+      "assertions": [
+        "The README is titled `# DuckDB Activities`, with one line under it naming what the set builds and the DuckDB version and date it was checked against",
+        "Item 1 gives the command that installs DuckDB, and ends with a visible result",
+        "Every item ends with a sentence starting `Check:` that the learner can act on without opening the solution; for a predict item, that is running the thing and comparing with what they wrote",
+        "No item contains the SQL or commands that answer it; those appear only inside `<details>` blocks",
+        "The set includes at least one predict item, one break or fix item, one inspect item, and one compare or choose item",
+        "At least one later item uses an earlier feature without naming it",
+        "There is at least one review item with no hint, and the set ends with a capstone, then a recall item or a proposal for Anki review notes",
+        "It searched the Anki collection and the existing activity sets before writing, and the reply says what it skipped or sent to flashcards, and why",
+        "No item asks the learner only to state a fact",
+        "Every `<details>` block is indented to its item's text, with a blank line after `</summary>`, and uses the labels `Hint` or `Solution` only",
+        "The reply says which solutions were run and which were only checked against the docs"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Turn the Terraform Get Started tutorial for AWS into exercises for me.",
+      "expected_output": "Exercises that state outcomes rather than the tutorial's steps, with a prediction the plan settles and a teardown item, linking the tutorial in Resources.",
+      "assertions": [
+        "No item tells the learner to copy or paste code from the tutorial",
+        "Items state outcomes, such as an instance that exists or an output that prints, not the tutorial's steps",
+        "At least one item asks for a prediction that `terraform plan` then settles",
+        "A teardown item comes last, with a check that nothing is left, such as an empty `terraform state list`",
+        "`## Resources` links the tutorial"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add five more exercises to my dlt-activities.",
+      "expected_output": "Items 16 to 20 appended, reusing the set's Pokémon and GitHub pipelines, with the existing items untouched and the README change offered as a fixup commit.",
+      "assertions": [
+        "It reads the existing README and git log before writing",
+        "The new items are numbered 16 to 20, and items 1 to 15 are unchanged",
+        "The new items build on the set's existing pipelines and names",
+        "At least one new item uses an earlier feature, such as a transformer or pagination, without naming it",
+        "Every new item ends with a check",
+        "If it commits, the subject is `fixup! Set up the playground`, and it does not rebase or push without asking"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "fastapi-activities has 13 Exercise commits but the README still says TODO. Write the statements.",
+      "expected_output": "Thirteen items written from the commits' diffs, numbered to match, each stating the outcome its diff achieves, with a check.",
+      "assertions": [
+        "It reads each Exercise commit's diff before writing its item",
+        "It writes 13 items, numbered 1 to 13 to match the commits",
+        "Each item states the outcome its diff achieves, not a description of the diff",
+        "Each item ends with a check",
+        "It changes no commit, and flags any commit whose purpose it cannot tell"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Review my weft-activities README.",
+      "expected_output": "A per-item review that keeps item 1, and reports that item 2's statement asks for a package name its Exercise 2 commit computes instead.",
+      "assertions": [
+        "It reads the README and the Exercise commits",
+        "It keeps item 1's statement, adding at most a check",
+        "It reports that item 2 asks the user for a package name while the commit computes it",
+        "It asks which of the two is right instead of silently changing either",
+        "It does not renumber anything"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Write the reference solution for exercise 4 of my activities and commit it.",
+      "expected_output": "One commit named exactly `Exercise 4`, holding only that exercise's files, with its check run and passing.",
+      "assertions": [
+        "The commit subject is exactly `Exercise 4`, with no body or prefix",
+        "The commit holds only that exercise's files, and not the README",
+        "The item's check was run and passed before committing",
+        "Commands the commit cannot show go in the item's Solution block, as a separate `fixup! Set up the playground` commit"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Write exercises so my colleague can learn dbt. She knows SQL well but has never used git.",
+      "expected_output": "A dbt set that skips SQL basics, gives the git setup openly since git is not what the set teaches, and spends its guidance on dbt.",
+      "assertions": [
+        "No item teaches SQL basics",
+        "Git commands the set needs are given openly in the items, not set as exercises",
+        "dbt features are named on first use and not named on later uses",
+        "Every item ends with a check"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Write a learning set for Kestra.",
+      "expected_output": "A set built from the current Kestra docs, with the version pinned, and no command, flag or API that was not read in the docs or run.",
+      "assertions": [
+        "It reads the current Kestra documentation before writing any item",
+        "The README names the Kestra version and date the set was checked against",
+        "Every command, flag and API in the set appears in the docs it read, or was run",
+        "It does not ask the user anything the docs answer"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Make Anki cards from the dlt docs.",
+      "expected_output": "Not this skill: flashcards belong to anki-flashcards.",
+      "assertions": [
+        "It does not write an activities README",
+        "It routes to anki-flashcards"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Write a getting-started tutorial for our CLI's documentation site.",
+      "expected_output": "Not this skill: a tutorial is documentation, which writing-documentation owns.",
+      "assertions": [
+        "It does not write exercises or an activities README",
+        "It routes to writing-documentation"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Explain how Kafka consumer groups rebalance.",
+      "expected_output": "A direct explanation, without loading this skill.",
+      "assertions": [
+        "It explains the concept directly",
+        "It does not write an exercise set"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Quiz me on Terraform state.",
+      "expected_output": "Boundary: a live quiz is out of scope. It quizzes directly, and may offer to turn the questions into predict or recall items in the learner's terraform-activities.",
+      "assertions": [
+        "It does not write a README unasked",
+        "If it mentions this skill, it says live quizzing is out of scope and offers predict or recall items as the alternative"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Write a React coding assessment we can use to screen candidates.",
+      "expected_output": "Boundary: an assessment that ranks people is out of scope, because its answers must stay away from the candidates, while this format hides them in the same README.",
+      "assertions": [
+        "It says the activities format is the wrong shape for screening, and why",
+        "It does not produce an activities README with hidden solutions for candidates"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Write the activities for Polars and commit them.",
+      "expected_output": "With writing-commits and humanizer loaded alongside: the README is committed as `Set up the playground`, and its prose has no generated tics.",
+      "assertions": [
+        "The commit subject is `Set up the playground`, not a subject rewritten to writing-commits' style",
+        "No item uses an em dash as glue, a synonym triad, or the words \"just\", \"simply\" or \"easy\"",
+        "The rules of the set itself still hold: outcomes, checks, and hidden solutions"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "I start on this Rust repository next week. Write exercises that check I master the Rust features it uses.",
+      "expected_output": "A readiness part for the learner's rust-activities, built from an inventory of the features the repository's code uses, with generic real-world exercises and nothing from the repository.",
+      "assertions": [
+        "It reads the workspace manifests and counts the features the code uses before choosing exercises",
+        "The reply shows the inventory with a decision per feature, including features skipped as barely used or already carded",
+        "No item contains code, file names, identifiers, domain terms or data from the repository",
+        "Every item is a realistic task on a neutral project of its own, and some items combine several features",
+        "The set goes into the learner's rust-activities, in a part named after the features, and nothing is written into the repository",
+        "Basics the collection already cards, such as formatting with `println!`, get no exercise"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Write exercises for printing and formatting in Rust.",
+      "expected_output": "The carded formatting syntax gets nothing, uncarded syntax rules go to flashcards, and exercises cover only the practice neither the cards nor the existing sets cover, as realistic tasks.",
+      "assertions": [
+        "It searches the collection and finds the existing formatting cards",
+        "It writes no exercise that only recalls formatting syntax, and lists uncarded syntax rules for flashcards instead",
+        "Every item it writes is a realistic task, such as a report or a table to print, that needs the formatting practice it covers",
+        "The reply says, concept by concept, what was skipped and why"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "Write exercises so I learn the CAP theorem.",
+      "expected_output": "No exercise set: the CAP theorem is theory, so it goes to anki-flashcards, unless a practical task is genuinely needed.",
+      "assertions": [
+        "It does not write an activities README of questions about the theorem",
+        "It routes the facts to anki-flashcards, or reports that they are already carded",
+        "If it proposes any exercise, the exercise is a hands-on task, such as observing a partition with a real database"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "Write more dbt exercises for me.",
+      "expected_output": "Only the gaps: the collection holds many dbt cards and dbt-activities already has done exercises, so the new items cover practice found in neither.",
+      "assertions": [
+        "It reads the existing dbt-activities README and its Exercise N commits",
+        "It searches the collection under the dbt context field",
+        "No new item repeats an exercise the learner has done",
+        "The reply lists what it skipped and where each skipped concept is already covered"
+      ]
+    },
+    {
+      "id": 19,
+      "prompt": "I'm joining a client's TypeScript monorepo tomorrow. Make sure I'm ready for its stack.",
+      "expected_output": "A readiness set in the learner's activities, generic, with nothing from the client's repository in it and nothing written into the repository.",
+      "assertions": [
+        "Nothing is written, staged or committed inside the client's repository",
+        "No item names the client, its modules, its identifiers or its domain",
+        "The exercises target the TypeScript, framework and library versions the repository pins"
+      ]
+    }
+  ]
+}
