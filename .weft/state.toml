@@ -24,11 +24,13 @@ base = [
     "0736e7169e54667ae8e8d8e88f3e17baeac36086da45a863533ba9515ab8647a",
     "21f8d4b6fba03410e84a1241ddc9e5b45506c723cbec9b61b5090656a0ab7014",
 ]
-tree_hash = "b6d3116fbf36378795adc7916405670887eeeebf9ee8ee48019a6d384bb18c89"
+tree_hash = "4f354b13585f0267198cd29315249a1ee00f6b51263fbb06c4ecfacd71ce327a"
 
 [answers]
 project_name = "Templates"
-use_linear = false
+use_anki = true
+use_linear = true
+use_obsidian = true
 use_weft = true
 
 [derived]
@@ -37,10 +39,8 @@ commit_mcp = true
 commit_mise = true
 commit_skills = true
 stack_skills = []
-use_anki = false
 use_github = true
 use_jira = false
 use_meetings = false
-use_obsidian = false
 
 [secrets]
