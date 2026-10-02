@@ -1,6 +1,6 @@
 {
   "title": "Anki skills",
-  "description": "Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through an anki MCP server configured at user level, since Anki runs on one machine.",
+  "description": "Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through the anki MCP server, which the anki-mcp patch declares.",
   "depends_on": [
     "skills"
   ],

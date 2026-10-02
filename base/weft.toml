@@ -1,7 +1,7 @@
 [template]
 name = "base"
 weft-version = "0.1"
-description = "The root every repository starts from: editor and git configuration, a mise toolchain, a Paseo worktree setup, agent instructions, the house Agent Skills, and MCP connections for the trackers the project uses, for Claude Code, Codex and oh-my-pi. Every patch except base is portable into the stack templates."
+description = "The root every repository starts from: editor and git configuration, a mise toolchain, a Paseo worktree setup, agent instructions, the house Agent Skills, and MCP connections for the services the project uses, for Claude Code, Codex and oh-my-pi. Every patch except base is portable into the stack templates."
 
 [[question]]
 id = "project_name"
@@ -14,7 +14,7 @@ example = "Demo Service"
 id = "use_github"
 kind = "bool"
 prompt = "Hosted on GitHub?"
-description = "Installs the skills for issues, pull requests, README and repository metadata. They drive gh; no MCP server is added."
+description = "Installs the skills for issues, pull requests, README and repository metadata, which drive gh, and GitHub's remote MCP server (a personal access token each person exports as GITHUB_PAT_TOKEN, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
 default = "True"
 
 [[question]]
@@ -35,14 +35,14 @@ default = "False"
 id = "use_anki"
 kind = "bool"
 prompt = "Write Anki flashcards about this project?"
-description = "Installs anki-flashcards and remembering-what-you-built. AnkiConnect is per machine, so its MCP server stays in user-level config."
+description = "Installs anki-flashcards and remembering-what-you-built, and the anki MCP server they call (run by npx against AnkiConnect on localhost, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
 default = "False"
 
 [[question]]
 id = "use_obsidian"
 kind = "bool"
 prompt = "Keep this project's ideas in an Obsidian vault?"
-description = "Installs idea-garden. The vault path is per machine, so its MCP server stays in user-level config."
+description = "Installs idea-garden and the MCP server of Obsidian's Local REST API with MCP plugin (its HTTP server turned on and its API key exported as OBSIDIAN_MCP_API_KEY by each person, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
 default = "False"
 
 [[question]]
@@ -78,7 +78,7 @@ default = "True"
 id = "commit_mcp"
 kind = "bool"
 prompt = "Commit the MCP server configuration to git?"
-description = "When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Asked whatever the trackers, since a stack can add its own server to them. Any false commit_* answer also gitignores paseo.json and .weft/."
+description = "When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Asked whatever servers the other answers turn on, since a stack can add its own server to them. Any false commit_* answer also gitignores paseo.json and .weft/."
 default = "True"
 
 [[question]]

@@ -1,6 +1,6 @@
 {
   "title": "Obsidian skills",
-  "description": "Installs idea-garden, which files ideas into the user's Obsidian vault through a filesystem or Obsidian MCP server configured at user level.",
+  "description": "Installs idea-garden, which files ideas into the user's Obsidian vault through the Obsidian MCP server that the obsidian-mcp patch declares, or directly on the filesystem.",
   "depends_on": [
     "skills"
   ],

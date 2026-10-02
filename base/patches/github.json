@@ -1,6 +1,6 @@
 {
   "title": "GitHub skills",
-  "description": "Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata, and one that schedules a pull request for a later day: it moves the branch's commit dates onto that day and leaves a Paseo schedule that opens the pull request then. They drive gh; no MCP server is added.",
+  "description": "Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata, and one that schedules a pull request for a later day: it moves the branch's commit dates onto that day and leaves a Paseo schedule that opens the pull request then. They drive gh; GitHub's MCP server is declared by the github-mcp patch.",
   "depends_on": [
     "skills"
   ],

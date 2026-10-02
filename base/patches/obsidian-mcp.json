@@ -1,0 +1,37 @@
+{
+  "title": "Obsidian MCP server",
+  "description": "Declares the MCP server that Obsidian's Local REST API with MCP plugin serves, obsidian at http://127.0.0.1:27123/mcp/, for Claude Code, Codex and oh-my-pi. Each person turns on the plugin's HTTP server and exports its API key as OBSIDIAN_MCP_API_KEY, which the entries name rather than hold.",
+  "depends_on": [
+    "mcp"
+  ],
+  "when": "use_obsidian",
+  "ops": [
+    {
+      "op": "fill_slot",
+      "path": ".codex/config.toml",
+      "slot": "entries",
+      "key": "obsidian-mcp",
+      "lines": [
+        "obsidian = { url = \"http://127.0.0.1:27123/mcp/\", bearer_token_env_var = \"OBSIDIAN_MCP_API_KEY\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".mcp.json",
+      "slot": "entries",
+      "key": "obsidian-mcp",
+      "lines": [
+        "    \"obsidian\": { \"type\": \"http\", \"url\": \"http://127.0.0.1:27123/mcp/\", \"headers\": { \"Authorization\": \"Bearer ${OBSIDIAN_MCP_API_KEY}\" } }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".omp/mcp.json",
+      "slot": "entries",
+      "key": "obsidian-mcp",
+      "lines": [
+        "    \"obsidian\": { \"type\": \"http\", \"url\": \"http://127.0.0.1:27123/mcp/\", \"headers\": { \"Authorization\": \"Bearer ${OBSIDIAN_MCP_API_KEY}\" } }"
+      ]
+    }
+  ]
+}

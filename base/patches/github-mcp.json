@@ -1,0 +1,37 @@
+{
+  "title": "GitHub MCP server",
+  "description": "Declares GitHub's remote MCP server, github at https://api.githubcopilot.com/mcp/, for Claude Code, Codex and oh-my-pi. The server takes a personal access token from these hosts, so each person exports one as GITHUB_PAT_TOKEN, which the entries name rather than hold.",
+  "depends_on": [
+    "mcp"
+  ],
+  "when": "use_github",
+  "ops": [
+    {
+      "op": "fill_slot",
+      "path": ".codex/config.toml",
+      "slot": "entries",
+      "key": "github-mcp",
+      "lines": [
+        "github = { url = \"https://api.githubcopilot.com/mcp/\", bearer_token_env_var = \"GITHUB_PAT_TOKEN\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".mcp.json",
+      "slot": "entries",
+      "key": "github-mcp",
+      "lines": [
+        "    \"github\": { \"type\": \"http\", \"url\": \"https://api.githubcopilot.com/mcp/\", \"headers\": { \"Authorization\": \"Bearer ${GITHUB_PAT_TOKEN}\" } }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".omp/mcp.json",
+      "slot": "entries",
+      "key": "github-mcp",
+      "lines": [
+        "    \"github\": { \"type\": \"http\", \"url\": \"https://api.githubcopilot.com/mcp/\", \"headers\": { \"Authorization\": \"Bearer ${GITHUB_PAT_TOKEN}\" } }"
+      ]
+    }
+  ]
+}
