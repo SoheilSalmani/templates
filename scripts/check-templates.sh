@@ -1,8 +1,9 @@
 #!/bin/sh
 # Runs `weft check` on base and every template that extends it under the
-# answer combinations base's questions introduce, then renders each template to
-# prove what the commit_* answers promise. Templates whose own gates need more
-# combinations run those in their own proof; this is the floor.
+# answer combinations base's questions introduce, fails any base patch that
+# installs skills and carries an answer reference, then renders each template
+# to prove what the commit_* answers promise. Templates whose own gates need
+# more combinations run those in their own proof; this is the floor.
 #
 #   scripts/check-templates.sh
 . "$(dirname "$0")/lib.sh"
@@ -29,6 +30,17 @@ else
   printf 'FAIL  %-10s %s\n%s\n' base "--answer stack_skills=dbt,slides" "$out"
   status=1
 fi
+
+# Skill prose is recorded word for word, under the name SKILLS_RECORD_ANSWER
+# sets, which no skill may quote. A skills patch that carries an answer
+# reference was recorded under another name, or a skill quoted that one.
+for p in "$BASE"/patches/*.json; do
+  grep -q '"\.agents/skills/' "$p" || continue
+  if grep -q '"answer"' "$p"; then
+    printf 'FAIL  %-10s %s carries an answer reference; record skills under "%s"\n' base "$(basename "$p")" "${SKILLS_RECORD_ANSWER#*=}"
+    status=1
+  fi
+done
 
 # The commit_* answers reach .gitignore, the README and slides' talk guide
 # through hand-written expr segments, which `weft patch amend` flattens into

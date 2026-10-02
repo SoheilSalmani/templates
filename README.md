@@ -20,15 +20,23 @@ For a client's repository, answer no to the `commit_*` questions: the skills, MC
 
 Every stack template declares `extends = "../base"`, so base's questions, patches and hooks are part of it under their own names and ids: one change to base reaches every template and, through `weft update`, every scaffolded project. Change shared scaffolding in `base` only; `weft patch amend` refuses an inherited patch in a stack.
 
-All the Agent Skills live in base. The ones for one stack are behind the `stack_skills` question: `dbt-skills` behind `dbt`, `writing-slides` behind `slides`. A stack narrows base's questions with `[refine.<id>]` tables in its `weft.toml`: dbt offers and selects its skills, slides fixes its own (its features extend `writing-slides`), and the other stacks offer none. The same tables reword a question for the stack, such as `project_name`'s description.
+All the Agent Skills live in base, and only there. The ones for one stack are behind the `stack_skills` question: `dbt-skills` behind `dbt`, `writing-slides` behind `slides`. A stack narrows base's questions with `[refine.<id>]` tables in its `weft.toml`: dbt offers and selects its skills, slides fixes its own (its features extend `writing-slides`), and the other stacks offer none. The same tables reword a question for the stack, such as `project_name`'s description.
 
 A stack's first patch, named after the template, builds on base's root: it adds the stack's ignores to the top of base's `.gitignore`, replaces base's README where the stack has its own, and orders its setup hooks `before` base's `git-commit`, so the first commit includes what they produce.
 
 Base's MCP files are shared. `mcp`, which `weft share` wrote, creates `.mcp.json`, `.codex/config.toml` and `.omp/mcp.json` around a slot, and each server is a patch that fills it: `linear-mcp` when `use_linear`, `jira-mcp` when `use_jira`. A file stays out of the project while no server fills it. A stack adds a server the same way: record it in a session on `mcp`, typing the entry where its patch name sorts, and commit with `--depends-on mcp`. `weft share` takes only files that several patches create, so a stack still reaches base's `.gitignore`, `.gitattributes`, `mise.toml` and `paseo.json` with hunks.
 
+To change a skill, amend the base patch that installs it, under the skills recording name that `SKILLS_RECORD_ANSWER` sets in `scripts/lib.sh`. Skills get a name of their own because the Weft skills quote `Demo Service` in their examples, and recorded under it that prose would become answer references; for the same reason, no skill may quote the recording name. For the house skills patch:
+
 ```sh
-scripts/sync-skills.sh ~/path/to/skills   # re-record base's skills patches from a checkout of SoheilSalmani/skills, then check every template
-scripts/check-templates.sh                # weft check every template under base's answer combinations, then prove the commit_* answers on a real render
+cd base
+weft patch amend skills --answer "project_name=Skills Recording"
+```
+
+A gated patch also needs the answer that switches it on, such as `--answer use_anki=true` for `anki`. Edit the skill in the worktree the command prints, run `weft commit` there, then check every template.
+
+```sh
+scripts/check-templates.sh   # weft check every template under base's answer combinations, fail any skills patch that carries an answer reference, then prove the commit_* answers on a real render
 ```
 
 CI (`.github/workflows/check.yml`) runs `check-templates.sh`, with `weft` built from source at the release or commit its `WEFT_REF` names.
