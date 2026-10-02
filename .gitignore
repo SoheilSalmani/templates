@@ -1,3 +1,23 @@
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+*.swp
+.tmp/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Personal toolchain overrides (mise)
+mise.local.toml
+
+# Personal settings (Claude Code)
+.claude/settings.local.json
+
 # Weft session worktrees (scratch renders; never committed)
 .weft-sessions/
 .weft-record/
@@ -8,5 +28,3 @@
 .scala-build/
 .bsp/
 .temp/
-.tmp/
-.DS_Store

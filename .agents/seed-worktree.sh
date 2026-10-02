@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Copies what a clone keeps out of git into a new linked worktree, from the
+# main checkout: .env files, mise.local.toml, Claude Code local settings, and
+# whatever the commit_* answers gitignore (the skills, the MCP configuration,
+# mise.toml, AGENTS.md and CLAUDE.md, paseo.json).
+#
+#   seed-worktree.sh             seed the current worktree (paseo.json runs this)
+#   seed-worktree.sh link-hook   make this git's post-checkout hook, so that
+#                                `git worktree add` seeds before any agent starts
+#
+# Only untracked, ignored files are copied, and nothing already in the worktree
+# is replaced, so running it twice is safe.
+set -euo pipefail
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
+
+seeded=(.env '.env.*' mise.local.toml mise.toml
+  .agents .claude .codex .omp .mcp.json AGENTS.md CLAUDE.md paseo.json)
+
+common=$(git rev-parse --path-format=absolute --git-common-dir)
+worktree=$(git rev-parse --show-toplevel)
+source=$(dirname "$common")
+
+link_hook() {
+  local hook="$common/hooks/post-checkout"
+  if [ -n "$(git config core.hooksPath || true)" ] || { [ -e "$hook" ] && [ ! -L "$hook" ]; }; then
+    echo "seed-worktree: post-checkout is managed elsewhere; call $0 from it to seed new worktrees" >&2
+    return 0
+  fi
+  mkdir -p "$common/hooks"
+  ln -sfn ../../.agents/seed-worktree.sh "$hook"
+}
+
+# Copies every file it can, then fails if any copy did.
+seed() {
+  cd "$source"
+  git ls-files -z --others --ignored --exclude-standard -- "${seeded[@]}" | {
+    failed=0
+    while IFS= read -r -d '' f; do
+      [ -e "$worktree/$f" ] || [ -L "$worktree/$f" ] && continue
+      mkdir -p "$(dirname "$worktree/$f")" && cp -a "$f" "$worktree/$f" || failed=1
+    done
+    exit "$failed"
+  }
+}
+
+case "$#:${1-}" in
+  1:link-hook) link_hook ;;
+  3:*)
+    # post-checkout passes the previous HEAD, the new HEAD and a branch flag;
+    # only a worktree's first checkout has a null previous HEAD. A failing hook
+    # would fail `git worktree add` itself, so it warns instead.
+    [ "$1" = 0000000000000000000000000000000000000000 ] || exit 0
+    [ "$(basename "$common")" = .git ] && [ "$source" != "$worktree" ] || exit 0
+    seed || echo "seed-worktree: some local files were not copied into $worktree" >&2
+    ;;
+  0:)
+    # Nothing to seed in the main checkout, or without one (bare repository).
+    [ "$(basename "$common")" = .git ] && [ "$source" != "$worktree" ] || exit 0
+    seed
+    ;;
+  *)
+    echo "usage: $0 [link-hook]" >&2
+    exit 2
+    ;;
+esac

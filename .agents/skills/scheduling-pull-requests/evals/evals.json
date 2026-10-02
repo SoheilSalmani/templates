@@ -1,0 +1,138 @@
+{
+  "skill_name": "scheduling-pull-requests",
+  "notes": "Runs need a git repository whose main is on origin and whose branch csv-export holds two unpushed commits made today, the time Wednesday 30 September 2026 01:00 in Europe/Paris, writing-pull-requests, writing-commits and preparing-client-meetings installed alongside, a vault whose roster is empty unless a prompt gives a row, and a Paseo CLI that records `schedule create` rather than running it. No run may push or force push. Score the reply, the commands, the commit dates, the note and the schedule prompt.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Nice, now schedule a PR for this in 2 days. (Meetings.md has Acme, daily, Mon–Fri 09:30–09:45, acme/api, Jira ACME; the work is ACME-9.)",
+      "expected_output": "Without stopping to ask: the commits moved onto Friday 2 October by redate.py, the note written under Monday 5 October's Acme daily, a one-off schedule at the script's opening time on Friday, and one reply covering all of it.",
+      "assertions": [
+        "It runs redate.py with --day 2026-10-02, --tz Europe/Paris and --apply",
+        "It does not stop for approval between moving the dates, writing the note and creating the schedule",
+        "The note is under Mon 5 Oct in 2026-W41.md, not under Friday's daily, because Friday's daily comes before the opening time",
+        "The schedule uses the script's cron with --timezone Europe/Paris, --max-runs 1 and --expires-in",
+        "It checks nextRunAt, maxRuns and expiresAt with paseo schedule inspect",
+        "The reply lists each commit's old and new date, the note's place, the exact title and description, the schedule id and the undo commands",
+        "Nothing is pushed"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Schedule the csv-export PR for Friday, ready for review, titled 'Export invoices as CSV [ACME-9]'. (redate.py printed new_tip 3f2a9c1e7b5d4a2f9e8c6b1a0d3e5f7a9b2c4d6e, pull_request_at 2026-10-02T17:12:00+02:00, cron '12 17 2 10 *'.)",
+      "expected_output": "A schedule whose prompt stands alone: branch, the new tip, base, title and description all filled in, the stop conditions first, and no rebase.",
+      "assertions": [
+        "The prompt contains the full new tip, the branch, the base main, the title and the whole description",
+        "No angle-bracket placeholder remains in the prompt",
+        "The prompt stops without publishing when the branch no longer points at that commit",
+        "The prompt forbids rebasing, amending, requesting reviewers and writing to a tracker",
+        "The title reaches gh pr create through a file, not a double-quoted literal",
+        "The cron is \"12 17 2 10 *\" with --timezone Europe/Paris"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Schedule a PR for this on Friday. (git branch -r --contains shows the branch's first commit on origin/csv-export.)",
+      "expected_output": "It says the commits are already on the remote, so their dates cannot move without a force push, and offers to schedule the pull request with the dates as they are.",
+      "assertions": [
+        "It does not force push, rebase or filter the branch",
+        "It reports the script's refusal, or the pushed state, in plain words",
+        "It offers the schedule without moving the dates"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Open a pull request for this branch.",
+      "expected_output": "The skill stays quiet; writing-pull-requests handles a pull request opened now.",
+      "assertions": [
+        "No schedule is created or proposed",
+        "No commit date changes"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Every weekday at 8, have an agent triage new GitHub issues.",
+      "expected_output": "A recurring job, handled without this skill.",
+      "assertions": [
+        "No pull request is drafted or scheduled",
+        "No commit date changes"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Schedule my billing-fix PR for Monday. (gh pr list --head billing-fix shows #52, open.)",
+      "expected_output": "It says #52 is already open, so there is nothing to schedule, and changes nothing.",
+      "assertions": [
+        "It reports that pull request #52 is already open",
+        "No schedule is created and no commit date changes",
+        "It neither pushes nor edits #52"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Nice, now schedule a PR for this in 2 days. (git status shows export.py and test_export.py modified, the CSV export just written.)",
+      "expected_output": "The uncommitted export work is committed first with writing-commits, then the dates move and the schedule is made, without asking.",
+      "assertions": [
+        "It commits export.py and test_export.py before running redate.py",
+        "It does not ask whether to commit them",
+        "The new commit is among those moved onto Friday"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Schedule a PR for this in three days.",
+      "expected_output": "Saturday 3 October 2026, named as a Saturday and kept.",
+      "assertions": [
+        "It runs redate.py with --day 2026-10-03",
+        "The reply says the day is a Saturday",
+        "It does not move the day to Friday or Monday on its own"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Nice, schedule a PR for this in 2 days. (Meetings.md has Globex, weekly, Thu 09:30–10:00, globex/data, none.)",
+      "expected_output": "The note goes under Thursday 8 October's Globex weekly, the first weekly after the pull request opens on Friday 2 October, as an in-progress line.",
+      "assertions": [
+        "The note is under Thu 8 Oct — Globex weekly in 2026-W41.md",
+        "The line says the work is in progress and in review, in plain words",
+        "No line about it appears under an earlier meeting"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I scheduled the csv-export PR for Friday, then added another commit to the branch.",
+      "expected_output": "It runs redate.py again for Friday, then updates the schedule's cron and prompt with the new tip.",
+      "assertions": [
+        "It says the scheduled run would otherwise publish nothing, because the branch moved",
+        "It runs redate.py --apply again with --day 2026-10-02",
+        "It uses paseo schedule update <id> with the new cron and prompt, not a second schedule"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Remind me in two days to open the csv-export PR.",
+      "expected_output": "A reminder for the user, not a pull request opened by an agent. The skill stays quiet, or says it only opens pull requests itself.",
+      "assertions": [
+        "No commit date changes",
+        "No schedule runs git push or gh pr create"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Mark my draft PR #52 ready for review tomorrow at 9.",
+      "expected_output": "It says the pull request already exists, so there is nothing for this skill to open, and changes nothing.",
+      "assertions": [
+        "It says pull request #52 already exists",
+        "No commit date changes and no schedule pushes a branch or opens a pull request"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Nice, now schedule a PR for this in 2 days. (The branch adds migrations/20260930_add_exports.sql and a CHANGELOG.md heading '## 2026-09-30'.)",
+      "expected_output": "The dates move and the schedule is made, and the reply names both content dates the script found, without renaming the migration or editing the changelog.",
+      "assertions": [
+        "The reply names migrations/20260930_add_exports.sql and the CHANGELOG.md heading as still showing 30 September",
+        "It renames no file and edits no line on its own"
+      ]
+    }
+  ]
+}
