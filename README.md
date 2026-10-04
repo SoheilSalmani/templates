@@ -2,7 +2,7 @@
 
 Weft templates, one directory each. `base` is the root every repository starts from; the stack templates (`java`, `fastapi`, `dbt`, `airflow`, `scala`, `slides`) extend it and add their own stack.
 
-The templates need a `weft` built from source at the `WEFT_REF` of `.github/workflows/check.yml` or later. The 0.1.0 release ignores the `[refine]` tables and rejects the hooks' `before` field, and only builds from `116e293` on can `weft patch amend` base's `mcp`.
+The templates need a `weft` built from source at the `WEFT_REF` of `.github/workflows/check.yml` or later. The 0.1.0 release ignores the `[refine]` tables and rejects the hooks' `before` field, only builds from `116e293` on can `weft patch amend` base's `mcp`, and only builds from `3751f9e` on can commit from a `weft session adopt --scope`, which the extracting-weft-templates skill teaches.
 
 ## Setup
 

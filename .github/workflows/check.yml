@@ -3,10 +3,11 @@ name: Check templates
 # The job builds weft from source at WEFT_REF, a release tag or commit of the
 # public SoheilSalmani/weft repository, so no token is needed to check it out.
 # Bump WEFT_REF to move every check to a newer weft. The templates need weft
-# 7642599 or later: stacks narrow base's questions with [refine] and order
-# their hooks with `before`, which the 0.1.0 release ignores and rejects, and
+# 3751f9e or later: stacks narrow base's questions with [refine] and order
+# their hooks with `before`, which the 0.1.0 release ignores and rejects;
 # base's `mcp` patch declares the slot `weft share` wrote, which only builds
-# from 116e293 on can amend.
+# from 116e293 on can amend; and the extracting-weft-templates skill in base
+# adopts a project with --scope, which commits only from 3751f9e on.
 
 on:
   push:
@@ -14,7 +15,7 @@ on:
   pull_request:
 
 env:
-  WEFT_REF: 76425996a9e423bd45322135f109babe72defb96
+  WEFT_REF: 3751f9e876d1990dd2f89703e6f96ffc4f61289d
 
 jobs:
   check:
