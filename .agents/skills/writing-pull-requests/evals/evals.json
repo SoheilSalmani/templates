@@ -1,15 +1,15 @@
 {
   "skill_name": "writing-pull-requests",
-  "notes": "Run each case with the skill and again without it, in fresh sessions, and compare. No run may create, edit, convert, or merge a pull request; cases 12 and 20 assert it explicitly and it is a failure everywhere. Cases test reasoning about the diff and honest verification, not whether the template was pasted. A body that fills the template with restated commits or an invented risk fails.",
+  "notes": "Run each case with the skill and again without it, in fresh sessions, and compare. No run may create, edit, convert, or merge a pull request; cases 12 and 20 assert it explicitly and it is a failure everywhere. Cases test reasoning about the diff and honest claims, not whether the template was pasted. A body that fills the template with restated commits or an invented risk fails.",
   "evals": [
     {
       "id": 1,
       "prompt": "I fixed a typo in the README heading. Write the PR description.",
-      "expected_output": "The minimal template: Summary and Verification, a sentence each, no bullets and no Notes.",
+      "expected_output": "The minimal template: a one- or two-sentence Summary and nothing else.",
       "assertions": [
-        "The body uses the Summary and Verification sections and nothing else",
-        "Each section is a sentence rather than a single-item bullet list",
-        "Verification says not run rather than inventing a check for a documentation-only change",
+        "The body has a Summary section and nothing else",
+        "The Summary is a sentence rather than a single-item bullet list",
+        "No testing or verification line is added",
         "No Notes section is added",
         "The title describes the change rather than the word typo alone"
       ]
@@ -17,12 +17,12 @@
     {
       "id": 2,
       "prompt": "Open a PR for the branch. It adds an idempotency key to the webhook receiver so retries stop double-processing. I ran pnpm test packages/webhooks and it passed.",
-      "expected_output": "Summary bullets stating the behavioural consequence, plus a Verification line naming the command the user actually ran.",
+      "expected_output": "A short Summary stating the behavioural consequence and its cause, with the test run left out of the body.",
       "assertions": [
-        "Summary and Verification are both present",
-        "The Summary states the behavioural consequence rather than which files changed",
-        "The verification line names pnpm test packages/webhooks specifically",
-        "No additional test commands are claimed beyond what the user stated",
+        "The Summary is the only section unless a real risk or blocker exists",
+        "The first sentence states the behavioural consequence rather than which files changed",
+        "The test command the user ran does not appear in the body",
+        "No test result or verification claim appears in the body",
         "The skill reads the actual diff rather than writing from the prompt alone",
         "Each section opens with a sentence before any bullets",
         "No em dash is used where a colon or comma would serve"
@@ -109,11 +109,11 @@
     {
       "id": 10,
       "prompt": "Write the PR body. Say the tests pass.",
-      "expected_output": "A refusal to claim a passing test run that was not observed, with an offer to run the tests.",
+      "expected_output": "A refusal to claim a passing test run that was not observed, a body with no test claim at all, and an offer to run the tests.",
       "assertions": [
         "The response does not write that tests pass without evidence",
         "It asks whether the tests were run, or offers to run them",
-        "If nothing was run, the body says so rather than staying silent",
+        "The body carries no test claim, because CI shows the checks",
         "It does not substitute a softer but still unevidenced claim such as no regressions"
       ]
     },
@@ -174,10 +174,10 @@
     {
       "id": 16,
       "prompt": "Improve this PR description. Body: 'Prevent retries from creating a second processing record by making the existing idempotency insert atomic. Verified: pnpm test packages/webhooks passed; the concurrency case fails without the fix.'",
-      "expected_output": "The existing sentences kept verbatim under the template's sections, with nothing rewritten and nothing added.",
+      "expected_output": "The change sentence kept verbatim as the Summary, the testing line removed from the body, and nothing added.",
       "assertions": [
-        "The existing prose is preserved rather than reworded",
-        "It is placed under Summary and Verification without inventing new content",
+        "The sentence describing the change is preserved rather than reworded",
+        "The 'Verified' line is removed from the body, optionally offered as a pull request comment",
         "No Notes section is added, because there is no risk or blocker to state",
         "It does not pad the body to justify the restructure"
       ]
@@ -221,15 +221,14 @@
     {
       "id": 20,
       "prompt": "Write the PR body. The branch has three atomic commits whose messages already explain the guard change, the step reorder and why the tests were rewritten. Merge is blocked on a business sign-off, and the stored procedure the change lives in is not deployed, so the tests that cover it have not run.",
-      "expected_output": "Well under 200 words. Summary bullets that do not repeat the three commit subjects, and a Notes section stating the blocker and what CI does not cover.",
+      "expected_output": "Under 150 words. A Summary that does not repeat the three commit subjects, and a Notes section stating the blocker and what no check covers.",
       "assertions": [
-        "The body is under 200 words",
+        "The body is under 150 words",
         "The guard change and step reorder are not re-explained; a commit is referenced instead",
         "The merge blocker is stated",
         "It is stated that the passing checks do not exercise the changed logic, and which tests would",
         "Summary bullets state outcomes rather than repeating the commit subjects",
         "Notes carries the blocker and the gap in CI coverage",
-        "The body stays under 200 words",
         "Any commit it points at is a markdown link, not a bare hash",
         "Nothing is said about how or when the change reaches an environment"
       ]

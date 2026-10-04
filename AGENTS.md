@@ -14,4 +14,4 @@ Persistent facts about how this repository is set up. Task knowledge lives in th
 ## MCP servers
 
 - Project-scoped servers are declared in `.mcp.json` (Claude Code), `.codex/config.toml` (Codex, trusted projects only) and `.omp/mcp.json` (oh-my-pi). The three files list the same servers; change all three together.
-- Only definitions are committed. Each person authorises remote servers with their own account (OAuth), so no token, header or credential belongs in these files.
+- Only definitions are committed. Each person authorises the servers themselves: with their own account through OAuth, or with a token they export in the environment variable the server's entry names. No token or credential belongs in these files.

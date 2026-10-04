@@ -1,6 +1,6 @@
 ---
 name: writing-pull-requests
-description: Writes and updates pull request titles and descriptions that someone outside the work can understand, and decides whether a branch is ready for review. Covers the required Summary and the optional Verification, Notes and What's next sections, writing for a reader who has never opened the code, putting measurements in a table, cutting anything the diff or CI already shows, what belongs in the body rather than in the commits, linking commits, title rules where CI or a changelog consumes the title, and draft state. Use when opening a pull request, rewriting its description, or asking whether a change is reviewable. To have one opened at a later time, use scheduling-pull-requests.
+description: Writes and updates pull request titles and descriptions that a reviewer understands in under a minute, and decides whether a branch is ready for review. Covers the required Summary and the optional What's next and Notes sections, writing for a reader who has never opened the code, keeping testing and verification out of the body, putting measurements in a table, cutting anything the diff or CI already shows, what belongs in the body rather than in the commits, linking commits, title rules where CI or a changelog consumes the title, and draft state. Use when opening a pull request, rewriting its description, or asking whether a change is reviewable. To have one opened at a later time, use scheduling-pull-requests.
 license: MIT
 ---
 
@@ -9,12 +9,13 @@ license: MIT
 Every pull request here uses the same shape, so a reviewer learns it once and then reads every
 description the same way.
 
-**One section is required. The rest earn their place or stay out.** A description that says one true
-thing clearly beats a complete one nobody finishes.
+**A reviewer should know what the pull request does from the title and the first sentence, and finish
+the description in under a minute.** One section is required. The rest earn their place or stay out.
+A description that says one true thing clearly beats a complete one nobody finishes.
 
 The body carries what the diff and the commits cannot: what was wrong, what is different now, and
-anything that would otherwise be a question. It never carries the file list, the commit subjects, or
-a retelling of the diff.
+anything that would otherwise be a question. It never carries the file list, the commit subjects, a
+retelling of the diff, or how the change was tested.
 
 **Read the diff and the commit messages before writing a word.** A branch name, a ticket title and
 the prompt that started the work are clues, not the change. When the ticket and the diff disagree,
@@ -32,25 +33,21 @@ git diff <base>...HEAD
 ```markdown
 ## Summary
 
-<what was wrong, as a person would notice it>
+<what was wrong and what this changes, in one sentence>
 <why it was happening, in one plain sentence>
-<what is different now>
-
-## Verification        <- optional, and rare
-
-<the one thing CI cannot show>
 
 ## What's next         <- optional
 
-<work this depends on or unblocks, one or two lines>
+<work this depends on or unblocks, one line>
 
 ## Notes               <- optional
 
 - <a risk, a blocker, where to look first, or why not the obvious approach>
 ```
 
-**`## Summary` is the only required section.** The other three are omitted unless they carry something
-a reviewer cannot get elsewhere. Three sections of real content beat four with one padded.
+**`## Summary` is the only required section.** The other two are omitted unless they carry something
+a reviewer cannot get elsewhere. There is no testing or verification section; see
+[Keep testing out of the body](#keep-testing-out-of-the-body).
 
 The minimal form is one section. A typo fix does not need a heading count:
 
@@ -66,11 +63,12 @@ The README heading had a typo. This fixes it.
 another team, or you in six months. This is the rule that most often goes wrong, because the author
 knows too much to notice.
 
-**Open with the problem as a person would notice it**, not as the code expresses it. "Pages were taking
-about six seconds" comes before any mention of query planning.
+**The first sentence carries the whole change**: what was wrong, as a person would notice it, and what
+this does about it. A reviewer who stops there should know what they are approving. "Pages were taking
+about six seconds; this brings them under two" comes before any mention of query planning.
 
-**Give the cause in one plain sentence before naming the fix.** Plain wording reaches a far larger
-audience at no cost in accuracy:
+**Then give the cause in one plain sentence.** Plain wording reaches a far larger audience at no cost in
+accuracy:
 
 > The database was not reading too much data. It was spending its time working out *how* to read it,
 > over and over.
@@ -82,13 +80,60 @@ against the same fact written for the author:
 **A term that would need a glossary is a term to replace.** Keep an identifier only where a reviewer
 needs it to navigate to something.
 
+The whole difference, on one change. Too much:
+
+```markdown
+## Summary
+
+Retries from the payment provider sometimes created a second order. Over the last month 37 duplicates
+were reported across 12 merchants, mostly during the provider's outage on the 14th.
+
+The handler checked for an existing order and inserted a new one in two steps, so two retries arriving
+together could both pass the check. This makes the insert atomic on the provider's event id, adds a
+migration for the key, updates the handler and its tests, and removes the old lookup.
+
+## Verification
+
+Ran the webhook tests (passed), replayed 200 stored events locally with no duplicates, and checked the
+migration on a copy of production.
+```
+
+Enough:
+
+```markdown
+## Summary
+
+Payment retries sometimes created a second order; this makes each retry land once.
+
+The handler checked for an existing order and then inserted in two separate steps, so two retries
+arriving together could both pass the check. The insert is now a single step keyed on the provider's
+event id.
+```
+
 **The test, before posting:** could someone who has never seen this repository say what was wrong and
-why this helps? If not, rewrite it. Do not add detail — detail is usually what broke it.
+why this helps, after one read? If not, rewrite it. Do not add detail: detail is usually what broke it.
+
+## Keep testing out of the body
+
+**The description says what the change does, not how it was checked.** No commands run, no test names,
+no "verified by", no before-and-after counts from a run on your machine. CI shows the checks, and a
+reviewer reads a testing narrative as length, not as information.
+
+Two things that look like testing do belong, each in its own place:
+
+- **A result that is the point of the change**, such as a page that now loads in two seconds instead of
+  six. That is the outcome, so it goes in the Summary, in a table when there are two or more numbers.
+- **A gap that is a real risk**, such as logic no check exercises. That goes in Notes, in one line:
+  "The stored procedure is not deployed, so no test covers the new guard."
+
+A manual check a reviewer would want to see goes in a pull request comment, not the description.
+Never write "tests pass", "verified" or "no regressions" anywhere unless you observed it.
 
 ## Put measurements in a table
 
-Two or more numbers go in a table with a before and after column. Prose buries exactly the comparison
-the reader came for, and a row of bullets is a table someone has to assemble in their head.
+Only a measurement that is the point of the change belongs in the body. Two or more numbers go in a
+table with a before and after column. Prose buries exactly the comparison the reader came for, and a
+row of bullets is a table someone has to assemble in their head.
 
 ```markdown
 | Planning time | Before | After |
@@ -102,10 +147,11 @@ A single number can stay inline.
 ## Cut anything the diff or CI already shows
 
 Before posting, delete every line that a reviewer could get from the files changed tab, a green check,
-or a commit body. In practice that means the file list, test names, lint and parse results, build
-success, row counts an assertion already guards, and any command the pipeline runs.
+or a commit body. In practice that means the file list, test names, how the change was tested, lint
+and parse results, build success, row counts an assertion already guards, and any command the
+pipeline runs.
 
-What survives is what none of those can tell them: why it was slow, why this approach, what is still
+What survives is what none of those can tell them: what was wrong, why this approach, what is still
 missing.
 
 ## How the sections read
@@ -115,8 +161,8 @@ These apply to every section you keep.
 **A heading is never followed straight by bullets.** Where a section uses a list, one sentence above it
 says what the list is, so a reader is not assembling the point from fragments.
 
-**Enumerate in a list.** Three test names or three affected tables run together in a sentence force
-a reader to parse commas as structure. One item per line, introduced by the sentence above it.
+**Enumerate in a list.** Three affected tables run together in a sentence force a reader to parse
+commas as structure. One item per line, introduced by the sentence above it.
 
 **Write prose, not notation.** `OVERRIDDEN > automated > MANUAL` is a diagram, not a sentence: say
 which one wins and in what order. Arrows, comparison operators and abbreviations a reviewer has to
@@ -136,64 +182,45 @@ any other writing, and an em dash standing in for a colon is the most common one
 
 ## Summary
 
-Three short paragraphs, or bullets where the change is a list of unrelated outcomes. **Under 150 words.**
-Problem, cause, what is different now, in that order, because that is the order a reader needs them.
+One to three short paragraphs, or bullets where the change is a list of unrelated outcomes. **Under
+100 words.** The first sentence says what was wrong and what this changes; the second gives the cause
+in plain words. Stop there unless a reviewer would otherwise ask a question.
 
 - Outcome, not mechanism: "retries no longer double-charge", not "add an idempotency key column".
 - Not the file list, not the commit subjects. The interface renders both.
 - Where a point needs a caveat to be accurate, the caveat goes in `## Notes`, not in brackets.
 
-## Verification
-
-**Omit this section by default.** It exists for the rare case where something load-bearing is invisible
-to CI, and it is the section most likely to fill with noise.
-
-Include it only for:
-
-- a measured result that is the point of the change,
-- a correctness argument CI cannot express, such as showing two versions return identical rows,
-- a gap worth stating plainly, such as a path never exercised against a real environment.
-
-**Never include any of these, because a green check already says it:** lint, parse, unit tests, schema
-tests, a successful build, row counts an assertion already guards, or any command the pipeline runs.
-Listing them buys nothing and costs the reader the lines where the real content should have been.
-
-Never turn "should pass" into "passes", and never write "no regressions" or "safe" as an inference
-from intent. **A stated gap beats a claim**, because a reviewer can act on it: "nothing was run
-against production" is more useful than silence, and honest where "tested" would not be.
-
 ## What's next
 
-Optional, one or two lines. Use it when the change **depends on work elsewhere to deliver anything**, or
+Optional, one line. Use it when the change **depends on work elsewhere to deliver anything**, or
 when it obviously unblocks something. Name the system or repository, not a ticket ID, so the line still
 reads years later.
 
-> Nothing changes until the backend reads this model instead of the five relations it queries today.
-> That work is in the web services repository.
+> Nothing changes until the backend reads this model; that work is in the web services repository.
 
-This is not a rollout plan. Deployment, release and environment promotion stay out, as below.
+This is not a rollout plan. Deployment, release and environment promotion stay out, as above.
 
 ## Notes
 
 Omit the section when there is nothing. **A padded section is worse than an absent one**, and an
-invented risk costs a reviewer more than silence.
+invented risk costs a reviewer more than silence. **At most three bullets, one line each.**
 
 What is worth a note, roughly in order of value:
 
 - **A blocker.** Something that must happen before merge and that the interface cannot show.
-- **A risk.** What breaks, what changes in production, what is hard to reverse.
+- **A risk.** What breaks, what changes in production, what is hard to reverse, what no check covers.
 - **Where to look**, when the diff is large or lopsided. One or two places.
 - **Why not the obvious approach**, when a reviewer would otherwise ask.
 
 ## Length
 
-**Under 200 words**, and stop at 400. Reviewers skim past roughly 400 lines of anything and find
-fewer defects per line, so a long description transfers less information, not more. The shape is a
-floor on structure, never a licence to fill it.
+**Under 150 words**, and stop at 250. A description is read before the diff, often on a phone or in a
+notification, so every line past the point costs the reviewer attention they wanted for the code.
+The shape is a floor on structure, never a licence to fill it.
 
 When you are over, cut a whole section rather than trimming every sentence. The first candidates are
-always the same: anything CI proves, anything the diff shows, and any sentence explaining the change
-to yourself rather than to the reader.
+always the same: how it was tested, anything CI proves, anything the diff shows, and any sentence
+explaining the change to yourself rather than to the reader.
 
 ## Do not restate the commits
 
@@ -272,14 +299,15 @@ the request to schedule it authorises opening it later with the text shown in th
 
 ## Before you finish
 
-- **Someone who has never opened this code could say what was wrong and why this helps.** If not, nothing else on this list matters.
-- `## Summary` is present and leads with the problem, then the cause in plain words, then what changed.
-- Every optional section present is carrying something. `## Verification`, `## What's next` and `## Notes` are all absent by default.
-- Verification, if present, holds no lint, parse, test, build or row-count result. A green check already says those.
-- Two or more measurements are in a table, not in prose.
+- **The title and the first sentence alone say what the pull request does.** If not, nothing else on this list matters.
+- Someone who has never opened this code could say what was wrong and why this helps, after one read.
+- `## Summary` is present: what was wrong and what changes, then the cause in plain words.
+- No testing narrative: no commands run, no test names, no counts from a run on your machine, no "verified".
+- `## What's next` and `## Notes` are absent unless they carry something; Notes has at most three one-line bullets.
+- A measurement appears only when it is the point of the change, and two or more are in a table.
 - No raw class, error or warning name where plain words carry it. The body is not mostly backticks.
 - No tracker ID in the body. The title suffix carries it; related work is linked as a pull request.
-- Under 200 words, or there is a stated reason it is not.
+- Under 150 words, or there is a stated reason it is not.
 - Nothing in the body also appears in a commit body, the diff, or the interface.
 - Any commit referenced is a link, not a bare hash.
 - No em dashes, and nothing about how the change gets deployed.

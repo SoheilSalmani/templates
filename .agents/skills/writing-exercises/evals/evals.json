@@ -1,6 +1,6 @@
 {
   "skill_name": "writing-exercises",
-  "notes": "Score the exercises a learner would get, not how much method the reply describes. A set fails outright if any item gives its answer's code or steps in the prompt, if an item has no check the learner can run without the solution, if a solution contradicts its item, if a command, flag or API was neither run nor checked against current docs, if an item asks only for a fact, or if a readiness set contains anything from the repository or was written into it. A set also fails if it skipped the coverage check without saying so. A review fails if it rewrites items that were already fine, or renumbers or changes the meaning of an item that has an Exercise N commit. Score each output against a run without the skill: a set that does not beat that baseline on these points is not finished.",
+  "notes": "Score the exercises a learner would get, not how much method the reply describes. A set fails outright if any item gives its answer's code or steps in the prompt, if an item has no check the learner can run without the solution, if a solution contradicts its item, if a command, flag or API was neither run nor checked against current docs, if an item asks only for a fact, or if a readiness set contains anything from the repository or was written into it. A set also fails if it skipped the coverage check without saying so, if any item carries a hint, or if an item makes the learner read or write material from outside the target that a one-line stand-in could replace. A review fails if it rewrites items that were already fine, or renumbers or changes the meaning of an item that has an Exercise N commit. Score each output against a run without the skill: a set that does not beat that baseline on these points is not finished.",
   "evals": [
     {
       "id": 1,
@@ -13,10 +13,11 @@
         "No item contains the SQL or commands that answer it; those appear only inside `<details>` blocks",
         "The set includes at least one predict item, one break or fix item, one inspect item, and one compare or choose item",
         "At least one later item uses an earlier feature without naming it",
-        "There is at least one review item with no hint, and the set ends with a capstone, then a recall item or a proposal for Anki review notes",
+        "There is at least one review item, and the set ends with a capstone, then a recall item or a proposal for Anki review notes",
         "It searched the Anki collection and the existing activity sets before writing, and the reply says what it skipped or sent to flashcards, and why",
         "No item asks the learner only to state a fact",
-        "Every `<details>` block is indented to its item's text, with a blank line after `</summary>`, and uses the labels `Hint` or `Solution` only",
+        "Every `<details>` block is indented to its item's text, with a blank line after `</summary>`, and is labelled `Solution`; no item has a hint",
+        "Each item states its task in a few sentences, on the smallest data that exercises it",
         "The reply says which solutions were run and which were only checked against the docs"
       ]
     },
@@ -210,6 +211,16 @@
         "Nothing is written, staged or committed inside the client's repository",
         "No item names the client, its modules, its identifiers or its domain",
         "The exercises target the TypeScript, framework and library versions the repository pins"
+      ]
+    },
+    {
+      "id": 20,
+      "prompt": "Write exercises to learn GitHub Actions.",
+      "expected_output": "Short items on Actions itself, whose workflows run one-line steps such as `echo`, so that no item needs an application to build, with only a Solution block under each.",
+      "assertions": [
+        "No item asks the learner to write or read application code: workflow steps are one-line commands",
+        "Every item reads in a few sentences, and its check is one command or one observable result",
+        "No item has a Hint block"
       ]
     }
   ]

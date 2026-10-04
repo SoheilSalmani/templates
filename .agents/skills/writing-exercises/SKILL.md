@@ -50,7 +50,7 @@ Read `references/codebase.md` for any readiness set: it has the inventory method
 
 List the core model, meaning the few nouns the tool is built from and what it does with them when it runs; the day-one loop of install, run, inspect, undo, read an error and find the right page of the docs; the operations real work uses most; the traps, such as the classic mistake, the confusing error and the false friend that looks like something the learner knows and behaves differently; and the look-alikes, such as `count` and `for_each`. Keep only what the target needs; a link in Resources is enough for the rest. Most first sets need 10 to 20 exercises. More is a second set, not a longer one.
 
-Then **write the capstone first**: a realistic task that an hour or two can finish, built from the core of the list. Work backwards from it, so that each exercise adds a piece the capstone needs, and grow **one small project on one dataset** across the set, from inputs that will not vanish.
+Then **write the capstone first**: the shortest realistic task that combines the core of the list. Work backwards from it, so that each exercise adds a piece the capstone needs, and grow **one small project on one dataset** across the set, from inputs that will not vanish.
 
 ## Ordering
 
@@ -59,7 +59,7 @@ Then **write the capstone first**: a realistic task that an hour or two can fini
 - **Each exercise uses only what came before**, and starts from the state the previous one left.
 - **Name a feature the first time it is the target, then stop naming it.** Later items that need it give only the goal, so that using it is recall. Once two look-alikes are both known, one item names neither and makes the learner choose.
 - **Guide first or attempt first, by what the learner could work out.** A convention nobody could guess, such as a magic file name, is named and linked. Behaviour the learner can reason about is a prediction to make before running anything.
-- **Bring every core idea back at least twice, unannounced**, with a different input each time. About every five exercises, a **review** item combines earlier ideas on new input, with no hint.
+- **Bring every core idea back at least twice, unannounced**, with a different input each time. About every five exercises, a **review** item combines earlier ideas on new input.
 - **Now and then, change a requirement on code the learner just wrote**, as real work does.
 - **Tear down** anything that costs money or leaves state behind, as its own exercise.
 - **End with the capstone**, which names no features. Where the learner schedules exercise reviews in Anki, propose review notes for the set's parts; otherwise add one **recall** item for a later day: rebuild a core piece without the docs, then compare it with its commit.
@@ -69,13 +69,15 @@ Then **write the capstone first**: a realistic task that an hour or two can fini
 The shape is `N. <Verb> <outcome>, <inputs and constraints>. Check: <how the learner tells it works>.`
 
 - **A task from real work.** Every item is something a developer does with the tool on a job: build a feature, fix a failing job, move data, speed up a query. Never a toy that runs a feature for no purpose.
+- **Fast to read, fast to do.** Use the fewest words that give the outcome, its inputs and its check, and cut every sentence the learner could do without. An item reads in seconds and is done in minutes.
+- **Practise the target and nothing else.** The task stays one from real work; its material shrinks to the smallest stand-in that works, such as a one-line file, a placeholder or "any content". A set on a template engine records placeholder files, not a Node.js service the learner has to read; a set on a CI system runs `echo`, not a build.
 - **State the outcome, not the steps.** Never put the answer's code in the prompt, and never turn a tutorial's "copy this" into an exercise. Code belongs in a prompt only as material: data to load, a snippet to predict, a bug to fix. Setup that the set does not teach may be given openly.
 - **Make it concrete**: real names for files, tables, routes and resources; inputs inline or linked; numbers and boundaries stated, such as "strictly more than 5 words".
 - **End with a sentence starting `Check:` that the learner can run alone**: a command and what it prints, a test that turns green, a behaviour to observe. A predict item's check is to run the thing and compare with what they wrote down. Anything to undo goes in the same sentence, so the check stays last.
 - **Put every fact the task depends on in the item.** Learners skim, and a constraint stated three items earlier gets missed.
 - **One outcome per item.** An outcome and its check are one.
 - **Block the shortcut** that would skip the point: "without editing the test", "using only the CLI", "in one query".
-- **Size each item for 5 to 15 minutes.** Only the capstone takes longer.
+- **Size each item for 5 to 10 minutes**, never more than 15. Only the capstone takes longer.
 - **Keep the state straight.** Every name an item uses exists by then, and its solution uses the same names.
 - **Mix the types**: build, extend, predict then run, break it on purpose, fix a bug, inspect, compare two ways, swap behind a check, choose which. Aim the predict and break items at the traps. `references/exercise-types.md` gives each type's shape, check and solution; read it when planning a set.
 - **Use plain words.** No "just", "simply", "easy", "experiment with" or "explore"; no item that is only a noun, such as "Cards."; no "same but…", which hides the task in the previous item; no "test X" that does not say what to look for.
@@ -105,14 +107,26 @@ After, the same change becomes a prediction that the plan settles:
    </details>
 ````
 
+An item that spends its words outside the target, before:
+
+```markdown
+1. Create a template `service` and record its first patch, `base`, from these four files: a `README.md`, a `package.json`, a seven-line Node.js `server.js` and a runbook, 40 lines to copy in all.
+```
+
+After, the same Weft practice on one line of material:
+
+```markdown
+1. Create a template `service` that asks `project_name`, and record a patch `base` that creates `README.md` reading `# Invoice API`. Check: a service scaffolded as Ledger Sync gets `# Ledger Sync`.
+```
+
 `references/worked-examples.md` rewrites more real exercises and names each one's defect. Read it before reviewing a set, or when a rule here feels abstract.
 
 ## Solutions
 
 - **The check sits in the item, outside any `<details>` block**, so the learner can verify without opening the solution.
-- **The `Solution` block holds what the answer commit cannot show**: commands, console or UI steps, queries typed into a console, the expected output, the answer to a predict or compare item, and, in a sentence or two, why the answer is right and which wrong turn a learner is likely to take.
+- **The `Solution` block holds what the answer commit cannot show**: commands, console or UI steps, queries typed into a console, the output lines that prove it, the answer to a predict or compare item, and, in one sentence, why the answer is right and which wrong turn a learner is likely to take. Nothing else: no restated task, no tour of the output.
 - **Code that lands in a file belongs in the `Exercise N` commit**, not in the block. An exercise that changes no file has no commit.
-- **A `Hint` block comes before the solution** where the likely obstacle is finding the feature or reading an error. It points at the doc page or quotes the error, and never contains the answer. Review, recall and capstone items get no hint.
+- **No hints.** An item has its check and its `Solution` block, nothing else. A learner who is stuck opens the solution.
 - **Verify every solution.** Run it in a scratch directory outside the learner's repository when the tool runs locally; otherwise check each command, flag and API against the docs for the pinned version. Say which items ran and which were only checked. A solution that contradicts its item, boundary included, is a broken exercise, not a detail.
 
 ## The repository
@@ -135,7 +149,8 @@ After, the same change becomes a prediction that the plan settles:
 
 - Both stores were checked, or the reply names the one that could not be, and the reply says what every concept became.
 - No exercise covers theory or a concept the learner already practised; theory without cards went to `anki-flashcards`.
-- Every item is a task from real work, states an outcome, ends with a `Check:` sentence the learner can run alone, and fits in 15 minutes, except the capstone.
+- Every item is a task from real work, states an outcome in as few words as it can, ends with a `Check:` sentence the learner can run alone, and fits in 15 minutes, except the capstone.
+- No item needs knowledge outside the target: material from elsewhere is a stand-in.
 - Exercise 1 installs the tool and gives a visible result within minutes.
 - Each item adds at most one concept new to the learner, and uses only what came before it.
 - Features are named once; later items give only the goal; look-alikes meet in an item that names neither.
@@ -143,7 +158,7 @@ After, the same change becomes a prediction that the plan settles:
 - The set mixes types: at least one predict, one break or fix, one inspect, and one compare or choose.
 - Every name exists by the time an item uses it, and every solution matches its item, boundaries included.
 - Every command, flag and API was run or checked against the docs for the pinned version, and the reply says which.
-- Solutions hold commands, output and the reason; code is in `Exercise N` commits; no hint contains its answer.
+- Solutions are short and hold commands, output and the reason; code is in `Exercise N` commits; no item has a hint.
 - A readiness set holds nothing from the repository, and nothing was written into the repository.
 - The numbering continues the README's, and no item with a commit was renumbered or changed in meaning.
 
@@ -153,7 +168,7 @@ When a few items join an existing set, the per-item checks apply to them, and th
 
 - `references/coverage.md`: searching the Anki collection and the existing sets, and deciding between an exercise, a flashcard and nothing. Read it before writing or extending a set.
 - `references/codebase.md`: the inventory of a repository's stack and features, ranking, and where a readiness set goes. Read it for any readiness set.
-- `references/format.md`: the README skeleton, list indentation, the hint and solution blocks, inputs, Resources, `.gitignore` and `resources/`, and the git workflow. Read it before writing a README or a commit.
+- `references/format.md`: the README skeleton, list indentation, the solution block, inputs, Resources, `.gitignore` and `resources/`, and the git workflow. Read it before writing a README or a commit.
 - `references/exercise-types.md`: each exercise type, when it pays off, its prompt shape, its check and what its solution holds. Read it when planning a set.
 - `references/worked-examples.md`: weak exercises from real sets rewritten, and strong ones kept, each with its reason. Read it before reviewing a set, or to calibrate wording.
 - `references/principles.md`: the research behind these rules, with sources. Read it when a call is genuinely unclear, such as how much to guide a learner, whether to let them attempt first, or whether something needs practice or only recall.

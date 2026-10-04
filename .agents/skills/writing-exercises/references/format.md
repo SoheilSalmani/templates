@@ -46,13 +46,6 @@
 3. <Verb> <outcome>, <inputs and constraints>. Check: <command> prints <output>.
 
    <details>
-     <summary>Hint</summary>
-
-   <The doc page to read, or the error to look for. Never the answer.>
-
-   </details>
-
-   <details>
      <summary>Solution</summary>
 
    ```bash
@@ -63,7 +56,7 @@
    <the output that confirms it>
    ```
 
-   <Why this is right, and the wrong turn a learner is likely to take, in a sentence or two.>
+   <Why this is right, and the wrong turn a learner is likely to take, in one sentence.>
 
    </details>
 ````
@@ -72,12 +65,13 @@
 - `<summary>` sits 2 spaces deeper than its `<details>`.
 - **Leave a blank line after `</summary>`**, or GitHub shows the Markdown inside as plain text, fences and all. Leave one before `</details>` too, as the sets already do.
 - Leave a blank line between items, and between an item's text and its first block.
-- The labels are exactly `Hint` and `Solution`, and a hint always comes before the solution.
+- The only block is labelled exactly `Solution`. Items carry no hint.
 - Every fence names a language. Match the fence the README already uses for shell, `bash` or `sh`, and use `bash` in a new README. Use `text` for output, and the tool's language for code and queries: `sql`, `python`, `hcl`, `json`.
 - Show only the output lines that confirm the step. Where the rest varies from run to run, such as timings, IDs and absolute paths, say which part matters.
 
 ## Inputs
 
+- **The smallest input the task needs.** Where the content is not what the set teaches, a one-line file or "any content" does.
 - **Data or code to work on**, when it is short: a fenced block inside the item, indented with it.
 - **A file too large to inline**: a link to a stable URL, or a file committed in the setup commit and named by its path.
 - **A specification with several rules**: `-` bullets under the item, one rule each, with the edge cases named:

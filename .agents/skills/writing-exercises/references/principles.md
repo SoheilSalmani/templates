@@ -42,8 +42,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 ## Hints
 
 - **Learners click straight through hints to the answer.** In intelligent tutors, 68% of the hint levels before the last were viewed for under a second, and this help abuse went with poorer learning. Hints that state the principle helped understanding; answer-giving hints helped only when the learner explained them (Aleven, Roll, McLaren & Koedinger 2016).
-- **Exercism's rule for its hints**: enough to unblock almost anyone, pointing at a resource that describes the solution rather than spelling it out, and never copy-pasteable into it (Exercism, concept exercise docs).
-- **So**: at most one hint, pointing at the doc page or quoting the error. The answer lives only in the solution.
+- **So**: no hints. A learner who is stuck opens the solution, which carries what helped in a hint, the principle and the likely wrong turn, along with the answer.
 
 ## How much to guide
 
@@ -55,6 +54,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 
 - Working memory is limited for new material. How much an exercise can carry depends on how much its new elements interact, and on what the learner already knows (Sweller, van Merriënboer & Paas 2019). No source gives a number.
 - **So**: one new tool idea per exercise is this skill's own working rule, not a research finding. Ideas the learner already has from programming cost almost nothing.
+- Text the task does not need is extraneous load: it takes working memory from what is new (Sweller, van Merriënboer & Paas 2019). **So**: an item is as short as its task allows, and material from outside the target shrinks to a stand-in.
 
 ## Order and revisits
 
@@ -75,7 +75,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 - **Design backwards from the final performance** (McTighe & Wiggins 2012). Wilson's version: write the program the learner should finish with, remove its hardest part to make the last exercise, and repeat (Wilson 2019, *Teaching Tech Together*). **So**: write the capstone first.
 - **Break the skill into subskills, practise the most important first, learn enough to self-correct, and remove the barriers to practising** (Kaufman 2013, *The First 20 Hours*, excerpt). **So**: the day-one loop comes first, and exercise 1 is a quick, visible win.
 - **Teach what the tool is, not a tour of its features**: the skills learners need to do things, and the model of how the tool runs (The Carpentries, lesson design training; Wilson 2019). Teach the concepts the tool actually has, not those other tools have (Exercism, syllabus docs).
-- **Doing beats reading by a wide margin**: in one online course, extra practice was associated with more than six times the learning of extra reading or watching (Koedinger et al. 2015, correlational). **So**: the README carries almost no prose.
+- **Doing beats reading by a wide margin**: in one online course, extra practice was associated with more than six times the learning of extra reading or watching (Koedinger et al. 2015, correlational). **So**: the README carries almost no prose, and each item as few words as its task allows.
 - **Learning styles are a myth**: there is virtually no evidence that matching instruction to a preferred style helps (Pashler, McDaniel, Rohrer & Bjork 2008, *abstract*). **So**: no "visual" or "hands-on" variants. Match the format to the content.
 
 ## Wording
@@ -87,13 +87,14 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 ## Sizing
 
 - Exercism aims its concept exercises at 5 to 10 minutes for a developer experienced in another language; a CodeKata takes 30 to 60 minutes; Wilson recommends a check every 10 to 15 minutes of teaching. These are targets set by their authors, not measured optimums.
-- **So**: 5 to 15 minutes per item, the capstone an hour or two.
+- **So**: 5 to 10 minutes per item, never more than 15, and the capstone only as long as combining the core takes.
 
 ## Where the evidence is weak
 
 - No study compares a project with drills for developers learning a tool. The project spine with drills only for routines is an inference from the four-component model and from transfer research.
 - Spacing ratios come from fact learning; applying them to code is inference.
 - Productive failure was studied mostly in school maths, in groups, with a teacher guiding the comparison afterwards. A learner alone has neither, which is why the solution must carry the comparison.
+- Dropping hints extends the finding that hints get skipped to experienced developers, and follows the learner's own preference for less to read.
 
 ## Sources
 

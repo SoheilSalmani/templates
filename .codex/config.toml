@@ -1,4 +1,7 @@
 # Project-scoped Codex configuration. Codex reads it only after `codex` has marked this project as trusted.
 
 [mcp_servers]
+anki = { command = "npx", args = ["-y", "@ankimcp/anki-mcp-server@0.26.0", "--stdio"] }
+github = { url = "https://api.githubcopilot.com/mcp/", bearer_token_env_var = "GITHUB_PAT_TOKEN" }
 linear-server = { url = "https://mcp.linear.app/mcp" }
+obsidian = { url = "http://127.0.0.1:27123/mcp/", bearer_token_env_var = "OBSIDIAN_MCP_API_KEY" }

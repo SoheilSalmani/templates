@@ -30,7 +30,7 @@ If a reviewer misread the code and your reply explains it, the explanation belon
 
 ## After changing code
 
-1. Rerun the verification that the change affects, and update the verification line to what you actually ran.
+1. Rerun the checks the change affects. Report what you ran in your reply, not in the description.
 2. Update the description if the change altered the canonical explanation. If review replaced approach A with C, the body describes C. The thread holds the chronology.
 3. Update the title if the change altered what the pull request means.
 4. Resolve threads that are genuinely settled, not to tidy the page.
@@ -81,7 +81,7 @@ Approving a pull request is a statement that a human is accountable for. An agen
 - Every comment you acted on was verified against the code first.
 - Nothing out of scope was implemented in this pull request.
 - Deferred work is captured somewhere, not lost in a resolved thread.
-- Verification was rerun and the line updated.
+- The checks the change affects were rerun.
 - The description matches the current head.
 - No thread was resolved without being settled.
 - Nothing was posted, pushed, approved, or merged without approval.

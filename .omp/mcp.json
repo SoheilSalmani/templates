@@ -1,6 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/can1357/oh-my-pi/main/packages/coding-agent/src/config/mcp-schema.json",
   "mcpServers": {
-    "linear-server": { "type": "http", "url": "https://mcp.linear.app/mcp" }
+    "anki": { "type": "stdio", "command": "npx", "args": ["-y", "@ankimcp/anki-mcp-server@0.26.0", "--stdio"] },
+    "github": { "type": "http", "url": "https://api.githubcopilot.com/mcp/", "headers": { "Authorization": "Bearer ${GITHUB_PAT_TOKEN}" } },
+    "linear-server": { "type": "http", "url": "https://mcp.linear.app/mcp" },
+    "obsidian": { "type": "http", "url": "http://127.0.0.1:27123/mcp/", "headers": { "Authorization": "Bearer ${OBSIDIAN_MCP_API_KEY}" } }
   }
 }

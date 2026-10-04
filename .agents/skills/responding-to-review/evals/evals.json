@@ -27,9 +27,9 @@
     {
       "id": 3,
       "prompt": "Review made me swap the in-memory cache for a database-backed one. I've pushed the change. Anything else to do?",
-      "expected_output": "Rerun verification, update the description to the current head, and check the title.",
+      "expected_output": "Rerun the affected checks, update the description to the current head, and check the title.",
       "assertions": [
-        "It reruns or asks to rerun the affected verification and updates the verification line",
+        "It reruns or asks to rerun the affected checks, without adding a verification line to the description",
         "It updates the description so it describes the database-backed approach",
         "It checks whether the title still describes the change",
         "It does not preserve the in-memory approach in the body as history"

@@ -49,7 +49,7 @@ There is no explain type. An answer that fits in a sentence is theory, and theor
 
 > On a branch with three commits, write down how many commits `git log --oneline` will show after `git commit --amend -m "Fix typo"`, and whether the last hash will change. Check: run it, and compare with what you wrote.
 
-**Solution**: the actual result first ("still three; the last hash changes"), then the reason ("amend replaces the commit rather than editing it"), then the tempting wrong answer and why it is wrong. No hint: the guess is the point.
+**Solution**: the actual result first ("still three; the last hash changes"), then the reason ("amend replaces the commit rather than editing it"), then the tempting wrong answer and why it is wrong.
 
 ## Break it on purpose
 
@@ -147,12 +147,12 @@ There is no explain type. An answer that fits in a sentence is theory, and theor
 
 **Shape**: `Without the docs or your earlier commits, <rebuild X> in an empty directory. Check: <its original check>, then compare with the Exercise N commit.`
 
-**Solution**: none beyond the pointer to the commit. Never a hint.
+**Solution**: none beyond the pointer to the commit.
 
 ## Capstone
 
 **When**: once, at the end. It integrates the core of the set in a task close to the learner's real use.
 
-**Shape**: a goal, the inputs, the constraints, and an acceptance check, sized for an hour or two. It names no features.
+**Shape**: a goal, the inputs, the constraints, and an acceptance check, as short as combining the core allows. It names no features.
 
 **Solution**: the acceptance commands and their output. The code is in the commit.
