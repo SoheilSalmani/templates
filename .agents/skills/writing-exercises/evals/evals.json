@@ -1,15 +1,15 @@
 {
   "skill_name": "writing-exercises",
-  "notes": "Score the exercises a learner would get, not how much method the reply describes. A set fails outright if any item gives its answer's code or steps in the prompt, if an item has no check the learner can run without the solution, if a solution contradicts its item, if a command, flag or API was neither run nor checked against current docs, if an item asks only for a fact, or if a readiness set contains anything from the repository or was written into it. A set also fails if it skipped the coverage check without saying so, if any item carries a hint, or if an item makes the learner read or write material from outside the target that a one-line stand-in could replace. A review fails if it rewrites items that were already fine, or renumbers or changes the meaning of an item that has an Exercise N commit. Score each output against a run without the skill: a set that does not beat that baseline on these points is not finished.",
+  "notes": "Score the exercises a learner would get, not how much method the reply describes. A set fails outright if any item gives its answer's code or steps in the prompt, if a solution does not answer its item, if a command, flag or API was neither run nor checked against current docs, if an item asks only for a fact, or if a readiness set contains anything from the repository or was written into it. A set also fails if it skipped the coverage check without saying so, if any item carries a hint or a check sentence, if any item installs the tool, if the README has prose between the title and the list, or if an item makes the learner read or write material from outside the target that a one-line stand-in could replace. A review fails if it rewrites items that were already fine, or renumbers or changes the meaning of an item that has an Exercise N commit. Score each output against a run without the skill: a set that does not beat that baseline on these points is not finished.",
   "evals": [
     {
       "id": 1,
       "prompt": "I want to learn DuckDB properly. Write the activities for it.",
       "expected_output": "A duckdb-activities README in the activities format, built on one dataset, ordered so each idea is introduced, reused and mixed, with every command checked against the current DuckDB docs.",
       "assertions": [
-        "The README is titled `# DuckDB Activities`, with one line under it naming what the set builds and the DuckDB version and date it was checked against",
-        "Item 1 gives the command that installs DuckDB, and ends with a visible result",
-        "Every item ends with a sentence starting `Check:` that the learner can act on without opening the solution; for a predict item, that is running the thing and comparing with what they wrote",
+        "The README is the title `# DuckDB Activities` followed directly by the numbered list, with no description or version line",
+        "No item installs DuckDB, and item 1 ends with a visible result",
+        "Every item is one or two short sentences, with no `Check:` sentence and almost no inline code",
         "No item contains the SQL or commands that answer it; those appear only inside `<details>` blocks",
         "The set includes at least one predict item, one break or fix item, one inspect item, and one compare or choose item",
         "At least one later item uses an earlier feature without naming it",
@@ -17,20 +17,19 @@
         "It searched the Anki collection and the existing activity sets before writing, and the reply says what it skipped or sent to flashcards, and why",
         "No item asks the learner only to state a fact",
         "Every `<details>` block is indented to its item's text, with a blank line after `</summary>`, and is labelled `Solution`; no item has a hint",
-        "Each item states its task in a few sentences, on the smallest data that exercises it",
-        "The reply says which solutions were run and which were only checked against the docs"
+        "The reply says which solutions were run and which were only checked against the docs, and names the DuckDB version and date"
       ]
     },
     {
       "id": 2,
       "prompt": "Turn the Terraform Get Started tutorial for AWS into exercises for me.",
-      "expected_output": "Exercises that state outcomes rather than the tutorial's steps, with a prediction the plan settles and a teardown item, linking the tutorial in Resources.",
+      "expected_output": "Short items that state outcomes rather than the tutorial's steps, with a prediction the plan settles and a teardown item, linking the tutorial in Resources.",
       "assertions": [
         "No item tells the learner to copy or paste code from the tutorial",
-        "Items state outcomes, such as an instance that exists or an output that prints, not the tutorial's steps",
+        "Items state outcomes, such as an instance that exists, not the tutorial's steps",
         "At least one item asks for a prediction that `terraform plan` then settles",
-        "A teardown item comes last, with a check that nothing is left, such as an empty `terraform state list`",
-        "`## Resources` links the tutorial"
+        "A teardown item comes last",
+        "A Resources list links the tutorial"
       ]
     },
     {
@@ -42,19 +41,19 @@
         "The new items are numbered 16 to 20, and items 1 to 15 are unchanged",
         "The new items build on the set's existing pipelines and names",
         "At least one new item uses an earlier feature, such as a transformer or pagination, without naming it",
-        "Every new item ends with a check",
+        "Every new item is one or two short sentences, with no check",
         "If it commits, the subject is `fixup! Set up the playground`, and it does not rebase or push without asking"
       ]
     },
     {
       "id": 4,
       "prompt": "fastapi-activities has 13 Exercise commits but the README still says TODO. Write the statements.",
-      "expected_output": "Thirteen items written from the commits' diffs, numbered to match, each stating the outcome its diff achieves, with a check.",
+      "expected_output": "Thirteen items written from the commits' diffs, numbered to match, each stating in a sentence the outcome its diff achieves.",
       "assertions": [
         "It reads each Exercise commit's diff before writing its item",
         "It writes 13 items, numbered 1 to 13 to match the commits",
         "Each item states the outcome its diff achieves, not a description of the diff",
-        "Each item ends with a check",
+        "Each item is one or two short sentences, with no check",
         "It changes no commit, and flags any commit whose purpose it cannot tell"
       ]
     },
@@ -64,7 +63,7 @@
       "expected_output": "A per-item review that keeps item 1, and reports that item 2's statement asks for a package name its Exercise 2 commit computes instead.",
       "assertions": [
         "It reads the README and the Exercise commits",
-        "It keeps item 1's statement, adding at most a check",
+        "It keeps item 1's statement word for word",
         "It reports that item 2 asks the user for a package name while the commit computes it",
         "It asks which of the two is right instead of silently changing either",
         "It does not renumber anything"
@@ -73,23 +72,23 @@
     {
       "id": 6,
       "prompt": "Write the reference solution for exercise 4 of my activities and commit it.",
-      "expected_output": "One commit named exactly `Exercise 4`, holding only that exercise's files, with its check run and passing.",
+      "expected_output": "One commit named exactly `Exercise 4`, holding only that exercise's files, with the solution run before committing.",
       "assertions": [
         "The commit subject is exactly `Exercise 4`, with no body or prefix",
         "The commit holds only that exercise's files, and not the README",
-        "The item's check was run and passed before committing",
+        "The solution was run before committing",
         "Commands the commit cannot show go in the item's Solution block, as a separate `fixup! Set up the playground` commit"
       ]
     },
     {
       "id": 7,
       "prompt": "Write exercises so my colleague can learn dbt. She knows SQL well but has never used git.",
-      "expected_output": "A dbt set that skips SQL basics, gives the git setup openly since git is not what the set teaches, and spends its guidance on dbt.",
+      "expected_output": "A dbt set that skips SQL basics, keeps git out of the items since git is not what the set teaches, and spends every item on dbt.",
       "assertions": [
-        "No item teaches SQL basics",
-        "Git commands the set needs are given openly in the items, not set as exercises",
+        "No item teaches SQL basics or git",
+        "Git commands the set needs appear in the setup commit or inside solutions, never as items of their own",
         "dbt features are named on first use and not named on later uses",
-        "Every item ends with a check"
+        "No item installs dbt, and no item has a check sentence"
       ]
     },
     {
@@ -98,7 +97,7 @@
       "expected_output": "A set built from the current Kestra docs, with the version pinned, and no command, flag or API that was not read in the docs or run.",
       "assertions": [
         "It reads the current Kestra documentation before writing any item",
-        "The README names the Kestra version and date the set was checked against",
+        "The reply names the Kestra version and date the set was checked against, and the README does not",
         "Every command, flag and API in the set appears in the docs it read, or was run",
         "It does not ask the user anything the docs answer"
       ]
@@ -155,7 +154,7 @@
       "assertions": [
         "The commit subject is `Set up the playground`, not a subject rewritten to writing-commits' style",
         "No item uses an em dash as glue, a synonym triad, or the words \"just\", \"simply\" or \"easy\"",
-        "The rules of the set itself still hold: outcomes, checks, and hidden solutions"
+        "The rules of the set itself still hold: short outcomes and hidden solutions, with no checks or hints"
       ]
     },
     {
@@ -219,7 +218,7 @@
       "expected_output": "Short items on Actions itself, whose workflows run one-line steps such as `echo`, so that no item needs an application to build, with only a Solution block under each.",
       "assertions": [
         "No item asks the learner to write or read application code: workflow steps are one-line commands",
-        "Every item reads in a few sentences, and its check is one command or one observable result",
+        "Every item is one or two short sentences, with no check",
         "No item has a Hint block"
       ]
     }

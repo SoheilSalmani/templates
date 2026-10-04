@@ -66,7 +66,7 @@ Order what is kept by dependency, not by count: traits before trait objects, own
 
 - **A fresh project with a neutral domain of its own**, unrelated to the codebase's: a URL shortener, a log parser, a rate limiter, a key-value store.
 - **Real tasks that combine the features the way the codebase does**: a worker pool on the runtime's tasks and channels that shuts down cleanly; a plugin registry of trait objects looked up by name; a parser that returns a custom error type through `?`.
-- **A mastery check, not a first lesson.** The learner is expected to know or study these features, so the items give little guidance, name a feature only when the task cannot make it inevitable, and check strictly, with tests.
+- **A test of mastery, not a first lesson.** The learner is expected to know or study these features, so the items give little guidance and name a feature only when the task cannot make it inevitable; the solutions hold the tests that pin the behaviour.
 - **A break or fix item for each feature that fails in a characteristic way**: a borrow-checker error, a deadlock, a future that never runs.
 - **A capstone** combining the top features in one program the learner could imagine shipping.
 

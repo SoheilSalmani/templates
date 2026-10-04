@@ -6,7 +6,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 
 ## Contents
 
-- The loop: attempt, check, then the solution
+- The loop: attempt, then the solution
 - Exercise or flashcard
 - Real tasks
 - Hints
@@ -19,14 +19,14 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 - Sizing
 - Where the evidence is weak
 
-## The loop: attempt, check, then the solution
+## The loop: attempt, then the solution
 
 - **Retrieval beats rereading**, even though rereading feels better at the time. Retrieval wins at two days and a week; rereading wins only at five minutes, and raises confidence while lowering recall (Roediger & Karpicke 2006, *abstract*). Dunlosky et al. (2013) rate practice testing and spacing the only two high-utility techniques of ten, and rereading low. **So**: every item is an outcome the learner produces, never a recipe to follow or a page to reread.
 - **Generating beats reading**, by about 0.40 SD across 86 studies, more when the learner generates the whole answer (0.55) than part of it (0.32), and about zero for nonwords (Bertsch et al. 2007). **So**: the learner writes the whole unit of code. A name nobody could derive, such as a magic file name, is a nonword: name it, link it, and don't make the learner guess it.
-- **Feedback helps on average (d = 0.48), most when it carries information (0.99) and least as reward or punishment (0.24)** (Wisniewski, Zierer & Hattie 2020). Over a third of feedback interventions made performance worse, and feedback aimed at the person rather than the task does least, praise included (Kluger & DeNisi 1996, *abstract*; Hattie & Timperley 2007). **So**: the check tells the learner whether it works; the solution says why, and names the likely wrong turn. No praise.
-- **Feedback helps after an attempt, not before.** Studies that kept answers out of reach until the learner tried show a benefit; studies that did not are inconsistent (Shute 2008, citing Bangert-Drowns et al. 1991). **So**: the solution is hidden, and the check sits outside it so that verifying never needs it.
+- **Feedback helps on average (d = 0.48), most when it carries information (0.99) and least as reward or punishment (0.24)** (Wisniewski, Zierer & Hattie 2020). Over a third of feedback interventions made performance worse, and feedback aimed at the person rather than the task does least, praise included (Kluger & DeNisi 1996, *abstract*; Hattie & Timperley 2007). **So**: the solution is the feedback: an answer that works, to compare with. No praise.
+- **Feedback helps after an attempt, not before.** Studies that kept answers out of reach until the learner tried show a benefit; studies that did not are inconsistent (Shute 2008, citing Bangert-Drowns et al. 1991). **So**: the solution is hidden until the learner has tried.
 - **A failed attempt followed by the answer beats reading the answer**, for guesses that were sure to fail (Kornell, Hays & Bjork 2009, *abstract*; Richland, Kornell & Kao 2009, *abstract*), provided correction follows and analyses the error (Metcalfe 2017, *abstract*). **So**: predict items are worth writing even when most predictions will be wrong, as long as the solution explains the actual behaviour.
-- **Judging your learning with the answer in view misleads you** (Koriat & Bjork 2005, *abstract*). **So**: checks are external, such as output, tests or behaviour, never "do you understand this?". A recall item later tests what reading the solution only seemed to teach.
+- **Judging your learning with the answer in view misleads you** (Koriat & Bjork 2005, *abstract*). **So**: open the solution only after a real attempt, and let a recall item, on a later day, test what reading it only seemed to teach.
 
 ## Exercise or flashcard
 
@@ -75,14 +75,14 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 - **Design backwards from the final performance** (McTighe & Wiggins 2012). Wilson's version: write the program the learner should finish with, remove its hardest part to make the last exercise, and repeat (Wilson 2019, *Teaching Tech Together*). **So**: write the capstone first.
 - **Break the skill into subskills, practise the most important first, learn enough to self-correct, and remove the barriers to practising** (Kaufman 2013, *The First 20 Hours*, excerpt). **So**: the day-one loop comes first, and exercise 1 is a quick, visible win.
 - **Teach what the tool is, not a tour of its features**: the skills learners need to do things, and the model of how the tool runs (The Carpentries, lesson design training; Wilson 2019). Teach the concepts the tool actually has, not those other tools have (Exercism, syllabus docs).
-- **Doing beats reading by a wide margin**: in one online course, extra practice was associated with more than six times the learning of extra reading or watching (Koedinger et al. 2015, correlational). **So**: the README carries almost no prose, and each item as few words as its task allows.
+- **Doing beats reading by a wide margin**: in one online course, extra practice was associated with more than six times the learning of extra reading or watching (Koedinger et al. 2015, correlational). **So**: the README is the title and the list, and each item as few words as its task allows.
 - **Learning styles are a myth**: there is virtually no evidence that matching instruction to a preferred style helps (Pashler, McDaniel, Rohrer & Bjork 2008, *abstract*). **So**: no "visual" or "hands-on" variants. Match the format to the content.
 
 ## Wording
 
 - **Say what to do, not how**, name the artefact the learner must build, and give an example that differs from the tests (Exercism, concept exercise instructions).
 - **One verifiable verb, one skill**, never "understand", "learn" or "explore" (The Carpentries, defining lesson objectives; Wilson 2019).
-- **Every sentence will be skipped by someone**, so a key fact stated once is a fact some learners never see (Eric Wastl, on writing Advent of Code puzzles, in a talk). **So**: every fact the task depends on goes in the item itself.
+- **Every sentence will be skipped by someone**, so a key fact stated once is a fact some learners never see (Eric Wastl, on writing Advent of Code puzzles, in a talk). **So**: an item is short enough to be read whole, and the few facts the task cannot do without sit in the item itself.
 
 ## Sizing
 
@@ -95,6 +95,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 - Spacing ratios come from fact learning; applying them to code is inference.
 - Productive failure was studied mostly in school maths, in groups, with a teacher guiding the comparison afterwards. A learner alone has neither, which is why the solution must carry the comparison.
 - Dropping hints extends the finding that hints get skipped to experienced developers, and follows the learner's own preference for less to read.
+- No study compares an item with a check sentence against one whose only feedback is a solution to compare with. Dropping the check follows the learner's preference for less to read; the feedback findings above are met by the solution, read after the attempt.
 
 ## Sources
 

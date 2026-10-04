@@ -6,7 +6,7 @@
 - An item and its blocks
 - Inputs
 - Numbering and parts
-- Resources
+- Parts and Resources
 - The repository
 - Commits
 - Finding an answer
@@ -16,9 +16,7 @@
 ````markdown
 # <Tool> Activities
 
-<What the set builds, in one sentence.> Checked against <tool> <version> on <YYYY-MM-DD>.
-
-1. <Verb> <outcome>, <inputs and constraints>. Check: <command> prints <output>.
+1. <Verb> <outcome>.
 
    <details>
      <summary>Solution</summary>
@@ -30,20 +28,16 @@
    </details>
 
 2. <Next item.>
-
-## Resources
-
-- [<Title> (<Publisher or site>)](<url>)
 ````
 
 - The title uses the tool's own casing: `# dbt Activities`, `# systemd Activities`, `# Amazon Web Services Activities`.
-- The line under the title is the only prose before the list. Say what is built, in the learner's words, and the version and date the commands were checked against, so a reader months later knows which docs to compare with.
+- **The list comes straight after the title.** No description, no version line, no notes: the version and date the set was checked against go in the reply.
 - No `## TODOs` or notes sections. Planning notes stay out of the README.
 
 ## An item and its blocks
 
 ````markdown
-3. <Verb> <outcome>, <inputs and constraints>. Check: <command> prints <output>.
+3. <Verb> <outcome>.
 
    <details>
      <summary>Solution</summary>
@@ -53,10 +47,10 @@
    ```
 
    ```text
-   <the output that confirms it>
+   <output, only where it is the answer>
    ```
 
-   <Why this is right, and the wrong turn a learner is likely to take, in one sentence.>
+   <One sentence, only where the commands alone would mislead.>
 
    </details>
 ````
@@ -67,38 +61,35 @@
 - Leave a blank line between items, and between an item's text and its first block.
 - The only block is labelled exactly `Solution`. Items carry no hint.
 - Every fence names a language. Match the fence the README already uses for shell, `bash` or `sh`, and use `bash` in a new README. Use `text` for output, and the tool's language for code and queries: `sql`, `python`, `hcl`, `json`.
-- Show only the output lines that confirm the step. Where the rest varies from run to run, such as timings, IDs and absolute paths, say which part matters.
+- Show output only where it answers the item, such as a predict item's result, and only the lines that do.
 
 ## Inputs
 
 - **The smallest input the task needs.** Where the content is not what the set teaches, a one-line file or "any content" does.
 - **Data or code to work on**, when it is short: a fenced block inside the item, indented with it.
 - **A file too large to inline**: a link to a stable URL, or a file committed in the setup commit and named by its path.
-- **A specification with several rules**: `-` bullets under the item, one rule each, with the edge cases named:
+- **A specification with several rules**: `-` bullets under the item, one rule each:
 
   ```markdown
   23. Create a staging model for products so that:
 
-      - `sku` is renamed to `product_id`
-      - `is_food_item` is true if `type`, which can be `null`, is `"jaffle"`, and false otherwise
-
-      Check: a product whose `type` is `null` has `is_food_item` false.
+      - the SKU becomes the product ID
+      - a product is a food item when its type, which can be null, is jaffle
   ```
 
-- **Setup that is not what the set teaches**, such as a scaffold command with its flags: give it openly in the item, then state the task.
+- **Setup that is not what the set teaches** goes in the setup commit, or in the solution, never in an item of its own.
 
 ## Numbering and parts
 
 - **One list per README, numbered 1 to N**, so that each `Exercise N` names exactly one commit on the branch.
-- A long set can be split with `##` headings that name its parts. The numbering continues across them: the list after a heading starts at the next number, which GitHub honours.
+- A long set can be split with `##` headings that name its parts, such as the course or chapter each part follows. The numbering continues across them: the list after a heading starts at the next number, which GitHub honours.
 - Older READMEs restart at 1 under each `## <Source>` section and keep each section's answers on a branch of its own. When extending one of those, keep its scheme.
 - Never write `1. TODO.` as a placeholder. A part with no exercises yet is left out.
 
-## Resources
+## Parts and Resources
 
-- The last section is `## Resources`. In a README split into per-source sections, each section ends with `### Resources` instead.
-- One bullet per source: `- [<Title> (<Publisher or site>)](<url>)`, such as `- [Terraform in Action (Manning)](...)` or `- [Get Started (Terraform Docs)](...)`. The official docs come first, then the course or book the set follows.
-- List only sources the exercises use.
+- Resources are optional. A part that follows a course, book or tutorial ends with `### Resources`, linking it; a set that follows nothing has none.
+- One bullet per source: `- [<Title> (<Publisher or site>)](<url>)`, such as `- [Terraform in Action (Manning)](...)`.
 
 ## The repository
 
@@ -143,4 +134,4 @@ git log --oneline --grep='^Exercise 4$'    # the commit that answers item 4
 git show <sha>                              # that answer, as a diff
 ```
 
-To redo an item from scratch, branch from the commit before its answer, and compare with `git diff <your-branch> <sha>` once the check passes.
+To redo an item from scratch, branch from the commit before its answer, and compare with `git diff <your-branch> <sha>` once yours works.
