@@ -33,15 +33,17 @@ Some collections also schedule exercise reviews, with a note type that holds a s
 
 ## Existing exercise sets
 
-The learner's sets are directories named `*-activities`, usually side by side in one folder. Search their READMEs for the concept's words, in the subject's own set and in sets for neighbouring tools:
+The learner's sets live in two places. The current ones are folders of one activities repository, each with its `README.md` on `master` and a branch of answers named after the folder. Older ones are repositories named `*-activities`, usually side by side in one folder. Search the READMEs of both for the concept's words, in the subject's own set and in sets for neighbouring tools:
 
 ```bash
+git -C activities grep -n -i -E 'lifetime|borrow' master -- '*/README.md'
 grep -n -i -E 'lifetime|borrow' */README.md
 ```
 
-An item whose number has an `Exercise N` commit was done:
+An item whose number has an `Exercise N` commit was done, on the activity's branch or in the older repository:
 
 ```bash
+git -C activities log --oneline --grep='^Exercise 7$' rust
 git -C rust-activities log --oneline --grep='^Exercise 7$'
 ```
 

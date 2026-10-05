@@ -2,16 +2,16 @@
 
 ## Contents
 
-- The README
+- The README of an activity
 - An item and its blocks
 - Inputs
 - Numbering and parts
 - Parts and Resources
-- The repository
+- The repository and its root README
 - Commits
 - Finding an answer
 
-## The README
+## The README of an activity
 
 ````markdown
 # <Tool> Activities
@@ -91,9 +91,33 @@
 - Resources are optional. A part that follows a course, book or tutorial ends with `### Resources`, linking it; a set that follows nothing has none.
 - One bullet per source: `- [<Title> (<Publisher or site>)](<url>)`, such as `- [Terraform in Action (Manning)](...)`.
 
-## The repository
+## The repository and its root README
 
-- The directory is `<tool>-activities/`, lowercase and hyphenated, beside the learner's other sets.
+One repository holds every activity:
+
+```text
+activities/
+├── README.md        the table of activities
+├── .gitignore
+├── weft/
+│   └── README.md    one activity: its title and numbered list
+└── rust/
+    └── README.md
+```
+
+- `master` holds a single commit, `Set up the playground`, with the tooling, the root `README.md`, `.gitignore`, and every activity's folder with its `README.md` and starter files.
+- The root `README.md` is the title and one table, a row per activity, linking the activity's `README.md` and its branch:
+
+  ```markdown
+  # Activities
+
+  | Activity | Branch |
+  | --- | --- |
+  | [Weft](weft/README.md) | [weft](https://github.com/<owner>/activities/tree/weft) |
+  ```
+
+- An activity's folder is named after the tool, lowercase and hyphenated, and its branch takes the same name.
+- Everything an exercise produces lives in its activity's folder, and the commands in the solutions run from there.
 - `.gitignore` groups its patterns into blocks, each under a `# <What> (<Tool>)` comment, with a blank line between blocks:
 
   ```gitignore
@@ -104,34 +128,30 @@
   .dlt/secrets.toml
   ```
 
-- A book's or course's companion code goes under `resources/<slug>` as a git submodule, and only when an exercise uses it:
-
-  ```bash
-  git submodule add <url> resources/<slug>
-  ```
-
-- Starter files the exercises need, such as code to fix, data to load, or a project to predict about, go in the setup commit.
+- A book's or course's companion code goes under `<activity>/resources/<slug>` as a git submodule, and only when an exercise uses it.
+- Starter files the exercises need, such as code to fix, data to load, or a project to predict about, go in the activity's folder in `Set up the playground`.
+- An older set, a `<tool>-activities` repository of its own, keeps its `README.md` at the root and its own `Set up the playground`.
 
 ## Commits
 
-| Subject | Holds |
-| --- | --- |
-| `Set up the playground` | The root commit: README, `.gitignore`, `.gitmodules`, starter files |
-| `fixup! Set up the playground` | A later change to the README, committed on its own |
-| `Exercise N` | The answer to item N, and nothing else. Never the README |
-| `fixup! Exercise N` | A correction to the answer to item N |
+| Subject | Where | Holds |
+| --- | --- | --- |
+| `Set up the playground` | `master`, its only commit | The tooling, the root `README.md`, `.gitignore`, `.gitmodules`, and every activity's `README.md` and starter files |
+| `fixup! Set up the playground` | `master` | A new activity, or a change to any `README.md` or starter file, until it is folded in |
+| `Exercise N` | The activity's branch | The answer to item N, inside the activity's folder, and nothing else. Never a `README.md` |
+| `fixup! Exercise N` | The activity's branch | A correction to the answer to item N |
 
 - **The subject is the whole message.** No body, no prefix, no trailer.
 - **An exercise that changes no file has no commit.** Its answer lives entirely in its `Solution` block.
 - **Write the item before its answer.** A statement written afterwards describes the diff instead of the goal.
 - **The numbers are keys.** An item inserted before committed ones means rewording every later `Exercise N` commit, so append instead. Items without commits can be reordered freely.
-- **Folding fixups in rewrites history.** `git rebase -i --autosquash --root` moves every `fixup!` into its target and changes every hash after the root, so the remote needs a force-push. Both are the user's call; `rewriting-history` covers the mechanics.
+- **Folding fixups in rewrites history.** `git rebase -i --autosquash --root` on `master` moves every `fixup!` into `Set up the playground` and gives it a new hash, so every activity branch is then rebased onto the new `master` with `git rebase --onto master <old-setup> <branch>`, and both need a force-push. All of it is the user's call; `rewriting-history` covers the mechanics.
 
 ## Finding an answer
 
 ```bash
-git log --oneline --grep='^Exercise 4$'    # the commit that answers item 4
-git show <sha>                              # that answer, as a diff
+git log --oneline --grep='^Exercise 4$' weft   # the commit that answers item 4 of the weft activity
+git show <sha>                                  # that answer, as a diff
 ```
 
 To redo an item from scratch, branch from the commit before its answer, and compare with `git diff <your-branch> <sha>` once yours works.

@@ -11352,7 +11352,7 @@
             "",
             "## Before writing",
             "",
-            "1. **Read what exists.** In an existing set, read the whole README and `git log --reverse --format='%h %s'`: which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, directories named `*-activities`, show what they already know and how they write.",
+            "1. **Read what exists.** In an existing set, read its whole `README.md` and the log of its answers, `git log --reverse --format='%h %s'` on its branch: which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, folders of the activities repository and older `*-activities` repositories, show what they already know and how they write.",
             "2. **Pin the subject**: the tool and its version, or the codebase's stack and its versions, and the tutorial, course or book if the learner follows one. Read the official docs for every part you will use. **Never write a command, flag, API or output you have not read in the docs or run.** The reply names the version and the date the set was checked against.",
             "3. **Know the learner**: what they already use, and what they want this for. Infer it from the request and their sets, and ask only when the target is unknown and would change the set. By default the learner is an experienced developer, so skip programming basics and spend the set on what is new.",
             "4. **Write the target in one sentence**: what the learner can do at the end without looking anything up. Every exercise serves it.",
@@ -11392,7 +11392,7 @@
             "- **Minimal.** Give the outcome and nothing the learner could do without. Leave out paths, file names, names and values the learner can choose; the solution shows one possible answer. An item reads in seconds and is done in minutes.",
             "- **Practise the target and nothing else.** Material from outside the target shrinks to the smallest stand-in that works, or disappears: a set on a template engine records placeholder files, not a service the learner has to read; a set on a CI system runs one-line steps, not a build.",
             "- **State the outcome, not the steps.** Never put the answer's code in the prompt, and never turn a tutorial's \"copy this\" into an exercise. Code belongs in a prompt only as material: data to load, a snippet to predict, a bug to fix.",
-            "- **Keep code out of the sentence.** Name things in words where words are clear, such as \"the project name\" or \"a Dockerfile\". Inline code only for a name the learner must type exactly and words cannot carry; anything longer is fenced material.",
+            "- **Keep code out of the sentence.** Name things in words where words are clear, such as \"the project name\" or \"a Dockerfile\". Inline code only for a name the learner must type exactly and words cannot carry; anything longer is fenced material. A file is the exception: give its name, such as `README.md`, never a paraphrase like \"the README\".",
             "- **Give only the facts the task cannot do without**, such as data to load or a value a later item reuses.",
             "- **One outcome per item.**",
             "- **Block a shortcut only where it would skip the point**: \"without adding a patch\", \"using only the CLI\".",
@@ -11449,10 +11449,12 @@
             "",
             "`references/format.md` holds the exact Markdown, the indentation a `<details>` block needs inside a list, and the git workflow. Read it before writing or editing a README or a commit. The parts that bind:",
             "",
-            "- **A set lives in `<tool>-activities/`**, a git repository beside the learner's other sets. Its README is the title, `# <Tool> Activities`, then the numbered list: no description and no version line.",
-            "- **Commit subjects are fixed.** `Set up the playground` for the root commit, which holds the README, `.gitignore` and starter files; `fixup! Set up the playground` for later README changes; `Exercise N` for the answer to item N, holding only that exercise's files. The number is the key that ties a commit to its item, so **these subjects win over the subject rules in `writing-commits`.**",
+            "- **One repository holds every activity.** Its `master` has a single commit, `Set up the playground`: the tooling, a root `README.md` with a table of every activity linking to its branch, and one folder per activity, named after the tool, holding that activity's `README.md`. An activity's `README.md` is its title, `# <Tool> Activities`, then the numbered list: no description and no version line.",
+            "- **Each activity has a branch named after its folder**, and its commits after `Set up the playground` are its answers and nothing else: one `Exercise N` per item, holding only that exercise's files, inside the activity's folder.",
+            "- **Commit subjects are fixed**, `Set up the playground` and `Exercise N`; the number is the key that ties a commit to its item, so **these subjects win over the subject rules in `writing-commits`.** A new activity or a change to any `README.md` is a `fixup! Set up the playground` on `master`, folded in by an autosquash rebase, after which every activity branch is rebased onto the new `master`.",
             "- **Never renumber, or change the meaning of, an item that has a commit.** Renumbering means rewording every later commit. Append instead; items without commits can still move.",
-            "- **Commit only when asked.** Folding fixups in with an autosquash rebase rewrites history, so ask first, and leave it and any force-push to the user.",
+            "- **Commit only when asked.** Folding fixups in and rebasing the branches rewrite history, so ask first, and leave the force-push to the user unless they ask for it.",
+            "- Older sets are separate `<tool>-activities` repositories, with their `README.md` at the root and their own `Set up the playground`. When extending one, keep its layout.",
             "- Run the README's prose through `humanizer` before showing it.",
             "",
             "## Extending or reviewing a set",
@@ -11475,7 +11477,7 @@
             "- Every name a solution uses exists by then, and every solution answers its item.",
             "- Every command, flag and API was run or checked against the docs for the pinned version, and the reply says which, with the version and date.",
             "- Solutions are one possible answer, mostly commands; longer code is in `Exercise N` commits.",
-            "- The README is the title and the list, with no description.",
+            "- The activity's `README.md` is the title and the list, with no description, in the activity's folder, and the root `README.md` lists the activity with a link to its branch.",
             "- A readiness set holds nothing from the repository, and nothing was written into the repository.",
             "- The numbering continues the README's, and no item with a commit was renumbered or changed in meaning.",
             "",
@@ -11719,6 +11721,18 @@
             "        \"Every item is one or two short sentences, with no check\",",
             "        \"No item has a Hint block\"",
             "      ]",
+            "    },",
+            "    {",
+            "      \"id\": 21,",
+            "      \"prompt\": \"Create a Rust activity in my activities repository.\",",
+            "      \"expected_output\": \"A rust/README.md with the title and the numbered list, and a row for it in the root README.md table linking the rust branch, both committed on master as fixup! Set up the playground, with no answers committed unasked.\",",
+            "      \"assertions\": [",
+            "        \"The activity's questions are in rust/README.md, titled `# Rust Activities` and followed directly by the list\",",
+            "        \"The root README.md table gains a row that links rust/README.md and the rust branch\",",
+            "        \"The change is committed on master as `fixup! Set up the playground`, and it asks before the autosquash rebase, rebasing the activity branches, or force-pushing\",",
+            "        \"Any commit it makes on the rust branch is an `Exercise N` holding only files inside rust/\",",
+            "        \"Items name files by their file name, such as `Cargo.toml`, never a paraphrase such as \\\"the manifest\\\"\"",
+            "      ]",
             "    }",
             "  ]",
             "}"
@@ -11857,15 +11871,17 @@
             "",
             "## Existing exercise sets",
             "",
-            "The learner's sets are directories named `*-activities`, usually side by side in one folder. Search their READMEs for the concept's words, in the subject's own set and in sets for neighbouring tools:",
+            "The learner's sets live in two places. The current ones are folders of one activities repository, each with its `README.md` on `master` and a branch of answers named after the folder. Older ones are repositories named `*-activities`, usually side by side in one folder. Search the READMEs of both for the concept's words, in the subject's own set and in sets for neighbouring tools:",
             "",
             "```bash",
+            "git -C activities grep -n -i -E 'lifetime|borrow' master -- '*/README.md'",
             "grep -n -i -E 'lifetime|borrow' */README.md",
             "```",
             "",
-            "An item whose number has an `Exercise N` commit was done:",
+            "An item whose number has an `Exercise N` commit was done, on the activity's branch or in the older repository:",
             "",
             "```bash",
+            "git -C activities log --oneline --grep='^Exercise 7$' rust",
             "git -C rust-activities log --oneline --grep='^Exercise 7$'",
             "```",
             "",
@@ -11980,10 +11996,10 @@
             "**When**: the tool keeps state or metadata the learner must learn to read, such as a plan, a state file, logs, a query plan or a lockfile.",
             "",
             "**Shape**: `Using only <the tool>, find <a fact>.`",
-            "**Solution**: the command, such as `git blame -L 12,12 README.md`, with the output that answers it.",
-            "> Using only git, find which commit last changed a line of the README.",
             "",
-            "**Solution**: the command, `git blame -L 12,12 README.md` here, with the output that answers it.",
+            "> Using only git, find which commit last changed a line of `README.md`.",
+            "",
+            "**Solution**: the command, such as `git blame -L 12,12 README.md`, with the output that answers it.",
             "",
             "## Compare two ways",
             "",
@@ -12071,16 +12087,16 @@
             "",
             "## Contents",
             "",
-            "- The README",
+            "- The README of an activity",
             "- An item and its blocks",
             "- Inputs",
             "- Numbering and parts",
             "- Parts and Resources",
-            "- The repository",
+            "- The repository and its root README",
             "- Commits",
             "- Finding an answer",
             "",
-            "## The README",
+            "## The README of an activity",
             "",
             "````markdown",
             "# <Tool> Activities",
@@ -12160,9 +12176,33 @@
             "- Resources are optional. A part that follows a course, book or tutorial ends with `### Resources`, linking it; a set that follows nothing has none.",
             "- One bullet per source: `- [<Title> (<Publisher or site>)](<url>)`, such as `- [Terraform in Action (Manning)](...)`.",
             "",
-            "## The repository",
+            "## The repository and its root README",
             "",
-            "- The directory is `<tool>-activities/`, lowercase and hyphenated, beside the learner's other sets.",
+            "One repository holds every activity:",
+            "",
+            "```text",
+            "activities/",
+            "├── README.md        the table of activities",
+            "├── .gitignore",
+            "├── weft/",
+            "│   └── README.md    one activity: its title and numbered list",
+            "└── rust/",
+            "    └── README.md",
+            "```",
+            "",
+            "- `master` holds a single commit, `Set up the playground`, with the tooling, the root `README.md`, `.gitignore`, and every activity's folder with its `README.md` and starter files.",
+            "- The root `README.md` is the title and one table, a row per activity, linking the activity's `README.md` and its branch:",
+            "",
+            "  ```markdown",
+            "  # Activities",
+            "",
+            "  | Activity | Branch |",
+            "  | --- | --- |",
+            "  | [Weft](weft/README.md) | [weft](https://github.com/<owner>/activities/tree/weft) |",
+            "  ```",
+            "",
+            "- An activity's folder is named after the tool, lowercase and hyphenated, and its branch takes the same name.",
+            "- Everything an exercise produces lives in its activity's folder, and the commands in the solutions run from there.",
             "- `.gitignore` groups its patterns into blocks, each under a `# <What> (<Tool>)` comment, with a blank line between blocks:",
             "",
             "  ```gitignore",
@@ -12173,34 +12213,30 @@
             "  .dlt/secrets.toml",
             "  ```",
             "",
-            "- A book's or course's companion code goes under `resources/<slug>` as a git submodule, and only when an exercise uses it:",
-            "",
-            "  ```bash",
-            "  git submodule add <url> resources/<slug>",
-            "  ```",
-            "",
-            "- Starter files the exercises need, such as code to fix, data to load, or a project to predict about, go in the setup commit.",
+            "- A book's or course's companion code goes under `<activity>/resources/<slug>` as a git submodule, and only when an exercise uses it.",
+            "- Starter files the exercises need, such as code to fix, data to load, or a project to predict about, go in the activity's folder in `Set up the playground`.",
+            "- An older set, a `<tool>-activities` repository of its own, keeps its `README.md` at the root and its own `Set up the playground`.",
             "",
             "## Commits",
             "",
-            "| Subject | Holds |",
-            "| --- | --- |",
-            "| `Set up the playground` | The root commit: README, `.gitignore`, `.gitmodules`, starter files |",
-            "| `fixup! Set up the playground` | A later change to the README, committed on its own |",
-            "| `Exercise N` | The answer to item N, and nothing else. Never the README |",
-            "| `fixup! Exercise N` | A correction to the answer to item N |",
+            "| Subject | Where | Holds |",
+            "| --- | --- | --- |",
+            "| `Set up the playground` | `master`, its only commit | The tooling, the root `README.md`, `.gitignore`, `.gitmodules`, and every activity's `README.md` and starter files |",
+            "| `fixup! Set up the playground` | `master` | A new activity, or a change to any `README.md` or starter file, until it is folded in |",
+            "| `Exercise N` | The activity's branch | The answer to item N, inside the activity's folder, and nothing else. Never a `README.md` |",
+            "| `fixup! Exercise N` | The activity's branch | A correction to the answer to item N |",
             "",
             "- **The subject is the whole message.** No body, no prefix, no trailer.",
             "- **An exercise that changes no file has no commit.** Its answer lives entirely in its `Solution` block.",
             "- **Write the item before its answer.** A statement written afterwards describes the diff instead of the goal.",
             "- **The numbers are keys.** An item inserted before committed ones means rewording every later `Exercise N` commit, so append instead. Items without commits can be reordered freely.",
-            "- **Folding fixups in rewrites history.** `git rebase -i --autosquash --root` moves every `fixup!` into its target and changes every hash after the root, so the remote needs a force-push. Both are the user's call; `rewriting-history` covers the mechanics.",
+            "- **Folding fixups in rewrites history.** `git rebase -i --autosquash --root` on `master` moves every `fixup!` into `Set up the playground` and gives it a new hash, so every activity branch is then rebased onto the new `master` with `git rebase --onto master <old-setup> <branch>`, and both need a force-push. All of it is the user's call; `rewriting-history` covers the mechanics.",
             "",
             "## Finding an answer",
             "",
             "```bash",
-            "git log --oneline --grep='^Exercise 4$'    # the commit that answers item 4",
-            "git show <sha>                              # that answer, as a diff",
+            "git log --oneline --grep='^Exercise 4$' weft   # the commit that answers item 4 of the weft activity",
+            "git show <sha>                                  # that answer, as a diff",
             "```",
             "",
             "To redo an item from scratch, branch from the commit before its answer, and compare with `git diff <your-branch> <sha>` once yours works."
@@ -12648,7 +12684,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "use_anki",
       "ops": [
@@ -14290,7 +14326,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "'dbt' in stack_skills",
       "ops": [
@@ -15748,7 +15784,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "use_github",
       "ops": [
@@ -19700,7 +19736,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "use_jira",
       "ops": [
@@ -20233,7 +20269,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "'lightdash' in stack_skills",
       "ops": [
@@ -35726,7 +35762,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "use_linear",
       "ops": [
@@ -37337,7 +37373,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "use_meetings",
       "ops": [
@@ -37936,7 +37972,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "use_obsidian",
       "ops": [
@@ -38662,7 +38698,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "use_weft",
       "ops": [
@@ -40586,7 +40622,7 @@
     },
     {
       "depends_on": [
-        "d884d627e0f88d80d5cac7befba493b9b4db53558f863c37017076cdf47cb8e1"
+        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
       ],
       "when": "'slides' in stack_skills",
       "ops": [

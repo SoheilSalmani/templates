@@ -32,7 +32,7 @@ Sort every candidate concept before writing anything, after checking two stores:
 
 ## Before writing
 
-1. **Read what exists.** In an existing set, read the whole README and `git log --reverse --format='%h %s'`: which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, directories named `*-activities`, show what they already know and how they write.
+1. **Read what exists.** In an existing set, read its whole `README.md` and the log of its answers, `git log --reverse --format='%h %s'` on its branch: which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, folders of the activities repository and older `*-activities` repositories, show what they already know and how they write.
 2. **Pin the subject**: the tool and its version, or the codebase's stack and its versions, and the tutorial, course or book if the learner follows one. Read the official docs for every part you will use. **Never write a command, flag, API or output you have not read in the docs or run.** The reply names the version and the date the set was checked against.
 3. **Know the learner**: what they already use, and what they want this for. Infer it from the request and their sets, and ask only when the target is unknown and would change the set. By default the learner is an experienced developer, so skip programming basics and spend the set on what is new.
 4. **Write the target in one sentence**: what the learner can do at the end without looking anything up. Every exercise serves it.
@@ -72,7 +72,7 @@ The shape is `N. <Verb> <outcome>.`, one short sentence, two at most.
 - **Minimal.** Give the outcome and nothing the learner could do without. Leave out paths, file names, names and values the learner can choose; the solution shows one possible answer. An item reads in seconds and is done in minutes.
 - **Practise the target and nothing else.** Material from outside the target shrinks to the smallest stand-in that works, or disappears: a set on a template engine records placeholder files, not a service the learner has to read; a set on a CI system runs one-line steps, not a build.
 - **State the outcome, not the steps.** Never put the answer's code in the prompt, and never turn a tutorial's "copy this" into an exercise. Code belongs in a prompt only as material: data to load, a snippet to predict, a bug to fix.
-- **Keep code out of the sentence.** Name things in words where words are clear, such as "the project name" or "a Dockerfile". Inline code only for a name the learner must type exactly and words cannot carry; anything longer is fenced material.
+- **Keep code out of the sentence.** Name things in words where words are clear, such as "the project name" or "a Dockerfile". Inline code only for a name the learner must type exactly and words cannot carry; anything longer is fenced material. A file is the exception: give its name, such as `README.md`, never a paraphrase like "the README".
 - **Give only the facts the task cannot do without**, such as data to load or a value a later item reuses.
 - **One outcome per item.**
 - **Block a shortcut only where it would skip the point**: "without adding a patch", "using only the CLI".
@@ -129,10 +129,12 @@ After, the same Weft practice:
 
 `references/format.md` holds the exact Markdown, the indentation a `<details>` block needs inside a list, and the git workflow. Read it before writing or editing a README or a commit. The parts that bind:
 
-- **A set lives in `<tool>-activities/`**, a git repository beside the learner's other sets. Its README is the title, `# <Tool> Activities`, then the numbered list: no description and no version line.
-- **Commit subjects are fixed.** `Set up the playground` for the root commit, which holds the README, `.gitignore` and starter files; `fixup! Set up the playground` for later README changes; `Exercise N` for the answer to item N, holding only that exercise's files. The number is the key that ties a commit to its item, so **these subjects win over the subject rules in `writing-commits`.**
+- **One repository holds every activity.** Its `master` has a single commit, `Set up the playground`: the tooling, a root `README.md` with a table of every activity linking to its branch, and one folder per activity, named after the tool, holding that activity's `README.md`. An activity's `README.md` is its title, `# <Tool> Activities`, then the numbered list: no description and no version line.
+- **Each activity has a branch named after its folder**, and its commits after `Set up the playground` are its answers and nothing else: one `Exercise N` per item, holding only that exercise's files, inside the activity's folder.
+- **Commit subjects are fixed**, `Set up the playground` and `Exercise N`; the number is the key that ties a commit to its item, so **these subjects win over the subject rules in `writing-commits`.** A new activity or a change to any `README.md` is a `fixup! Set up the playground` on `master`, folded in by an autosquash rebase, after which every activity branch is rebased onto the new `master`.
 - **Never renumber, or change the meaning of, an item that has a commit.** Renumbering means rewording every later commit. Append instead; items without commits can still move.
-- **Commit only when asked.** Folding fixups in with an autosquash rebase rewrites history, so ask first, and leave it and any force-push to the user.
+- **Commit only when asked.** Folding fixups in and rebasing the branches rewrite history, so ask first, and leave the force-push to the user unless they ask for it.
+- Older sets are separate `<tool>-activities` repositories, with their `README.md` at the root and their own `Set up the playground`. When extending one, keep its layout.
 - Run the README's prose through `humanizer` before showing it.
 
 ## Extending or reviewing a set
@@ -155,7 +157,7 @@ After, the same Weft practice:
 - Every name a solution uses exists by then, and every solution answers its item.
 - Every command, flag and API was run or checked against the docs for the pinned version, and the reply says which, with the version and date.
 - Solutions are one possible answer, mostly commands; longer code is in `Exercise N` commits.
-- The README is the title and the list, with no description.
+- The activity's `README.md` is the title and the list, with no description, in the activity's folder, and the root `README.md` lists the activity with a link to its branch.
 - A readiness set holds nothing from the repository, and nothing was written into the repository.
 - The numbering continues the README's, and no item with a commit was renumbered or changed in meaning.
 

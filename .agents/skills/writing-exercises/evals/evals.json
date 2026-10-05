@@ -221,6 +221,18 @@
         "Every item is one or two short sentences, with no check",
         "No item has a Hint block"
       ]
+    },
+    {
+      "id": 21,
+      "prompt": "Create a Rust activity in my activities repository.",
+      "expected_output": "A rust/README.md with the title and the numbered list, and a row for it in the root README.md table linking the rust branch, both committed on master as fixup! Set up the playground, with no answers committed unasked.",
+      "assertions": [
+        "The activity's questions are in rust/README.md, titled `# Rust Activities` and followed directly by the list",
+        "The root README.md table gains a row that links rust/README.md and the rust branch",
+        "The change is committed on master as `fixup! Set up the playground`, and it asks before the autosquash rebase, rebasing the activity branches, or force-pushing",
+        "Any commit it makes on the rust branch is an `Exercise N` holding only files inside rust/",
+        "Items name files by their file name, such as `Cargo.toml`, never a paraphrase such as \"the manifest\""
+      ]
     }
   ]
 }

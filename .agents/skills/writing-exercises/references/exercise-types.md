@@ -84,10 +84,10 @@ Every shape below is one or two short sentences, and its solution is one possibl
 **When**: the tool keeps state or metadata the learner must learn to read, such as a plan, a state file, logs, a query plan or a lockfile.
 
 **Shape**: `Using only <the tool>, find <a fact>.`
-**Solution**: the command, such as `git blame -L 12,12 README.md`, with the output that answers it.
-> Using only git, find which commit last changed a line of the README.
 
-**Solution**: the command, `git blame -L 12,12 README.md` here, with the output that answers it.
+> Using only git, find which commit last changed a line of `README.md`.
+
+**Solution**: the command, such as `git blame -L 12,12 README.md`, with the output that answers it.
 
 ## Compare two ways
 
