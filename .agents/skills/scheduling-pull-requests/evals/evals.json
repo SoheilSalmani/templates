@@ -1,30 +1,33 @@
 {
   "skill_name": "scheduling-pull-requests",
-  "notes": "Runs need a git repository whose main is on origin and whose branch csv-export holds two unpushed commits made today, the time Wednesday 30 September 2026 01:00 in Europe/Paris, writing-pull-requests, writing-commits and preparing-client-meetings installed alongside, a vault whose roster is empty unless a prompt gives a row, and a Paseo CLI that records `schedule create` rather than running it. No run may push or force push. Score the reply, the commands, the commit dates, the note and the schedule prompt.",
+  "notes": "Runs need a git repository whose main is on origin and whose branch csv-export holds two unpushed commits made today, the time Wednesday 30 September 2026 01:00 in Europe/Paris, writing-pull-requests, writing-commits and preparing-client-meetings installed alongside, a vault whose roster is empty unless a prompt gives a row, a Paseo agent whose PASEO_AGENT_ID is set and whose mode is full unless a prompt says otherwise, and a Paseo CLI that records `heartbeat create` rather than running it. No run may push or force push. Score the reply, the commands, the commit dates, the note and the heartbeat's prompt.",
   "evals": [
     {
       "id": 1,
       "prompt": "Nice, now schedule a PR for this in 2 days. (Meetings.md has Acme, daily, Mon–Fri 09:30–09:45, acme/api, Jira ACME; the work is ACME-9.)",
-      "expected_output": "Without stopping to ask: the commits moved onto Friday 2 October by redate.py, the note written under Monday 5 October's Acme daily, a one-off schedule at the script's opening time on Friday, and one reply covering all of it.",
+      "expected_output": "Without stopping to ask: the commits moved onto Friday 2 October by redate.py, the note written under Monday 5 October's Acme daily, a one-off heartbeat on this agent at the script's opening time on Friday, and one reply covering all of it.",
       "assertions": [
         "It runs redate.py with --day 2026-10-02, --tz Europe/Paris and --apply",
-        "It does not stop for approval between moving the dates, writing the note and creating the schedule",
+        "It does not stop for approval between moving the dates, writing the note and creating the heartbeat",
         "The note is under Mon 5 Oct in 2026-W41.md, not under Friday's daily, because Friday's daily comes before the opening time",
-        "The schedule uses the script's cron with --timezone Europe/Paris, --max-runs 1 and --expires-in",
-        "It checks nextRunAt, maxRuns and expiresAt with paseo schedule inspect",
-        "The reply lists each commit's old and new date, the note's place, the exact title and description, the schedule id and the undo commands",
+        "It creates the heartbeat with paseo heartbeat create, the script's cron, --timezone Europe/Paris, --max-runs 1 and --expires-in, and passes no --provider, --mode or --cwd",
+        "It checks target, nextRunAt, maxRuns and expiresAt in the heartbeat's file under PASEO_HOME/schedules, not with paseo schedule inspect",
+        "The reply lists each commit's old and new date, the note's place, the exact title and description, the heartbeat id and the undo commands",
         "Nothing is pushed"
       ]
     },
     {
       "id": 2,
       "prompt": "Schedule the csv-export PR for Friday, ready for review, titled 'Export invoices as CSV [ACME-9]'. (redate.py printed new_tip 3f2a9c1e7b5d4a2f9e8c6b1a0d3e5f7a9b2c4d6e, pull_request_at 2026-10-02T17:12:00+02:00, cron '12 17 2 10 *'.)",
-      "expected_output": "A schedule whose prompt stands alone: branch, the new tip, base, title and description all filled in, the stop conditions first, and no rebase.",
+      "expected_output": "A heartbeat whose prompt stands alone: branch, the new tip, base, title and description all filled in, the stop conditions first, then a rebase onto main only when main has moved on.",
       "assertions": [
         "The prompt contains the full new tip, the branch, the base main, the title and the whole description",
         "No angle-bracket placeholder remains in the prompt",
         "The prompt stops without publishing when the branch no longer points at that commit",
-        "The prompt forbids rebasing, amending, requesting reviewers and writing to a tracker",
+        "The prompt rebases onto origin/main only when git merge-base --is-ancestor shows main has moved on",
+        "The rebase uses --committer-date-is-author-date and continues with GIT_EDITOR=true",
+        "The prompt aborts the rebase and publishes nothing when a conflict cannot be resolved",
+        "The prompt forbids amending, force pushing, requesting reviewers and writing to a tracker",
         "The title reaches gh pr create through a file, not a double-quoted literal",
         "The cron is \"12 17 2 10 *\" with --timezone Europe/Paris"
       ]
@@ -100,11 +103,11 @@
     {
       "id": 10,
       "prompt": "I scheduled the csv-export PR for Friday, then added another commit to the branch.",
-      "expected_output": "It runs redate.py again for Friday, then updates the schedule's cron and prompt with the new tip.",
+      "expected_output": "It runs redate.py again for Friday, then replaces the heartbeat with one carrying the new cron and the new tip.",
       "assertions": [
         "It says the scheduled run would otherwise publish nothing, because the branch moved",
         "It runs redate.py --apply again with --day 2026-10-02",
-        "It uses paseo schedule update <id> with the new cron and prompt, not a second schedule"
+        "It deletes the old heartbeat and creates one with the new cron and prompt, so a single heartbeat remains"
       ]
     },
     {
@@ -132,6 +135,27 @@
       "assertions": [
         "The reply names migrations/20260930_add_exports.sql and the CHANGELOG.md heading as still showing 30 September",
         "It renames no file and edits no line on its own"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Nice, now schedule a PR for this in 2 days. (PASEO_AGENT_ID is empty: this is a terminal session outside Paseo.)",
+      "expected_output": "It stops before moving any date and says the request has to come from a Paseo agent, because the heartbeat wakes the agent that was asked.",
+      "assertions": [
+        "No commit date changes",
+        "No heartbeat or schedule is created",
+        "It says the request has to come from a Paseo agent"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Nice, now schedule a PR for this in 2 days. (paseo inspect shows this agent's Mode as ask.)",
+      "expected_output": "It stops before moving any date and says the run would wait for permission in this agent's mode, leaving the choice of mode to the user.",
+      "assertions": [
+        "No commit date changes",
+        "No heartbeat is created",
+        "It names the agent's mode as the reason",
+        "It does not change the agent's mode on its own"
       ]
     }
   ]
