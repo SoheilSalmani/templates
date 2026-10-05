@@ -43,7 +43,7 @@ grep -n -i -E 'lifetime|borrow' */README.md
 An item whose number has an `Exercise N` commit was done, on the activity's branch or in the older repository:
 
 ```bash
-git -C activities log --oneline --grep='^Exercise 7$' rust
+git -C activities log --oneline --grep='^Exercise 7$' rust --
 git -C rust-activities log --oneline --grep='^Exercise 7$'
 ```
 

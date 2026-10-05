@@ -150,8 +150,10 @@ activities/
 ## Finding an answer
 
 ```bash
-git log --oneline --grep='^Exercise 4$' weft   # the commit that answers item 4 of the weft activity
-git show <sha>                                  # that answer, as a diff
+git log --oneline --grep='^Exercise 4$' weft --   # the commit that answers item 4 of the weft activity
+git show <sha>                                     # that answer, as a diff
 ```
+
+The `--` tells git that `weft` is the branch, not the folder of the same name.
 
 To redo an item from scratch, branch from the commit before its answer, and compare with `git diff <your-branch> <sha>` once yours works.

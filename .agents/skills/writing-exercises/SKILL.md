@@ -32,7 +32,7 @@ Sort every candidate concept before writing anything, after checking two stores:
 
 ## Before writing
 
-1. **Read what exists.** In an existing set, read its whole `README.md` and the log of its answers, `git log --reverse --format='%h %s'` on its branch: which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, folders of the activities repository and older `*-activities` repositories, show what they already know and how they write.
+1. **Read what exists.** In an existing set, read its whole `README.md` and the log of its answers, `git log --reverse --format='%h %s' <branch> --` (the `--` because the branch and the activity's folder share a name): which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, folders of the activities repository and older `*-activities` repositories, show what they already know and how they write.
 2. **Pin the subject**: the tool and its version, or the codebase's stack and its versions, and the tutorial, course or book if the learner follows one. Read the official docs for every part you will use. **Never write a command, flag, API or output you have not read in the docs or run.** The reply names the version and the date the set was checked against.
 3. **Know the learner**: what they already use, and what they want this for. Infer it from the request and their sets, and ask only when the target is unknown and would change the set. By default the learner is an experienced developer, so skip programming basics and spend the set on what is new.
 4. **Write the target in one sentence**: what the learner can do at the end without looking anything up. Every exercise serves it.

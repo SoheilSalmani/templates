@@ -11352,7 +11352,7 @@
             "",
             "## Before writing",
             "",
-            "1. **Read what exists.** In an existing set, read its whole `README.md` and the log of its answers, `git log --reverse --format='%h %s'` on its branch: which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, folders of the activities repository and older `*-activities` repositories, show what they already know and how they write.",
+            "1. **Read what exists.** In an existing set, read its whole `README.md` and the log of its answers, `git log --reverse --format='%h %s' <branch> --` (the `--` because the branch and the activity's folder share a name): which items have an `Exercise N` commit, which are still `TODO`, which source each section follows. The learner's other sets, folders of the activities repository and older `*-activities` repositories, show what they already know and how they write.",
             "2. **Pin the subject**: the tool and its version, or the codebase's stack and its versions, and the tutorial, course or book if the learner follows one. Read the official docs for every part you will use. **Never write a command, flag, API or output you have not read in the docs or run.** The reply names the version and the date the set was checked against.",
             "3. **Know the learner**: what they already use, and what they want this for. Infer it from the request and their sets, and ask only when the target is unknown and would change the set. By default the learner is an experienced developer, so skip programming basics and spend the set on what is new.",
             "4. **Write the target in one sentence**: what the learner can do at the end without looking anything up. Every exercise serves it.",
@@ -11881,7 +11881,7 @@
             "An item whose number has an `Exercise N` commit was done, on the activity's branch or in the older repository:",
             "",
             "```bash",
-            "git -C activities log --oneline --grep='^Exercise 7$' rust",
+            "git -C activities log --oneline --grep='^Exercise 7$' rust --",
             "git -C rust-activities log --oneline --grep='^Exercise 7$'",
             "```",
             "",
@@ -12235,9 +12235,11 @@
             "## Finding an answer",
             "",
             "```bash",
-            "git log --oneline --grep='^Exercise 4$' weft   # the commit that answers item 4 of the weft activity",
-            "git show <sha>                                  # that answer, as a diff",
+            "git log --oneline --grep='^Exercise 4$' weft --   # the commit that answers item 4 of the weft activity",
+            "git show <sha>                                     # that answer, as a diff",
             "```",
+            "",
+            "The `--` tells git that `weft` is the branch, not the folder of the same name.",
             "",
             "To redo an item from scratch, branch from the commit before its answer, and compare with `git diff <your-branch> <sha>` once yours works."
           ],
@@ -12684,7 +12686,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "use_anki",
       "ops": [
@@ -14326,7 +14328,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "'dbt' in stack_skills",
       "ops": [
@@ -15784,7 +15786,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "use_github",
       "ops": [
@@ -19736,7 +19738,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "use_jira",
       "ops": [
@@ -20269,7 +20271,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "'lightdash' in stack_skills",
       "ops": [
@@ -35762,7 +35764,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "use_linear",
       "ops": [
@@ -37373,7 +37375,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "use_meetings",
       "ops": [
@@ -37972,7 +37974,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "use_obsidian",
       "ops": [
@@ -38698,7 +38700,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "use_weft",
       "ops": [
@@ -40622,7 +40624,7 @@
     },
     {
       "depends_on": [
-        "b19a2585e7ba5a8339c8bdbe8febb2676deeafc8ba191b2c7d539d06b952ee87"
+        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
       ],
       "when": "'slides' in stack_skills",
       "ops": [
