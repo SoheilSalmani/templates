@@ -1,0 +1,77 @@
+{
+  "title": "GitHub Actions chart checks",
+  "description": "Adds a GitHub Actions workflow that runs the chart's lint, unit tests and README check on every pull request and push to main, then installs the chart with the commit's data model on a throwaway kind cluster with the chart:e2e task.",
+  "depends_on": [
+    "kubernetes"
+  ],
+  "when": "use_github_actions and use_helm",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "`charts/cube` runs Cube in production on Kubernetes: the API instances behind a Service, the refresh worker and a Cube Store cluster, as non-root pods that drain on shutdown and take no traffic until they have compiled the model. [Its README](charts/cube/README.md) explains its design and lists its values. Before a pull request that changes it, `mise run chart:lint` lints it and validates what it renders for every environment, and `mise run chart:test` runs its unit tests; `mise run check` runs both before the data model check. After a change to `values.yaml`, `mise run chart:docs` regenerates its README.",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "GitHub Actions runs them on every pull request and push to `main`, along with `mise run chart:e2e` and a check that the chart's README matches `values.yaml`.",
+            ""
+          ],
+          "context_after": [
+            "## Deploy to Kubernetes",
+            ""
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": ".github/workflows/chart.yml",
+      "content": [
+        "name: Chart",
+        "",
+        "on:",
+        "  push:",
+        "    branches: [main]",
+        "  pull_request:",
+        "",
+        "permissions:",
+        "  contents: read",
+        "",
+        "concurrency:",
+        "  group: chart-${{ github.ref }}",
+        "  cancel-in-progress: true",
+        "",
+        "jobs:",
+        "  lint:",
+        "    name: Lint and unit tests",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - uses: actions/checkout@v7",
+        "      - uses: jdx/mise-action@v5",
+        "      - run: mise run chart:lint",
+        "      - run: mise run chart:test",
+        "      - name: Check that the chart's README matches values.yaml",
+        "        run: |",
+        "          mise run chart:docs",
+        "          git diff --exit-code -- charts/cube/README.md ||",
+        "            { echo \"::error::charts/cube/README.md is stale: run mise run chart:docs and commit it\"; exit 1; }",
+        "",
+        "  e2e:",
+        "    name: Install on kind",
+        "    needs: lint",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - uses: actions/checkout@v7",
+        "      - uses: jdx/mise-action@v5",
+        "      # Installs the chart with the image of this commit's data model on a",
+        "      # throwaway cluster, then runs helm test.",
+        "      - run: mise run chart:e2e"
+      ],
+      "mode": 420
+    }
+  ]
+}

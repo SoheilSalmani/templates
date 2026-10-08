@@ -1,0 +1,226 @@
+{
+  "title": "Cube project",
+  "description": "Adds the Cube project under cube/: an empty cube.py, an example cube on inline rows with the view clients query over it, and .env.example with the data source type. compose.yaml and the dev task run Cube in development mode on this machine, on ports .env can move; every task is a mise file task in .mise/tasks, README.md replaces base's with the setup and the dev loop, and the Cube ignores go at the top of base's .gitignore.",
+  "depends_on": [
+    "base",
+    "mise"
+  ],
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": ".gitignore",
+      "hunks": [
+        {
+          "context_before": [],
+          "removed": [],
+          "added": [
+            "# Local data of the Cube dev server (Cube Store)",
+            ".cubestore/",
+            "",
+            "# Python bytecode of cube.py and Jinja globals",
+            "__pycache__/",
+            ""
+          ],
+          "context_after": [
+            "# Operating system",
+            ".DS_Store"
+          ]
+        }
+      ]
+    },
+    {
+      "op": "delete_file",
+      "path": "README.md"
+    },
+    {
+      "op": "create_file",
+      "path": "README.md",
+      "content": [
+        [
+          "# ",
+          {
+            "answer": "project_name"
+          }
+        ],
+        "",
+        "A [Cube](https://cube.dev) semantic layer. The data model is YAML in `cube/model`: the cubes in `cube/model/cubes` describe tables and stay private, and the views in `cube/model/views` are what clients query, as [Cube's style guide](https://docs.cube.dev/recipes/data-modeling/style-guide) recommends. `cube/cube.py` holds the configuration that needs code; every setting that differs between environments is a `CUBEJS_*` [environment variable](https://docs.cube.dev/reference/configuration/environment-variables).",
+        "",
+        "## Setup",
+        "",
+        [
+          "```sh",
+          {
+            "expr": "'\\nmise install' if commit_mise else ''"
+          }
+        ],
+        "cp .env.example .env",
+        "```",
+        "",
+        [
+          "In `.env`, set `CUBEJS_DB_TYPE` and the variables [your data source](https://docs.cube.dev/admin/connect-to-data) reads, pointing at a development copy of the data, with no quotes around the values. The project's tasks are the executables in `.mise/tasks/`, and they need Docker.",
+          {
+            "expr": "' `mise run <task>` runs one with the tools `mise.toml` pins, and `mise tasks` lists them.' if commit_mise else ' Each also runs directly from the repository root, with the tools it calls on the PATH.'"
+          }
+        ],
+        "",
+        "## Develop",
+        "",
+        "`mise run dev` runs Cube in development mode with `cube/` mounted, so the model reloads on save. It listens on this machine only, on ports that `CUBE_PORT` and `CUBE_SQL_PORT` in `.env` move when another project holds them:",
+        "",
+        "- the Playground, to build queries and read the SQL they generate, at http://localhost:4000;",
+        "- the SQL API, for BI tools, on `localhost:15432`, with any user name and password."
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".env.example",
+      "content": [
+        "# Settings of the local Cube, which reads this file and then .env on top of it.",
+        "# Put the connection to a development copy of the data in .env, which git",
+        "# ignores, with the variables your data source reads and no quotes around the",
+        "# values: https://docs.cube.dev/admin/connect-to-data",
+        [
+          "CUBEJS_DB_TYPE=",
+          {
+            "answer": "db_type"
+          }
+        ],
+        "# CUBEJS_DB_HOST=",
+        "# CUBEJS_DB_PORT=",
+        "# CUBEJS_DB_NAME=",
+        "# CUBEJS_DB_USER=",
+        "# CUBEJS_DB_PASS=",
+        "",
+        "# Ports of the dev server on this machine, for when another project holds them:",
+        "# CUBE_PORT=4000",
+        "# CUBE_SQL_PORT=15432"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "compose.yaml",
+      "content": [
+        "# Cube in development mode for local work, started by `mise run dev`. Development",
+        "# mode turns authentication off, so the ports listen on localhost only.",
+        "# `mise run check` starts a one-off copy of the same service in production mode.",
+        [
+          "name: ",
+          {
+            "answer": "package_name"
+          }
+        ],
+        "",
+        "services:",
+        "  cube:",
+        "    image: cubejs/cube:v1.8.1",
+        "    ports:",
+        "      - 127.0.0.1:${CUBE_PORT:-4000}:4000 # Playground and REST API",
+        "      - 127.0.0.1:${CUBE_SQL_PORT:-15432}:15432 # SQL API",
+        "    env_file:",
+        "      - path: .env.example",
+        "      - path: .env",
+        "        required: false",
+        "    environment:",
+        "      CUBEJS_DEV_MODE: \"true\"",
+        "      CUBEJS_TELEMETRY: \"false\"",
+        "    volumes:",
+        "      - ./cube:/cube/conf"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "cube/cube.py",
+      "content": [
+        "# Cube configuration: https://docs.cube.dev/reference/configuration/config",
+        "#",
+        "# Settings that differ between environments are CUBEJS_* environment variables",
+        "# (.env locally, the deployment's environment in production), not code here.",
+        "from cube import config"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "cube/model/cubes/base_orders.yml",
+      "content": [
+        "# An example cube on inline rows, so the project compiles and answers queries",
+        "# before it has a model of its own. Replace it with cubes on your tables",
+        "# (sql_table: schema.table), then delete it with the orders view and the",
+        "# golden query in tests/queries that use it.",
+        "cubes:",
+        "  - name: base_orders",
+        "    sql: >",
+        "      SELECT 1 AS id, 100 AS amount, 'new' AS status",
+        "      UNION ALL SELECT 2 AS id, 200 AS amount, 'new' AS status",
+        "      UNION ALL SELECT 3 AS id, 300 AS amount, 'processed' AS status",
+        "      UNION ALL SELECT 4 AS id, 500 AS amount, 'processed' AS status",
+        "      UNION ALL SELECT 5 AS id, 600 AS amount, 'shipped' AS status",
+        "    public: false",
+        "",
+        "    dimensions:",
+        "      - name: id",
+        "        sql: id",
+        "        type: number",
+        "        primary_key: true",
+        "",
+        "      - name: status",
+        "        sql: status",
+        "        type: string",
+        "",
+        "    measures:",
+        "      - name: count",
+        "        type: count",
+        "",
+        "      - name: total_amount",
+        "        sql: amount",
+        "        type: sum"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "cube/model/views/orders.yml",
+      "content": [
+        "# An example view: views are what clients query, while cubes stay private.",
+        "views:",
+        "  - name: orders",
+        "    description: Orders with their status and amount.",
+        "",
+        "    cubes:",
+        "      - join_path: base_orders",
+        "        includes:",
+        "          - status",
+        "          - count",
+        "          - total_amount"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".mise/tasks/dev",
+      "content": [
+        "#!/bin/sh",
+        "#MISE description=\"Run Cube in development mode, with the Playground and the SQL API on this machine\"",
+        "# Starts the cube service of compose.yaml with cube/ mounted, so model edits",
+        "# reload on save. Arguments go to `docker compose up`, e.g. mise run dev --detach.",
+        "set -eu",
+        "cd \"$(dirname \"$0\")/../..\"",
+        "exec docker compose up \"$@\""
+      ],
+      "mode": 493
+    }
+  ],
+  "hooks": [
+    {
+      "id": "verify-docker",
+      "phase": "pre",
+      "effect": "check",
+      "label": "Verify Docker is installed",
+      "description": "The dev server, the check task and the image builds run Cube in Docker.",
+      "action": "command -v docker"
+    }
+  ]
+}

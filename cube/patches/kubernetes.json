@@ -1,0 +1,631 @@
+{
+  "title": "Kubernetes deploys",
+  "description": "Adds deploy/dev.yaml, staging.yaml and production.yaml, each environment's values, and the deploy task: it ships the image of the data model to the cluster (loaded into a local one, pushed for any other), writes the release's Secret from an env file, upgrades the release with rollback on failure and runs helm test, with --chart-only to keep the image that runs. The chart:e2e task installs every component on a throwaway kind cluster against an in-memory DuckDB. kubectl and kind are pinned in mise.toml.",
+  "depends_on": [
+    "helm"
+  ],
+  "when": "use_helm",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "AGENTS.md",
+      "hunks": [
+        {
+          "context_before": [
+            "- A metric that a dashboard or an application depends on gets a golden query in `tests/queries`, with absolute date ranges.",
+            "- A change to the Helm chart in `charts/cube` comes with its unit tests in `charts/cube/tests` and a version bump in `Chart.yaml`. Each value is documented by the `# --` comment above it in `values.yaml`, which `mise run chart:docs` turns into the chart's README, and validated by `values.schema.json`."
+          ],
+          "removed": [],
+          "added": [
+            "- Deployments go through `mise run deploy` or the deploy workflow, never a hand-run `helm upgrade`, so that each release is a commit and an image of its data model, and rolls back by itself when a new pod cannot start."
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "",
+            "`charts/cube` runs Cube in production on Kubernetes: the API instances behind a Service, the refresh worker and a Cube Store cluster, as non-root pods that drain on shutdown and take no traffic until they have compiled the model. [Its README](charts/cube/README.md) explains its design and lists its values. Before a pull request that changes it, `mise run chart:lint` lints it and validates what it renders for every environment, and `mise run chart:test` runs its unit tests; `mise run check` runs both before the data model check. After a change to `values.yaml`, `mise run chart:docs` regenerates its README."
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "## Deploy to Kubernetes",
+            "",
+            "`mise run deploy [environment]` deploys the chart with the values of `deploy/<environment>.yaml`, `dev` by default, to the current kubectl context:",
+            "",
+            "1. It builds the image of the data model with `mise run image`, and loads it into a cluster on this machine (kind, minikube, Docker Desktop, OrbStack) or pushes it to the registry for any other. An unchanged model keeps its image, so its pods do not restart.",
+            [
+              "2. It writes the Secret `",
+              {
+                "answer": "package_name"
+              },
+              "-env` from an env file of `CUBEJS_*` variables, `CUBEJS_API_SECRET` and the data source credentials: `.env` for dev, the file `CUBE_ENV_FILE` names otherwise. Without one, a Secret managed elsewhere, by External Secrets for example, stays as it is."
+            ],
+            "3. It upgrades the release, which rolls back by itself when a new pod cannot start, as when the model does not compile or the data source is out of reach, then runs `helm test`.",
+            "",
+            [
+              "`mise run deploy dev --chart-only` deploys a change to the chart or its values and keeps the image that runs. Staging and production deploy committed work only, and `helm history ",
+              {
+                "answer": "package_name"
+              },
+              " --namespace ",
+              {
+                "answer": "package_name"
+              },
+              "` lists each release with the commit it deployed, which `helm rollback` returns to. `mise run chart:e2e` installs everything on a throwaway kind cluster."
+            ],
+            "",
+            "Before the first staging or production deploy, give Cube Store a bucket of its own in `deploy/<environment>.yaml`, since the volume it uses by default suits a single node, and let the cluster pull from the image's registry, with `imagePullSecrets` if it is private."
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "mise.toml",
+      "hunks": [
+        {
+          "context_before": [
+            "helm-docs = \"1.14\"",
+            "\"github:helm-unittest/helm-unittest\" = { version = \"1.2.1\", bin = \"untt\" }"
+          ],
+          "removed": [],
+          "added": [
+            "# Deploys: kubectl, and kind for the chart:e2e task.",
+            "kubectl = \"1.37\"",
+            "kind = \"0.33\""
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": "charts/cube/ci/e2e-values.yaml",
+      "content": [
+        "# Values for mise run chart:e2e: the whole topology, small enough for a one-node",
+        "# kind cluster, on an in-memory DuckDB so it needs no data source.",
+        "config:",
+        "  env:",
+        "    CUBEJS_DB_TYPE: duckdb",
+        "  secretEnv:",
+        "    CUBEJS_API_SECRET: e2e-only-secret",
+        "  logLevel: info",
+        "",
+        "api:",
+        "  replicas: 2",
+        "  resources:",
+        "    requests:",
+        "      cpu: 50m",
+        "      memory: 512Mi",
+        "    limits:",
+        "      memory: 1Gi",
+        "",
+        "worker:",
+        "  resources:",
+        "    requests:",
+        "      cpu: 50m",
+        "      memory: 512Mi",
+        "    limits:",
+        "      memory: 1Gi",
+        "  env:",
+        "    NODE_OPTIONS: --max-old-space-size=768",
+        "",
+        "cubestore:",
+        "  logLevel: info",
+        "  router:",
+        "    resources:",
+        "      requests:",
+        "        cpu: 50m",
+        "        memory: 128Mi",
+        "      limits:",
+        "        memory: 1Gi",
+        "    persistence:",
+        "      size: 1Gi",
+        "  workers:",
+        "    replicas: 2",
+        "    resources:",
+        "      requests:",
+        "        cpu: 50m",
+        "        memory: 128Mi",
+        "      limits:",
+        "        memory: 1Gi",
+        "  remoteStorage:",
+        "    volume:",
+        "      size: 1Gi",
+        "  metrics:",
+        "    enabled: true"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "deploy/dev.yaml",
+      "content": [
+        "# Values of the chart for a development cluster on this machine (kind,",
+        "# minikube, Docker Desktop, OrbStack): one small replica of everything, and",
+        "# Cube Store on a local volume. mise run deploy dev reads it.",
+        [
+          "fullnameOverride: ",
+          {
+            "answer": "package_name"
+          }
+        ],
+        "",
+        "config:",
+        "  env:",
+        [
+          "    CUBEJS_DB_TYPE: ",
+          {
+            "answer": "db_type"
+          }
+        ],
+        "    CUBEJS_PRE_AGGREGATIONS_SCHEMA: dev_pre_aggregations",
+        "  # mise run deploy fills it from .env.",
+        [
+          "  existingSecret: ",
+          {
+            "answer": "package_name"
+          },
+          "-env"
+        ],
+        "  logLevel: info",
+        "",
+        "api:",
+        "  replicas: 1",
+        "  podDisruptionBudget:",
+        "    enabled: false",
+        "  resources:",
+        "    requests:",
+        "      cpu: 100m",
+        "      memory: 512Mi",
+        "    limits:",
+        "      memory: 1Gi",
+        "",
+        "worker:",
+        "  resources:",
+        "    requests:",
+        "      cpu: 100m",
+        "      memory: 512Mi",
+        "    limits:",
+        "      memory: 1Gi",
+        "  env:",
+        "    NODE_OPTIONS: --max-old-space-size=768",
+        "",
+        "cubestore:",
+        "  router:",
+        "    resources:",
+        "      requests:",
+        "        cpu: 100m",
+        "        memory: 256Mi",
+        "      limits:",
+        "        memory: 1Gi",
+        "    persistence:",
+        "      size: 1Gi",
+        "  workers:",
+        "    replicas: 1",
+        "    resources:",
+        "      requests:",
+        "        cpu: 100m",
+        "        memory: 256Mi",
+        "      limits:",
+        "        memory: 1Gi",
+        "  remoteStorage:",
+        "    volume:",
+        "      size: 2Gi"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "deploy/production.yaml",
+      "content": [
+        "# Values of the chart for production, deployed once staging has the same",
+        "# commit and the production environment's reviewers approve it.",
+        [
+          "fullnameOverride: ",
+          {
+            "answer": "package_name"
+          }
+        ],
+        "",
+        "config:",
+        "  env:",
+        [
+          "    CUBEJS_DB_TYPE: ",
+          {
+            "answer": "db_type"
+          }
+        ],
+        "    # Cube drops tables it does not know from this schema: never share it with",
+        "    # another environment.",
+        "    CUBEJS_PRE_AGGREGATIONS_SCHEMA: prod_pre_aggregations",
+        "  # The deploy workflow fills it from the production environment's CUBE_ENV",
+        "  # secret; mise run deploy does from CUBE_ENV_FILE.",
+        [
+          "  existingSecret: ",
+          {
+            "answer": "package_name"
+          },
+          "-env"
+        ],
+        "",
+        "api:",
+        "  autoscaling:",
+        "    enabled: true",
+        "    minReplicas: 2",
+        "    maxReplicas: 10",
+        "",
+        "cubestore:",
+        "  workers:",
+        "    replicas: 2",
+        "  metrics:",
+        "    enabled: true",
+        "  # Before the first deploy, move Cube Store to a bucket of its own, which",
+        "  # every node reaches from any Kubernetes node, for example:",
+        "  # remoteStorage:",
+        "  #   type: s3",
+        "  #   s3:",
+        [
+          "  #     bucket: ",
+          {
+            "answer": "package_name"
+          },
+          "-cubestore"
+        ],
+        "  #     region: eu-west-1",
+        [
+          "  #     roleArn: arn:aws:iam::123456789012:role/",
+          {
+            "answer": "package_name"
+          },
+          "-cubestore"
+        ],
+        "",
+        "# ingress:",
+        "#   enabled: true",
+        "#   className: nginx",
+        "#   hosts:",
+        "#     - host: cube.example.com",
+        "#       paths:",
+        "#         - path: /",
+        "#           pathType: Prefix",
+        "#   tls:",
+        "#     - secretName: cube-tls",
+        "#       hosts: [cube.example.com]"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "deploy/staging.yaml",
+      "content": [
+        "# Values of the chart for staging, deployed on every push to main. Size it like",
+        "# production, at a smaller scale, so staging catches what production would hit.",
+        [
+          "fullnameOverride: ",
+          {
+            "answer": "package_name"
+          }
+        ],
+        "",
+        "config:",
+        "  env:",
+        [
+          "    CUBEJS_DB_TYPE: ",
+          {
+            "answer": "db_type"
+          }
+        ],
+        "    # Cube drops tables it does not know from this schema: never share it with",
+        "    # another environment.",
+        "    CUBEJS_PRE_AGGREGATIONS_SCHEMA: staging_pre_aggregations",
+        "  # The deploy workflow fills it from the staging environment's CUBE_ENV",
+        "  # secret; mise run deploy does from CUBE_ENV_FILE.",
+        [
+          "  existingSecret: ",
+          {
+            "answer": "package_name"
+          },
+          "-env"
+        ],
+        "",
+        "api:",
+        "  replicas: 2",
+        "",
+        "cubestore:",
+        "  workers:",
+        "    replicas: 2",
+        "  metrics:",
+        "    enabled: true",
+        "  # Before the first deploy, move Cube Store to a bucket of its own, which",
+        "  # every node reaches from any Kubernetes node, for example:",
+        "  # remoteStorage:",
+        "  #   type: s3",
+        "  #   s3:",
+        [
+          "  #     bucket: ",
+          {
+            "answer": "package_name"
+          },
+          "-staging-cubestore"
+        ],
+        "  #     region: eu-west-1",
+        [
+          "  #     roleArn: arn:aws:iam::123456789012:role/",
+          {
+            "answer": "package_name"
+          },
+          "-staging-cubestore"
+        ]
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".mise/tasks/chart/e2e",
+      "content": [
+        "#!/bin/sh",
+        "#MISE description=\"Install the chart with the data model on a throwaway kind cluster and run its tests\"",
+        "# Usage: mise run chart:e2e [--keep]",
+        "#",
+        [
+          "# Creates the kind cluster ",
+          {
+            "answer": "package_name"
+          },
+          "-e2e, loads the image the image task"
+        ],
+        "# builds, installs charts/cube with charts/cube/ci/e2e-values.yaml (every",
+        "# component, on an in-memory DuckDB) and runs helm test. The cluster is deleted",
+        "# afterwards unless --keep is given; a kept cluster is reused by the next run.",
+        "set -eu",
+        "cd \"$(dirname \"$0\")/../../..\"",
+        "",
+        [
+          "cluster=",
+          {
+            "answer": "package_name"
+          },
+          "-e2e"
+        ],
+        "context=kind-$cluster",
+        "keep=",
+        "case \"${1:-}\" in",
+        "  \"\") ;;",
+        "  --keep) keep=1 ;;",
+        "  *)",
+        "    echo \"usage: mise run chart:e2e [--keep]\" >&2",
+        "    exit 2",
+        "    ;;",
+        "esac",
+        "",
+        "if ! kind get clusters 2>/dev/null | grep -qx \"$cluster\"; then",
+        "  kind create cluster --name \"$cluster\" --wait 120s",
+        "fi",
+        "finish() {",
+        "  status=$?",
+        "  if [ \"$status\" -ne 0 ]; then",
+        "    kubectl --context \"$context\" --namespace e2e get pods,pvc --output wide || true",
+        "    kubectl --context \"$context\" --namespace e2e get events --sort-by .lastTimestamp | tail -n 30 || true",
+        "  fi",
+        "  [ -n \"$keep\" ] || kind delete cluster --name \"$cluster\"",
+        "  exit \"$status\"",
+        "}",
+        "trap finish EXIT",
+        "",
+        "image=$(.mise/tasks/image --load)",
+        "kind load docker-image \"$image\" --name \"$cluster\"",
+        "helm --kube-context \"$context\" upgrade --install e2e charts/cube --namespace e2e --create-namespace \\",
+        "  --values charts/cube/ci/e2e-values.yaml \\",
+        "  --set \"image.repository=${image%:*}\" --set \"image.tag=${image##*:}\" \\",
+        "  --set \"cubestore.arch=$(kubectl --context \"$context\" get nodes --output 'jsonpath={.items[0].status.nodeInfo.architecture}')\" \\",
+        "  --wait --timeout 10m",
+        "helm --kube-context \"$context\" test e2e --namespace e2e --logs"
+      ],
+      "mode": 493
+    },
+    {
+      "op": "create_file",
+      "path": ".mise/tasks/deploy",
+      "content": [
+        "#!/bin/sh",
+        "#MISE description=\"Deploy Cube and the data model to a Kubernetes environment: deploy [ENVIRONMENT] [--chart-only]\"",
+        "# Usage: mise run deploy [ENVIRONMENT] [--chart-only]",
+        "#",
+        "# Deploys charts/cube with the values of deploy/ENVIRONMENT.yaml (default: dev)",
+        "# to the current kubectl context, in three steps:",
+        "#",
+        "#  1. The image task builds the image that holds the data model. A cluster on",
+        "#     this machine (kind, minikube, Docker Desktop, OrbStack, Rancher Desktop)",
+        "#     gets it loaded; any other pulls it from the registry it is pushed to.",
+        "#     --chart-only skips the image and keeps the one the release runs, for a",
+        "#     change to the chart or its values alone.",
+        "#  2. The Secret <release>-env gets the CUBEJS_* variables of an env file:",
+        "#     CUBE_ENV_FILE, or .env for dev. Without one, a Secret managed elsewhere",
+        "#     stays as it is. When the file sets no CUBEJS_API_SECRET, the Secret keeps",
+        "#     the one it has, or gets a new one.",
+        "#  3. helm upgrade --install rolls the release back if it fails, then helm test",
+        "#     checks that the API reaches the data source and that the model compiles.",
+        "#",
+        "# Staging and production deploy committed work only. Settings: KUBE_CONTEXT,",
+        [
+          "# CUBE_RELEASE and CUBE_NAMESPACE (default ",
+          {
+            "answer": "package_name"
+          },
+          "), CUBE_IMAGE (see"
+        ],
+        "# the image task), CUBE_ENV_FILE and CUBE_DEPLOY_TIMEOUT (default 10m).",
+        "set -eu",
+        "cd \"$(dirname \"$0\")/../..\"",
+        "",
+        "die() {",
+        "  echo \"error: $*\" >&2",
+        "  exit 1",
+        "}",
+        "",
+        "environment=dev",
+        "chart_only=",
+        "for arg; do",
+        "  case \"$arg\" in",
+        "    --chart-only) chart_only=1 ;;",
+        "    -*)",
+        "      echo \"usage: mise run deploy [ENVIRONMENT] [--chart-only]\" >&2",
+        "      exit 2",
+        "      ;;",
+        "    *) environment=$arg ;;",
+        "  esac",
+        "done",
+        "values=deploy/$environment.yaml",
+        "[ -f \"$values\" ] || die \"no $values; the environments are: $(ls deploy | sed 's/\\.yaml$//' | tr '\\n' ' ')\"",
+        [
+          "release=${CUBE_RELEASE:-",
+          {
+            "answer": "package_name"
+          },
+          "}"
+        ],
+        [
+          "namespace=${CUBE_NAMESPACE:-",
+          {
+            "answer": "package_name"
+          },
+          "}"
+        ],
+        "context=${KUBE_CONTEXT:-$(kubectl config current-context)}",
+        "description=$(git log -1 --format='%h %s' 2>/dev/null || echo \"Deploy\")",
+        "if [ -n \"$(git status --porcelain)\" ]; then",
+        "  [ \"$environment\" = dev ] || die \"$environment deploys committed work only; commit or stash your changes first\"",
+        "  description=\"$description, with uncommitted changes\"",
+        "fi",
+        "kube() { kubectl --context \"$context\" --namespace \"$namespace\" \"$@\"; }",
+        "cleanup=",
+        "trap 'rm -f $cleanup' EXIT",
+        "",
+        "echo \"Deploying $release to namespace $namespace of $context, with $values\" >&2",
+        "kubectl --context \"$context\" get namespace \"$namespace\" >/dev/null 2>&1 ||",
+        "  kubectl --context \"$context\" create namespace \"$namespace\" >&2",
+        "",
+        "set -- --values \"$values\"",
+        "case \"$context\" in",
+        "  kind-* | minikube | docker-desktop | orbstack | rancher-desktop)",
+        "    # One image per architecture for Cube Store: take this machine's.",
+        "    set -- \"$@\" --set \"cubestore.arch=$(kubectl --context \"$context\" get nodes \\",
+        "      --output 'jsonpath={.items[0].status.nodeInfo.architecture}')\"",
+        "    local_cluster=1",
+        "    ;;",
+        "  *) local_cluster= ;;",
+        "esac",
+        "",
+        "if [ -z \"$chart_only\" ]; then",
+        "  if [ -n \"$local_cluster\" ]; then",
+        "    image=$(.mise/tasks/image --load)",
+        "    case \"$context\" in",
+        "      kind-*) kind load docker-image \"$image\" --name \"${context#kind-}\" >&2 ;;",
+        "      minikube) minikube image load \"$image\" >&2 ;;",
+        "    esac",
+        "  else",
+        "    image=$(.mise/tasks/image --push)",
+        "  fi",
+        "else",
+        "  image=$(helm --kube-context \"$context\" --namespace \"$namespace\" get values \"$release\" --output json 2>/dev/null |",
+        "    node -e 'let s = \"\"; process.stdin.on(\"data\", (d) => (s += d)).on(\"end\", () => {",
+        "      const image = (s && JSON.parse(s)?.image) || {};",
+        "      if (image.repository && image.tag) console.log(`${image.repository}:${image.tag}`);",
+        "    })')",
+        "fi",
+        "if [ -n \"$image\" ]; then",
+        "  set -- \"$@\" --set \"image.repository=${image%:*}\" --set \"image.tag=${image##*:}\"",
+        "fi",
+        "",
+        "env_file=${CUBE_ENV_FILE:-}",
+        "if [ -z \"$env_file\" ] && [ \"$environment\" = dev ]; then",
+        "  if [ -f .env ]; then",
+        "    env_file=.env",
+        "  elif env | grep -q '^CUBEJS_DB_TYPE='; then",
+        "    env_file=$(mktemp)",
+        "    cleanup=\"$cleanup $env_file\"",
+        "    env | grep '^CUBEJS_' >\"$env_file\"",
+        "  else",
+        "    die \"dev reads the data source connection from .env: copy .env.example to .env and fill it in\"",
+        "  fi",
+        "fi",
+        "secret=$release-env",
+        "if [ -n \"$env_file\" ]; then",
+        "  [ -f \"$env_file\" ] || die \"$env_file does not exist\"",
+        "  payload=$(mktemp)",
+        "  cleanup=\"$cleanup $payload\"",
+        "  cat \"$env_file\" >\"$payload\"",
+        "  if ! grep -q '^CUBEJS_API_SECRET=' \"$payload\"; then",
+        "    api_secret=$(kube get secret \"$secret\" --ignore-not-found \\",
+        "      --output 'go-template={{with index .data \"CUBEJS_API_SECRET\"}}{{base64decode .}}{{end}}')",
+        "    [ -n \"$api_secret\" ] || api_secret=$(node -e 'console.log(require(\"node:crypto\").randomBytes(32).toString(\"hex\"))')",
+        "    printf '\\nCUBEJS_API_SECRET=%s\\n' \"$api_secret\" >>\"$payload\"",
+        "  fi",
+        "  kube create secret generic \"$secret\" --from-env-file=\"$payload\" --dry-run=client --output yaml |",
+        "    kube apply --filename - >&2",
+        "  # Rolls the pods when the Secret's content changed.",
+        "  set -- \"$@\" --set-string \"config.existingSecretRevision=$(git hash-object \"$payload\" | cut -c1-12)\"",
+        "elif ! kube get secret \"$secret\" >/dev/null 2>&1; then",
+        "  die \"no Secret $secret yet: give its CUBEJS_* variables in an env file, CUBE_ENV_FILE=path mise run deploy $environment\"",
+        "fi",
+        "",
+        "if [ \"$environment\" != dev ] && helm template \"$release\" charts/cube \"$@\" | grep -q CUBESTORE_REMOTE_DIR; then",
+        "  echo \"warning: Cube Store keeps its data on a volume in $values; give it an s3 or gcs bucket for production\" >&2",
+        "fi",
+        "",
+        "helm --kube-context \"$context\" --namespace \"$namespace\" upgrade --install \"$release\" charts/cube \"$@\" \\",
+        "  --rollback-on-failure --wait --timeout \"${CUBE_DEPLOY_TIMEOUT:-10m}\" --description \"$description\"",
+        "if [ -n \"$image\" ]; then",
+        "  helm --kube-context \"$context\" --namespace \"$namespace\" test \"$release\" --logs",
+        "else",
+        "  echo \"The release runs Cube without a data model yet; mise run deploy $environment builds and deploys it.\" >&2",
+        "fi"
+      ],
+      "mode": 493
+    }
+  ],
+  "hooks": [
+    {
+      "id": "deploy-helm",
+      "phase": "post",
+      "effect": "deploy",
+      "label": "Install the Helm chart in the current Kubernetes context",
+      "description": "Runs `mise run deploy dev --chart-only` once the scaffold is committed, and again when weft update changes the chart or deploy/dev.yaml: installs or upgrades the release (API instances, refresh worker, Cube Store) and keeps the image it runs, Cube's own until the data model is deployed. Gated on deploy_kubernetes.",
+      "action": "mise run deploy dev --chart-only",
+      "when": "deploy_kubernetes",
+      "after": [
+        "git-commit",
+        "mise-install"
+      ],
+      "inputs": [
+        "glob:charts/cube/**",
+        "glob:deploy/dev.yaml"
+      ]
+    },
+    {
+      "id": "deploy-metrics",
+      "phase": "post",
+      "effect": "deploy",
+      "label": "Deploy the data model to the current Kubernetes context",
+      "description": "Runs `mise run deploy dev` after deploy-helm, and again when weft update changes cube/ or the Dockerfile: builds the image of the data model, loads or pushes it, rolls the release onto it and runs helm test. Gated on deploy_kubernetes.",
+      "action": "mise run deploy dev",
+      "when": "deploy_kubernetes",
+      "after": [
+        "deploy-helm"
+      ],
+      "inputs": [
+        "glob:cube/**",
+        "glob:Dockerfile"
+      ]
+    }
+  ]
+}

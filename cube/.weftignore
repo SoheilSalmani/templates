@@ -1,0 +1,24 @@
+# gitignore-style patterns excluded when weft reads a recording
+# worktree back (weft commit / diff / patch resync). Keeps tool
+# side-products out of patches. `.git/`, `.weft/`, and `.DS_Store`
+# are always ignored.
+
+# Local data of the Cube dev server, and Python bytecode of cube.py
+.cubestore/
+__pycache__/
+
+# Derived per project: the golden queries' SQL snapshots, which scripts/check
+# writes in the project's own dialect, and the chart's README, which the
+# chart-docs hook generates from values.yaml
+tests/queries/*.sql
+charts/cube/README.md
+
+# Skill scripts
+node_modules/
+
+# Claude Code symlink farm (rebuilt by the sync-claude-skills hook)
+.claude/skills/
+
+# Personal, per-machine files
+mise.local.toml
+.env

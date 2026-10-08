@@ -1,0 +1,146 @@
+{
+  "title": "Cube image with the model",
+  "description": "Adds a Dockerfile that copies cube/ into Cube's image and runs it as the unprivileged node user, and the image task, which tags the image with the Cube version and a hash of the data model, so an unchanged model is never built, pushed or rolled out again, and pushes it for amd64 and arm64 to GitHub's registry or CUBE_IMAGE. Self-hosted Cube Core only.",
+  "depends_on": [
+    "model-checks"
+  ],
+  "when": "not use_cube_cloud",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "",
+            "After an intended change, `mise run check --update` rewrites the snapshots, so the pull request shows reviewers how the SQL behind each metric changes. Give every metric something depends on a golden query, with absolute date ranges so its SQL stays the same from day to day."
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "## Image",
+            "",
+            "`mise run image` builds the image every environment runs: Cube's own image with `cube/` copied into `/cube/conf`. Its tag is the Cube version followed by a hash of the data model, so one model always has one tag, and an unchanged model is never built, pushed or rolled out again. `mise run image --push` builds it for amd64 and arm64 and pushes it to `ghcr.io/<owner>/<repo>`, or to the repository `CUBE_IMAGE` names."
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": ".dockerignore",
+      "content": [
+        "# The image needs the Cube project only, without the dev server's local data.",
+        "*",
+        "!cube/",
+        "cube/.cubestore/",
+        "cube/.env*",
+        "cube/**/__pycache__/"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": "Dockerfile",
+      "content": [
+        "# Cube with this project's data model and configuration in /cube/conf: the",
+        "# image every environment runs, built and tagged by `mise run image`. Keep",
+        "# CUBE_VERSION on the release compose.yaml runs.",
+        "ARG CUBE_VERSION=v1.8.1",
+        "FROM cubejs/cube:${CUBE_VERSION}",
+        "",
+        "# Python or npm packages that cube.py or the model import install here, before",
+        "# the switch to the unprivileged user:",
+        "# https://docs.cube.dev/cube-core/deployment#extend-the-docker-image",
+        "COPY cube/ /cube/conf/",
+        "",
+        "# The `node` user of the base image; the chart runs the pods as its uid, 1000.",
+        "USER node"
+      ],
+      "mode": 420
+    },
+    {
+      "op": "create_file",
+      "path": ".mise/tasks/image",
+      "content": [
+        "#!/bin/sh",
+        "#MISE description=\"Build the Cube image that holds the data model, tagged by its content\"",
+        "# Usage: mise run image [--load | --push]",
+        "#",
+        "# Builds Dockerfile, which copies cube/ into Cube's image, and prints the",
+        "# image's reference. The tag is the Cube version followed by a hash of what the",
+        "# image holds (cube/, Dockerfile and .dockerignore), so one data model always",
+        "# has one tag: an unchanged model is never built, pushed or rolled out again.",
+        "#",
+        "#   --load   build into the local Docker engine (the default)",
+        "#   --push   build for linux/amd64 and linux/arm64 and push to the registry,",
+        "#            unless it has the tag already; log in to the registry first",
+        "#",
+        "# CUBE_IMAGE names the repository. It defaults to ghcr.io/<owner>/<repo> for a",
+        [
+          "# GitHub origin remote, and to ",
+          {
+            "answer": "package_name"
+          },
+          " for a local build without one."
+        ],
+        "set -eu",
+        "cd \"$(dirname \"$0\")/../..\"",
+        "",
+        "mode=load",
+        "case \"${1:-}\" in",
+        "  \"\" | --load) ;;",
+        "  --push) mode=push ;;",
+        "  *)",
+        "    echo \"usage: mise run image [--load | --push]\" >&2",
+        "    exit 2",
+        "    ;;",
+        "esac",
+        "",
+        "version=$(sed -n 's/^ARG CUBE_VERSION=//p' Dockerfile)",
+        "hash=$(git ls-files --cached --others --exclude-standard -- cube Dockerfile .dockerignore | LC_ALL=C sort |",
+        "  while IFS= read -r file; do",
+        "    if [ -f \"$file\" ]; then printf '%s %s\\n' \"$(git hash-object -- \"$file\")\" \"$file\"; fi",
+        "  done | git hash-object --stdin | cut -c1-12)",
+        "",
+        "repository=${CUBE_IMAGE:-}",
+        "if [ -z \"$repository\" ]; then",
+        "  remote=$(git remote get-url origin 2>/dev/null || true)",
+        "  case \"$remote\" in",
+        "    *github.com[:/]*)",
+        "      repository=ghcr.io/$(printf '%s' \"$remote\" | sed -E 's#.*github\\.com[:/]##; s#\\.git$##' | tr '[:upper:]' '[:lower:]')",
+        "      ;;",
+        "    *)",
+        "      if [ \"$mode\" = push ]; then",
+        "        echo \"error: set CUBE_IMAGE to the repository to push the image to\" >&2",
+        "        exit 1",
+        "      fi",
+        [
+          "      repository=",
+          {
+            "answer": "package_name"
+          }
+        ],
+        "      ;;",
+        "  esac",
+        "fi",
+        "ref=$repository:$version-$hash",
+        "",
+        "if [ \"$mode\" = push ]; then",
+        "  if docker buildx imagetools inspect \"$ref\" >/dev/null 2>&1; then",
+        "    echo \"$ref is in the registry already\" >&2",
+        "  else",
+        "    docker buildx build --platform \"${CUBE_IMAGE_PLATFORMS:-linux/amd64,linux/arm64}\" \\",
+        "      --build-arg \"CUBE_VERSION=$version\" --tag \"$ref\" --push . >&2",
+        "  fi",
+        "elif docker image inspect \"$ref\" >/dev/null 2>&1; then",
+        "  echo \"$ref is built already\" >&2",
+        "else",
+        "  docker build --build-arg \"CUBE_VERSION=$version\" --tag \"$ref\" . >&2",
+        "fi",
+        "echo \"$ref\""
+      ],
+      "mode": 493
+    }
+  ]
+}
