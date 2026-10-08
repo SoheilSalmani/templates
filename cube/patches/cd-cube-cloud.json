@@ -1,0 +1,86 @@
+{
+  "title": "GitHub Actions Cube Cloud deploys",
+  "description": "Adds a deploy workflow that runs the deploy task on every push to main in the GitHub environment production, whose reviewers can gate it, after an optional staging deployment named by the repository variable CUBE_STAGING_DEPLOYMENT_ID. It authenticates with the environments' CUBE_API_URL variable and CUBE_API_KEY secret, one deploy at a time.",
+  "depends_on": [
+    "cube-cloud"
+  ],
+  "when": "use_github_actions and use_cube_cloud",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "2. The deployment deploys from the CLI, so that a push to its git branch never overwrites a deploy: `cube deployments update <id> -d '{\"deployMode\":\"cli\"}'`.",
+            "3. The deployment has the data source connection: `cube variables set <id> CUBEJS_DB_TYPE=… CUBEJS_DB_HOST=…`."
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "On every push to `main`, the deploy workflow runs `mise run deploy` in the GitHub environment `production`, which needs the variable `CUBE_API_URL`, `https://<tenant>.cubecloud.dev`, and the secret `CUBE_API_KEY`, an API key with access to the deployment; required reviewers on the environment make each deploy wait for an approval. The repository variable `CUBE_STAGING_DEPLOYMENT_ID` adds a staging deployment that every commit reaches first, in the environment `staging`, which needs the same variable and secret. Re-running an earlier run of the workflow deploys its commit again."
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": ".github/workflows/deploy.yml",
+      "content": [
+        "name: Deploy",
+        "",
+        "# Every push to main deploys the data model to Cube Cloud: first to the staging",
+        "# deployment when the repository variable CUBE_STAGING_DEPLOYMENT_ID names one,",
+        "# then to production once the production environment's reviewers approve.",
+        "# Re-running an earlier run deploys its commit again, which is how a deploy is",
+        "# rolled back.",
+        "on:",
+        "  push:",
+        "    branches: [main]",
+        "  workflow_dispatch:",
+        "",
+        "permissions:",
+        "  contents: read",
+        "",
+        "# One deploy at a time, and never one cancelled halfway.",
+        "concurrency:",
+        "  group: deploy",
+        "  cancel-in-progress: false",
+        "",
+        "jobs:",
+        "  staging:",
+        "    name: Staging",
+        "    if: vars.CUBE_STAGING_DEPLOYMENT_ID != ''",
+        "    runs-on: ubuntu-latest",
+        "    environment: staging",
+        "    steps:",
+        "      - uses: actions/checkout@v7",
+        "      - uses: jdx/mise-action@v5",
+        "      - name: Deploy",
+        "        env:",
+        "          CUBE_API_URL: ${{ vars.CUBE_API_URL }}",
+        "          CUBE_API_KEY: ${{ secrets.CUBE_API_KEY }}",
+        "          STAGING_DEPLOYMENT_ID: ${{ vars.CUBE_STAGING_DEPLOYMENT_ID }}",
+        "        run: mise run deploy \"$STAGING_DEPLOYMENT_ID\"",
+        "",
+        "  production:",
+        "    name: Production",
+        "    needs: staging",
+        "    if: ${{ !cancelled() && (needs.staging.result == 'success' || needs.staging.result == 'skipped') }}",
+        "    runs-on: ubuntu-latest",
+        "    environment: production",
+        "    steps:",
+        "      - uses: actions/checkout@v7",
+        "      - uses: jdx/mise-action@v5",
+        "      - name: Deploy",
+        "        env:",
+        "          CUBE_API_URL: ${{ vars.CUBE_API_URL }}",
+        "          CUBE_API_KEY: ${{ secrets.CUBE_API_KEY }}",
+        "        # Deploys to the CUBE_DEPLOYMENT_ID of mise.toml.",
+        "        run: mise run deploy"
+      ],
+      "mode": 420
+    }
+  ]
+}

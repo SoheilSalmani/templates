@@ -1,0 +1,64 @@
+{
+  "title": "GitHub Actions checks",
+  "description": "Adds a GitHub Actions workflow that runs the check task on every pull request and push to main, with Node from mise.toml and the runner's Docker, so the golden queries' SQL changes show in the pull request and a failing check can block the merge.",
+  "depends_on": [
+    "model-checks"
+  ],
+  "when": "use_github_actions",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "`mise run check` starts the Cube image the project pins, in production mode and without connecting to the data source, compiles the model, and checks the golden queries in `tests/queries`. Each `.json` file there is a query a dashboard or an application depends on, and the `.sql` file beside it is the SQL Cube generates for it. The check fails when the model does not compile, when a query asks for a member that no longer exists, or when the SQL of a query changes.",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "GitHub Actions runs the same check on every pull request and every push to `main`; once the branch protection of `main` requires it, a pull request cannot merge while it fails.",
+            ""
+          ],
+          "context_after": [
+            "After an intended change, `mise run check --update` rewrites the snapshots, so the pull request shows reviewers how the SQL behind each metric changes. Give every metric something depends on a golden query, with absolute date ranges so its SQL stays the same from day to day."
+          ]
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": ".github/workflows/check.yml",
+      "content": [
+        "name: Check",
+        "",
+        "on:",
+        "  push:",
+        "    branches: [main]",
+        "  pull_request:",
+        "",
+        "permissions:",
+        "  contents: read",
+        "",
+        "concurrency:",
+        "  group: check-${{ github.ref }}",
+        "  cancel-in-progress: true",
+        "",
+        "jobs:",
+        "  model:",
+        "    name: Data model",
+        "    runs-on: ubuntu-latest",
+        "    steps:",
+        "      - uses: actions/checkout@v7",
+        "      # Node from mise.toml; Docker and Compose come with the runner.",
+        "      - uses: jdx/mise-action@v5",
+        "        with:",
+        "          install_args: node",
+        "      # Compiles the model in the pinned Cube image and compares the SQL of",
+        "      # the golden queries with their snapshots.",
+        "      - run: mise run check"
+      ],
+      "mode": 420
+    }
+  ]
+}

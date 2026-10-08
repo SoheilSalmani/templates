@@ -1,0 +1,134 @@
+{
+  "title": "Cube Cloud deploys",
+  "description": "Pins the cube CLI from the matching Cube release in mise.toml, with the deployment id in its [env], and adds the deploy task: it uploads cube/ to the deploy branch of that deployment, or of the one it is given, waits for the build and validates the model there against the deployment's own variables and Cube version, refusing a deployment that builds from git, whose next sync would overwrite the upload.",
+  "depends_on": [
+    "model-checks"
+  ],
+  "when": "use_cube_cloud",
+  "ops": [
+    {
+      "op": "modify_file",
+      "path": "README.md",
+      "hunks": [
+        {
+          "context_before": [
+            "",
+            "After an intended change, `mise run check --update` rewrites the snapshots, so the pull request shows reviewers how the SQL behind each metric changes. Give every metric something depends on a golden query, with absolute date ranges so its SQL stays the same from day to day."
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "## Deploy to Cube Cloud",
+            "",
+            "`mise run deploy` uploads `cube/` to the Cube Cloud deployment that `CUBE_DEPLOYMENT_ID` in `mise.toml` names, on its deploy branch, waits for the build, then compiles the model there with `cube validate`, against the deployment's own environment variables and Cube version. A deploy is the commit you stand on; to roll one back, deploy an earlier commit.",
+            "",
+            "Before the first deploy:",
+            "",
+            "1. Each person signs in once: `cube login --url https://<tenant>.cubecloud.dev`.",
+            "2. The deployment deploys from the CLI, so that a push to its git branch never overwrites a deploy: `cube deployments update <id> -d '{\"deployMode\":\"cli\"}'`.",
+            "3. The deployment has the data source connection: `cube variables set <id> CUBEJS_DB_TYPE=… CUBEJS_DB_HOST=…`."
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "modify_file",
+      "path": "mise.toml",
+      "hunks": [
+        {
+          "context_before": [
+            "[tools]",
+            "node = \"24\""
+          ],
+          "removed": [],
+          "added": [
+            "# The cube CLI, from the Cube release of the same version.",
+            "\"github:cube-js/cube\" = \"1.8.1\"",
+            "",
+            "[env]",
+            "# The Cube Cloud deployment `mise run deploy` deploys to.",
+            [
+              "CUBE_DEPLOYMENT_ID = \"",
+              {
+                "answer": "cube_deployment_id"
+              },
+              "\""
+            ]
+          ],
+          "context_after": []
+        }
+      ]
+    },
+    {
+      "op": "create_file",
+      "path": ".mise/tasks/deploy",
+      "content": [
+        "#!/bin/sh",
+        "#MISE description=\"Deploy the data model to Cube Cloud and wait until the deployment serves it\"",
+        "# Usage: mise run deploy [DEPLOYMENT]",
+        "#",
+        "# Uploads cube/ to a Cube Cloud deployment on its deploy branch, waits for the",
+        "# build, then compiles the model there with cube validate, against the",
+        "# deployment's own environment variables and Cube version. DEPLOYMENT is the",
+        "# deployment's id, CUBE_DEPLOYMENT_ID of mise.toml by default; the deploy",
+        "# workflow passes its staging deployment's.",
+        "#",
+        "# The deployment must deploy from the CLI, which it does once:",
+        "#   cube deployments update <id> -d '{\"deployMode\":\"cli\"}'",
+        "# The cube CLI signs in as `cube login` saved, or with CUBE_API_URL and",
+        "# CUBE_API_KEY, which CI uses.",
+        "set -eu",
+        "cd \"$(dirname \"$0\")/../..\"",
+        "",
+        "case \"${1:-}\" in",
+        "  -*)",
+        "    echo \"usage: mise run deploy [DEPLOYMENT]\" >&2",
+        "    exit 2",
+        "    ;;",
+        "esac",
+        "deployment=${1:-${CUBE_DEPLOYMENT_ID:-}}",
+        "if [ -z \"$deployment\" ]; then",
+        "  echo \"error: name the Cube Cloud deployment: mise run deploy <id>, or CUBE_DEPLOYMENT_ID in mise.toml\" >&2",
+        "  exit 1",
+        "fi",
+        "setting() {",
+        "  printf '%s' \"$settings\" | node -e 'let s = \"\"; process.stdin.on(\"data\", (d) => (s += d))",
+        "    .on(\"end\", () => console.log(JSON.parse(s)[process.argv[1]] ?? \"\"))' \"$1\"",
+        "}",
+        "settings=$(cube deployments settings \"$deployment\" --json)",
+        "if [ \"$(setting deployMode)\" = git ]; then",
+        "  echo \"error: deployment $deployment builds from git, which overwrites what the CLI uploads; switch it once with\" >&2",
+        "  echo \"  cube deployments update $deployment -d '{\\\"deployMode\\\":\\\"cli\\\"}'\" >&2",
+        "  exit 1",
+        "fi",
+        "branch=$(setting deployBranchName)",
+        "message=$(git log -1 --format='%h %s' 2>/dev/null || echo \"Deploy\")",
+        "[ -z \"$(git status --porcelain -- cube)\" ] || message=\"$message, with uncommitted changes\"",
+        "",
+        "cube deploy \"$deployment\" --directory cube --branch \"$branch\" --message \"$message\"",
+        "cube deployments build-status \"$deployment\" --branch \"$branch\" --wait",
+        "cube validate \"$deployment\" --branch \"$branch\""
+      ],
+      "mode": 493
+    }
+  ],
+  "hooks": [
+    {
+      "id": "deploy-cube-cloud",
+      "phase": "post",
+      "effect": "deploy",
+      "label": "Deploy the data model to Cube Cloud",
+      "description": "Runs the deploy task once the scaffold is committed, and again when weft update changes cube/: uploads it to the deployment in CUBE_DEPLOYMENT_ID, waits for the build and validates the model there. Gated on deploy_cube_cloud.",
+      "action": "mise run deploy",
+      "when": "deploy_cube_cloud",
+      "after": [
+        "git-commit",
+        "mise-install"
+      ],
+      "inputs": [
+        "glob:cube/**"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+[template]
+name = "cube"
+weft-version = "0.1"
+description = "A Cube semantic layer: the data model in YAML under cube/, a local dev server, and a pre-pull-request check that compiles the model in the pinned Cube image and snapshots the SQL of golden queries. It deploys either to Cube Cloud with the cube CLI or, for self-hosted Cube Core, to Kubernetes with a production Helm chart adapted from gadsme's (API instances, a refresh worker, a Cube Store cluster, Prometheus metrics) and an image per data model, with optional GitHub Actions that check every pull request and promote main from staging to production, and deploy hooks for the first deploy. On base: the house editor, git, mise, Paseo, agent-instruction, skill and MCP configuration."
+extends = "../base"
+
+[[question]]
+id = "package_name"
+kind = "string"
+computed = true
+default = "'-'.join(''.join([c if c.isalnum() else ' ' for c in project_name.lower().elems()]).split())"
+
+[[question]]
+id = "db_type"
+kind = "string"
+prompt = "Data source type"
+description = "CUBEJS_DB_TYPE of the warehouse the model reads, as Cube names it (postgres, snowflake, bigquery, databricks-jdbc, redshift, clickhouse, athena, trino, duckdb…: https://docs.cube.dev/admin/connect-to-data). It picks the SQL dialect the check task compiles the golden queries in, and goes into .env.example and, for Kubernetes, each environment's values; the connection itself is set per environment."
+example = "snowflake"
+default = "'postgres'"
+
+[[question]]
+id = "use_cube_cloud"
+kind = "bool"
+prompt = "Deploy to Cube Cloud rather than self-host Cube Core?"
+description = "True for the managed Cube Cloud: pins the cube CLI in mise.toml and adds a deploy task, which uploads cube/ to a deployment, waits for the build and validates the model there. False for self-hosted Cube Core: adds a Dockerfile that bakes the model into Cube's image, and offers a Helm chart for Kubernetes."
+default = "False"
+
+[[question]]
+id = "cube_deployment_id"
+kind = "string"
+prompt = "Cube Cloud deployment id"
+description = "Id of the Cube Cloud deployment the data model deploys to, from its URL or `cube deployments list`. Becomes CUBE_DEPLOYMENT_ID in mise.toml; leave it empty until the deployment exists. Asked for Cube Cloud."
+example = "4217"
+default = "''"
+when = "use_cube_cloud"
+
+[[question]]
+id = "deploy_cube_cloud"
+kind = "bool"
+prompt = "Deploy the data model to Cube Cloud once scaffolded?"
+description = "Runs the deploy task as the last step of weft new, and again when weft update changes cube/. Needs cube_deployment_id, a deployment set to deploy from the CLI, and `cube login` done (or CUBE_API_URL and CUBE_API_KEY exported) beforehand. Asked for Cube Cloud."
+default = "False"
+when = "use_cube_cloud"
+
+[[question]]
+id = "use_helm"
+kind = "bool"
+prompt = "Deploy Cube Core to Kubernetes with a Helm chart?"
+description = "Adds charts/cube, a production Helm chart for the API instances, the refresh worker and a Cube Store cluster, with its unit tests and an install test on kind, plus deploy/<environment>.yaml values and a deploy task, which ships the data model as an image tagged by its content. Asked for Cube Core."
+default = "not use_cube_cloud"
+when = "not use_cube_cloud"
+
+[[question]]
+id = "deploy_kubernetes"
+kind = "bool"
+prompt = "Install Cube and the data model in the current Kubernetes context once scaffolded?"
+description = "Runs `mise run deploy dev` as the last steps of weft new, first for the chart, then for the data model, and again when weft update changes them. Needs a kubectl context, ideally a local cluster such as kind, and the data source connection as exported CUBEJS_* variables, since .env does not exist yet. Asked with the Helm chart."
+default = "False"
+when = "use_helm"
+
+[[question]]
+id = "use_github_actions"
+kind = "bool"
+prompt = "Check and deploy with GitHub Actions?"
+description = "Adds a workflow that runs the check task on every pull request and push to main, and the deploy workflow of the edition: Cube Cloud from main, or Kubernetes from main to staging, then to production once its reviewers approve; with the Helm chart, also the chart's lint, unit tests and kind install. Defaults to whether the project is on GitHub. Only offered when mise.toml is committed, which the workflows install their tools from."
+default = "use_github and commit_mise"
+when = "commit_mise"
+
+[refine.project_name]
+description = "Human-facing name; becomes the README title and, slugified, the Compose project, the Helm release and namespace, and the local image name."
+
+[refine.commit_mise]
+description = "When false, mise.toml is gitignored like mise.local.toml and copied into every new git worktree, and the README leaves out its mise install step. The GitHub workflows install their tools from the committed mise.toml, so they are only offered when it is committed. Any false commit_* answer also gitignores paseo.json and .weft/."
+
+[refine.stack_skills]
+choices = []
+
+[[preset]]
+name = "with-cube-cloud"
+file = "presets/with-cube-cloud.toml"
+
+[[preset]]
+name = "no-helm"
+file = "presets/no-helm.toml"

@@ -1,9 +1,10 @@
 #!/bin/sh
 # Runs `weft check` on base and every template that extends it under the
-# answer combinations base's questions introduce, fails any base patch that
-# installs skills and carries an answer reference, then renders each template
-# to prove what the commit_* answers promise. Templates whose own gates need
-# more combinations run those in their own proof; this is the floor.
+# answer combinations base's questions introduce, and under each preset a
+# template ships, fails any base patch that installs skills and carries an
+# answer reference, then renders each template to prove what the commit_*
+# answers promise. Templates whose own gates need more combinations than their
+# presets cover run those in their own proof; this is the floor.
 #
 #   scripts/check-templates.sh
 . "$(dirname "$0")/lib.sh"
@@ -20,6 +21,22 @@ for t in "$BASE" $(templates); do
       exit 1
     fi
   done || status=1
+done
+
+# A preset locks the answers of a variant its template ships, such as cube's
+# Cube Cloud edition, so each one is checked as a combination of its own.
+for t in "$BASE" $(templates); do
+  name="$(basename "$t")"
+  for p in "$t"/presets/*.toml; do
+    [ -f "$p" ] || continue
+    preset="$(basename "$p" .toml)"
+    if out="$(weft check "$t" --answer "$RECORD_ANSWER" --preset "$preset" 2>&1)"; then
+      printf 'ok    %-10s %s\n' "$name" "--preset $preset"
+    else
+      printf 'FAIL  %-10s %s\n%s\n' "$name" "--preset $preset" "$out"
+      status=1
+    fi
+  done
 done
 
 # Each stack offers only its own stack skills, so only base can switch them
