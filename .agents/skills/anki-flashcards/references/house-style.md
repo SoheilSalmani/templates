@@ -52,6 +52,17 @@ Which tool is used to quickly scaffold a Python package containing a Dagster <co
 What is wrong is `"uv: what does --frozen do?"` or `"Sanofi R&D: which committee approves Gate 4?"`.
 The reviewer reads the context line, then reads it again. Drop the prefix, keep the sentence natural.
 
+The opposite failure is a card that needs context its field does not give. The field names a subject,
+never the document a card came from, so a card drafted from a repository that asks about "the chart"
+reads, six months later, as a question about an unknown chart. Name the thing, or card the general
+fact the source applies:
+
+```
+Topic:  Cube
+Before: Why doesn't the chart use /readyz as the API instances' readiness probe?
+After:  What happens to Cube API instances whose readiness probe is /readyz when the data source goes down?
+```
+
 ## Length
 
 The Back is normally one sentence. Two when the second earns its place, as in the Vim card above

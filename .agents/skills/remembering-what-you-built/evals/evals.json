@@ -52,7 +52,9 @@
         "The result is on the order of five to fifteen cards, not one per module",
         "Selection favours the command surface, the invented vocabulary, the constraints and the decisions",
         "It says what it deliberately left out",
-        "No card restates something the code answers faster than recall"
+        "No card restates something the code answers faster than recall",
+        "Every card names what it is about, so none relies on the reader knowing which \"the chart\" or \"the project\" is meant",
+        "A choice the repository made, such as which exporter it runs, is carded under the project's context value or not at all, never as how the tool it uses works"
       ]
     },
     {

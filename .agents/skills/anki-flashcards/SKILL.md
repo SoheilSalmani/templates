@@ -1,6 +1,6 @@
 ---
 name: anki-flashcards
-description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repo, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and this collection's own note-type and formatting conventions.
+description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards. For cards about a repository or your own project, load remembering-what-you-built as well: it picks the facts, and this skill writes them. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and this collection's own note-type and formatting conventions.
 allowed-tools: Read, Grep, Glob, WebFetch, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/anki_cards.py:*), mcp__anki__listDecks, mcp__anki__modelNames, mcp__anki__modelFieldNames, mcp__anki__findNotes, mcp__anki__notesInfo, mcp__anki__getTags
 ---
 
@@ -71,6 +71,10 @@ Phrasing:
   cleanly, and cut preamble that the Topic line already supplies.
 - One unambiguous answer. If two answers are defensible, the Front is underspecified: add the
   qualifier that picks one.
+- Every card stands alone. At review there is the card and its context field, never the source, so a
+  card that points at the source ("the chart", "this page", "the article", "our team") names nothing.
+  Name the thing, or card the general fact the source applies. A fact true of one project only takes
+  that project as its `Topic` or `Tool` value. Brevity never outranks this rule.
 - Watch interference between sibling cards. When a source gives you six parallel items, near-identical
   Fronts will blur together under review. Differentiate by the distinguishing content, or card only
   the items that carry weight.
@@ -96,8 +100,13 @@ Walk the drafted set once and ask:
 3. Could any two cards in this batch be confused for each other?
 4. Is every answer traceable to the source, with no inference of your own presented as fact?
 5. Does any Front repeat its own Topic or Tool value?
-6. Is any Back longer than it needs to be?
-7. Would you want this card in six months?
+6. Read each card as someone who never saw the source. Does any card lean on it, saying "the chart"
+   or "this page" where it should name the thing?
+7. Is any claim true only of the source's own setup, such as the exporter one chart happens to run,
+   stated as if it held everywhere? Card the general fact, or give the claim its project as the
+   context value.
+8. Is any Back longer than it needs to be?
+9. Would you want this card in six months?
 
 ## Reviewing existing cards
 
