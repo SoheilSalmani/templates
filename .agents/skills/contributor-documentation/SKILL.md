@@ -30,7 +30,7 @@ Where a repository also holds agent skills or instruction files with detailed op
 
 > `CONTRIBUTING.md` states the externally observable contract, which is what a contributor must do. The skills hold the operational detail, which is how an agent does it.
 
-So the file can say that commit subjects are imperative and name the change, and that a pull request explains what changed and how it was verified. It does not reproduce the message patterns, the cohesion tests, or the accuracy rules. One line may point at `.claude/skills/` for contributors who use Claude Code, and that is the whole relationship.
+So the file can say that commit subjects are imperative and name the change, and that a pull request explains what changed and why. It does not reproduce the message patterns, the cohesion tests, or the accuracy rules. One line may point at `.claude/skills/` for contributors who use Claude Code, and that is the whole relationship.
 
 If a convention only exists to steer an agent, it is not a contributor convention and does not appear here.
 

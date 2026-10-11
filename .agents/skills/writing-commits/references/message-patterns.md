@@ -71,7 +71,7 @@ No headings. No `Summary`, `Why`, `Testing`, `Notes`, or `Context` sections. A c
 
 **Bullets only where each item is a reason.** A list of *changes* is the diff restated, and it passes a naive reading of "genuinely a list" while adding nothing: three bullets naming three modified tests are three things the reader can already see. Three bullets giving three independent causes are worth the lines. When in doubt, prose.
 
-Do not put routine verification in the body. The pull request owns that. The exception is when the verification *is* the point, such as a characterisation commit stating that it captures existing behaviour.
+Do not put routine verification in the body. CI shows the checks, and a manual one goes in a pull request comment. The exception is when the verification *is* the point, such as a characterisation commit stating that it captures existing behaviour.
 
 ## Worked rewrites
 

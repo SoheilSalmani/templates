@@ -232,6 +232,18 @@
         "Any commit it points at is a markdown link, not a bare hash",
         "Nothing is said about how or when the change reaches an environment"
       ]
+    },
+    {
+      "id": 21,
+      "prompt": "Write the PR for this branch. It adds an optional Notion MCP server to the template's Claude Code, Codex and oh-my-pi configs. In a rendered project I checked that Claude Code lists the server, Codex shows it as not logged in, the oh-my-pi file passes its schema, and the endpoint answers with an OAuth challenge. Nobody has signed in or called a Notion tool through it yet.",
+      "expected_output": "A Summary of the change and one Notes line saying nobody has signed in or called a Notion tool yet, with none of the four checks in the body.",
+      "assertions": [
+        "Notes states in one line that nobody has signed in or called a Notion tool through the new entries",
+        "None of the four checks appears in the body, as a list or in prose",
+        "There is no Verification, Testing or Test plan section",
+        "The checks are at most offered as a pull request comment",
+        "The body is under 150 words"
+      ]
     }
   ]
 }

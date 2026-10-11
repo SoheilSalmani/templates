@@ -7664,7 +7664,7 @@
             "",
             "### 4. Route",
             "",
-            "At a glance: the tracker holds why work exists and where it stands; a technical issue holds execution state worth surviving the session; a pull request holds this change and its verification; a record holds a durable decision; the agent instruction file holds what agents need on most tasks; a skill holds a reusable procedure; tooling holds anything that must not depend on the model remembering.",
+            "At a glance: the tracker holds why work exists and where it stands; a technical issue holds execution state worth surviving the session; a pull request holds this change and why it is written this way; a record holds a durable decision; the agent instruction file holds what agents need on most tasks; a skill holds a reusable procedure; tooling holds anything that must not depend on the model remembering.",
             "",
             "`references/work-routing.md` holds the full matrices when routing is ambiguous: the four layers, which information type lives in which of them, and a second table for information belonging to none of the four, such as agent instructions, enforcement and dedicated files.",
             "",
@@ -8497,6 +8497,18 @@
             "        \"contributor-documentation is named as the specialist\",",
             "        \"The other five roster rows still appear\"",
             "      ]",
+            "    },",
+            "    {",
+            "      \"id\": 70,",
+            "      \"prompt\": \"Wrap up this change. The test suite passed, I tried the new sign-up flow by hand in the browser, and the confirmation email is untested because staging has no mail server. Where does each of those go?\",",
+            "      \"expected_output\": \"The suite is left to CI, the manual run goes in a pull request comment, and only the untested email reaches the pull request description, as a known limitation.\",",
+            "      \"assertions\": [",
+            "        \"The passing suite is left to CI and is not restated in any artefact\",",
+            "        \"The manual browser check is routed to a pull request comment, not the description\",",
+            "        \"The untested confirmation email is the only part routed to the pull request description\",",
+            "        \"No Verification, Testing or Test plan section is proposed for the description\",",
+            "        \"Nothing is posted or edited without approval\"",
+            "      ]",
             "    }",
             "  ]",
             "}"
@@ -8544,7 +8556,7 @@
             "| Specialist | Give it | Do not give it |",
             "| --- | --- | --- |",
             "| GitHub issue | The technical problem, the Linear link, known constraints, investigation evidence | Product rationale, priority, dates, the routing argument |",
-            "| Pull request | The actual diff, linked work items, verification evidence and commands run | The full issue body, product background |",
+            "| Pull request | The actual diff, linked work items, anything no check exercised | The full issue body, product background, the checks that passed |",
             "| ADR | The decision question, forces and constraints, existing and superseded records | Implementation detail, the ticket's status |",
             "| Linear | Problem, outcome, scope, affected users, current state | The technical plan, filenames, stack traces |",
             "| Commits | The staged diff and the change's intent | The artefact graph |",
@@ -8650,7 +8662,7 @@
             "| --- | --- | --- | --- |",
             "| Tracker item | Why the work exists, what changes, for whom, and where it stands | Anyone, including people who do not read code | Never. It is product history |",
             "| Technical issue | What technical work exists, under what constraints, and how we know it is done | Engineers and coding agents | The work lands |",
-            "| Pull request | This exact change, why it is written this way, and how it was verified | Reviewers | Merge |",
+            "| Pull request | This exact change and why it is written this way | Reviewers | Merge |",
             "| Decision record | Why the system is shaped this way, and what it cost | A future engineer with no context | Superseded, never edited |",
             "",
             "## The two tests",
@@ -8689,8 +8701,7 @@
             "| Implementation options | | ○ | ● | ● | |",
             "| Implementation plan | | ○ | ● | | |",
             "| Rejected approaches | | ○ | ○ | ● | |",
-            "| Test plan | | ● | ○ | | |",
-            "| Exact test output | | | ● | | |",
+            "| Test plan | | ● | | | |",
             "| Benchmarks | | ● | ● | ○ | |",
             "| Architecture diagrams | | ○ | | ● | ● |",
             "| Rollout and sequencing | | ● | ○ | ○ | |",
@@ -8702,8 +8713,6 @@
             "| Discovered technical debt | | ● | ○ | | |",
             "| Implementation actually chosen | | | ● | | ● |",
             "| Code-level rationale | | | ● | | ● |",
-            "| Exact commands run | | | ● | | |",
-            "| Manual verification | | | ● | | |",
             "| Screenshots of a visible change | | ○ | ● | | |",
             "| Known limitation | | ○ | ● | | ● |",
             "| Reviewer concern | | | ● | | |",
@@ -8712,6 +8721,10 @@
             "Some rows have no home because the forge renders them natively: the file list, the commit",
             "list, check status, linked issues, labels, reviewers, and mergeability. Prose repeating",
             "those belongs nowhere.",
+            "",
+            "How a change was tested has no row either. CI shows the automated checks, and a manual",
+            "check a reviewer would want to see goes in a pull request comment, never the description.",
+            "Only what no check exercised reaches the description, as a known limitation.",
             "",
             "Three exceptions carry most of the judgement.",
             "",
@@ -10231,7 +10244,7 @@
             "",
             "**Bullets only where each item is a reason.** A list of *changes* is the diff restated, and it passes a naive reading of \"genuinely a list\" while adding nothing: three bullets naming three modified tests are three things the reader can already see. Three bullets giving three independent causes are worth the lines. When in doubt, prose.",
             "",
-            "Do not put routine verification in the body. The pull request owns that. The exception is when the verification *is* the point, such as a characterisation commit stating that it captures existing behaviour.",
+            "Do not put routine verification in the body. CI shows the checks, and a manual one goes in a pull request comment. The exception is when the verification *is* the point, such as a characterisation commit stating that it captures existing behaviour.",
             "",
             "## Worked rewrites",
             "",
@@ -12686,7 +12699,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "use_anki",
       "ops": [
@@ -14328,7 +14341,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "'dbt' in stack_skills",
       "ops": [
@@ -15786,7 +15799,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "use_github",
       "ops": [
@@ -15826,7 +15839,7 @@
             "",
             "> `CONTRIBUTING.md` states the externally observable contract, which is what a contributor must do. The skills hold the operational detail, which is how an agent does it.",
             "",
-            "So the file can say that commit subjects are imperative and name the change, and that a pull request explains what changed and how it was verified. It does not reproduce the message patterns, the cohesion tests, or the accuracy rules. One line may point at `.claude/skills/` for contributors who use Claude Code, and that is the whole relationship.",
+            "So the file can say that commit subjects are imperative and name the change, and that a pull request explains what changed and why. It does not reproduce the message patterns, the cohesion tests, or the accuracy rules. One line may point at `.claude/skills/` for contributors who use Claude Code, and that is the whole relationship.",
             "",
             "If a convention only exists to steer an agent, it is not a contributor convention and does not appear here.",
             "",
@@ -16185,7 +16198,7 @@
             "| --- | --- | --- | --- |",
             "| Linear | Why the work exists, what changes, for whom, and where it stands | Anyone, including people who do not read code | Never. It is product history |",
             "| GitHub issue | What technical work exists, under what constraints, and how we know it is done | Engineers and coding agents | The work lands |",
-            "| Pull request | This exact change, why it is written this way, and how it was verified | Reviewers | Merge |",
+            "| Pull request | This exact change and why it is written this way | Reviewers | Merge |",
             "| ADR | Why the system is shaped this way, and what it cost | A future engineer with no context | Superseded, never edited |",
             "",
             "## The two tests",
@@ -16224,8 +16237,7 @@
             "| Implementation options | | ○ | ● | ● | |",
             "| Implementation plan | | ○ | ● | | |",
             "| Rejected approaches | | ○ | ○ | ● | |",
-            "| Test plan | | ● | ○ | | |",
-            "| Exact test output | | | ● | | |",
+            "| Test plan | | ● | | | |",
             "| Benchmarks | | ● | ● | ○ | |",
             "| Architecture diagrams | | ○ | | ● | ● |",
             "| Rollout and sequencing | | ● | ○ | ○ | |",
@@ -16237,8 +16249,6 @@
             "| Discovered technical debt | | ● | ○ | | |",
             "| Implementation actually chosen | | | ● | | ● |",
             "| Code-level rationale | | | ● | | ● |",
-            "| Exact commands run | | | ● | | |",
-            "| Manual verification | | | ● | | |",
             "| Screenshots of a visible change | | ○ | ● | | |",
             "| Known limitation | | ○ | ● | | ● |",
             "| Reviewer concern | | | ● | | |",
@@ -16247,6 +16257,10 @@
             "Some rows have no home because GitHub renders them natively: the file list, the commit",
             "list, check status, linked issues, labels, reviewers, and mergeability. Prose repeating",
             "those belongs nowhere.",
+            "",
+            "How a change was tested has no row either. CI shows the automated checks, and a manual",
+            "check a reviewer would want to see goes in a pull request comment, never the description.",
+            "Only what no check exercised reaches the description, as a known limitation.",
             "",
             "## Three exceptions that carry the judgement",
             "",
@@ -18695,6 +18709,10 @@
             "- **A gap that is a real risk**, such as logic no check exercises. That goes in Notes, in one line:",
             "  \"The stored procedure is not deployed, so no test covers the new guard.\"",
             "",
+            "**Name the gap and stop.** Do not list what was checked around it to show how small it is: that list",
+            "is the testing narrative back again. \"Nobody has signed in through the new server entries yet\" is the",
+            "whole note, not the first line of a section of checks that passed.",
+            "",
             "A manual check a reviewer would want to see goes in a pull request comment, not the description.",
             "Never write \"tests pass\", \"verified\" or \"no regressions\" anywhere unless you observed it.",
             "",
@@ -18871,7 +18889,7 @@
             "- **The title and the first sentence alone say what the pull request does.** If not, nothing else on this list matters.",
             "- Someone who has never opened this code could say what was wrong and why this helps, after one read.",
             "- `## Summary` is present: what was wrong and what changes, then the cause in plain words.",
-            "- No testing narrative: no commands run, no test names, no counts from a run on your machine, no \"verified\".",
+            "- No testing narrative: no commands run, no test names, no counts from a run on your machine, no \"verified\", no list of checks beside a gap.",
             "- `## What's next` and `## Notes` are absent unless they carry something; Notes has at most three one-line bullets.",
             "- A measurement appears only when it is the point of the change, and two or more are in a table.",
             "- No raw class, error or warning name where plain words carry it. The body is not mostly backticks.",
@@ -19122,6 +19140,18 @@
             "        \"Notes carries the blocker and the gap in CI coverage\",",
             "        \"Any commit it points at is a markdown link, not a bare hash\",",
             "        \"Nothing is said about how or when the change reaches an environment\"",
+            "      ]",
+            "    },",
+            "    {",
+            "      \"id\": 21,",
+            "      \"prompt\": \"Write the PR for this branch. It adds an optional Notion MCP server to the template's Claude Code, Codex and oh-my-pi configs. In a rendered project I checked that Claude Code lists the server, Codex shows it as not logged in, the oh-my-pi file passes its schema, and the endpoint answers with an OAuth challenge. Nobody has signed in or called a Notion tool through it yet.\",",
+            "      \"expected_output\": \"A Summary of the change and one Notes line saying nobody has signed in or called a Notion tool yet, with none of the four checks in the body.\",",
+            "      \"assertions\": [",
+            "        \"Notes states in one line that nobody has signed in or called a Notion tool through the new entries\",",
+            "        \"None of the four checks appears in the body, as a list or in prose\",",
+            "        \"There is no Verification, Testing or Test plan section\",",
+            "        \"The checks are at most offered as a pull request comment\",",
+            "        \"The body is under 150 words\"",
             "      ]",
             "    }",
             "  ]",
@@ -19764,7 +19794,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "use_jira",
       "ops": [
@@ -20297,7 +20327,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "'lightdash' in stack_skills",
       "ops": [
@@ -35790,7 +35820,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "use_linear",
       "ops": [
@@ -35908,7 +35938,7 @@
             "| --- | --- | --- | --- |",
             "| Linear | Why the work exists, what changes, for whom, and where it stands | Anyone, including people who do not read code | Never. It is product history |",
             "| GitHub issue | What technical work exists, under what constraints, and how we know it is done | Engineers and coding agents | The work lands |",
-            "| Pull request | This exact change, why it is written this way, and how it was verified | Reviewers | Merge |",
+            "| Pull request | This exact change and why it is written this way | Reviewers | Merge |",
             "| ADR | Why the system is shaped this way, and what it cost | A future engineer with no context | Superseded, never edited |",
             "",
             "What follows is the Linear side of that boundary.",
@@ -37401,7 +37431,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "use_meetings",
       "ops": [
@@ -38000,7 +38030,42 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "61862dff02513d3c8046078274aeafde24deef6525204e5a66197a14daff2529"
+      ],
+      "when": "use_notion",
+      "ops": [
+        {
+          "op": "fill_slot",
+          "path": ".codex/config.toml",
+          "slot": "entries",
+          "key": "notion-mcp",
+          "lines": [
+            "notion = { url = \"https://mcp.notion.com/mcp\" }"
+          ]
+        },
+        {
+          "op": "fill_slot",
+          "path": ".mcp.json",
+          "slot": "entries",
+          "key": "notion-mcp",
+          "lines": [
+            "    \"notion\": { \"type\": \"http\", \"url\": \"https://mcp.notion.com/mcp\" }"
+          ]
+        },
+        {
+          "op": "fill_slot",
+          "path": ".omp/mcp.json",
+          "slot": "entries",
+          "key": "notion-mcp",
+          "lines": [
+            "    \"notion\": { \"type\": \"http\", \"url\": \"https://mcp.notion.com/mcp\" }"
+          ]
+        }
+      ]
+    },
+    {
+      "depends_on": [
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "use_obsidian",
       "ops": [
@@ -38726,7 +38791,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "use_weft",
       "ops": [
@@ -40650,7 +40715,7 @@
     },
     {
       "depends_on": [
-        "3bd730c324cfb7408717c2ac795e11c122f05ff54c7d4f3903f00ab293529e79"
+        "6969e0cf1f397e633495f86c0e7704c9e833742b06c8a044ac51fa7b25d9fbc3"
       ],
       "when": "'slides' in stack_skills",
       "ops": [

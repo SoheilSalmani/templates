@@ -43,7 +43,7 @@ No valid answer means do not create it. **Creating nothing is frequently the cor
 
 ### 4. Route
 
-At a glance: the tracker holds why work exists and where it stands; a technical issue holds execution state worth surviving the session; a pull request holds this change and its verification; a record holds a durable decision; the agent instruction file holds what agents need on most tasks; a skill holds a reusable procedure; tooling holds anything that must not depend on the model remembering.
+At a glance: the tracker holds why work exists and where it stands; a technical issue holds execution state worth surviving the session; a pull request holds this change and why it is written this way; a record holds a durable decision; the agent instruction file holds what agents need on most tasks; a skill holds a reusable procedure; tooling holds anything that must not depend on the model remembering.
 
 `references/work-routing.md` holds the full matrices when routing is ambiguous: the four layers, which information type lives in which of them, and a second table for information belonging to none of the four, such as agent instructions, enforcement and dedicated files.
 

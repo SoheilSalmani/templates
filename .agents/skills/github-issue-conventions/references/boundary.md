@@ -16,7 +16,7 @@ Route by the question answered and the lifetime, never by the topic.
 | --- | --- | --- | --- |
 | Linear | Why the work exists, what changes, for whom, and where it stands | Anyone, including people who do not read code | Never. It is product history |
 | GitHub issue | What technical work exists, under what constraints, and how we know it is done | Engineers and coding agents | The work lands |
-| Pull request | This exact change, why it is written this way, and how it was verified | Reviewers | Merge |
+| Pull request | This exact change and why it is written this way | Reviewers | Merge |
 | ADR | Why the system is shaped this way, and what it cost | A future engineer with no context | Superseded, never edited |
 
 ## The two tests
@@ -55,8 +55,7 @@ If not, it belongs in the pull request, and no issue should exist.
 | Implementation options | | ○ | ● | ● | |
 | Implementation plan | | ○ | ● | | |
 | Rejected approaches | | ○ | ○ | ● | |
-| Test plan | | ● | ○ | | |
-| Exact test output | | | ● | | |
+| Test plan | | ● | | | |
 | Benchmarks | | ● | ● | ○ | |
 | Architecture diagrams | | ○ | | ● | ● |
 | Rollout and sequencing | | ● | ○ | ○ | |
@@ -68,8 +67,6 @@ If not, it belongs in the pull request, and no issue should exist.
 | Discovered technical debt | | ● | ○ | | |
 | Implementation actually chosen | | | ● | | ● |
 | Code-level rationale | | | ● | | ● |
-| Exact commands run | | | ● | | |
-| Manual verification | | | ● | | |
 | Screenshots of a visible change | | ○ | ● | | |
 | Known limitation | | ○ | ● | | ● |
 | Reviewer concern | | | ● | | |
@@ -78,6 +75,10 @@ If not, it belongs in the pull request, and no issue should exist.
 Some rows have no home because GitHub renders them natively: the file list, the commit
 list, check status, linked issues, labels, reviewers, and mergeability. Prose repeating
 those belongs nowhere.
+
+How a change was tested has no row either. CI shows the automated checks, and a manual
+check a reviewer would want to see goes in a pull request comment, never the description.
+Only what no check exercised reaches the description, as a known limitation.
 
 ## Three exceptions that carry the judgement
 

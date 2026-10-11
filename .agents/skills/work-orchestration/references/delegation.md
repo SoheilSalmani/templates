@@ -35,7 +35,7 @@ Give each specialist what its artefact needs and nothing else. Passing the orche
 | Specialist | Give it | Do not give it |
 | --- | --- | --- |
 | GitHub issue | The technical problem, the Linear link, known constraints, investigation evidence | Product rationale, priority, dates, the routing argument |
-| Pull request | The actual diff, linked work items, verification evidence and commands run | The full issue body, product background |
+| Pull request | The actual diff, linked work items, anything no check exercised | The full issue body, product background, the checks that passed |
 | ADR | The decision question, forces and constraints, existing and superseded records | Implementation detail, the ticket's status |
 | Linear | Problem, outcome, scope, affected users, current state | The technical plan, filenames, stack traces |
 | Commits | The staged diff and the change's intent | The artefact graph |

@@ -704,6 +704,18 @@
         "contributor-documentation is named as the specialist",
         "The other five roster rows still appear"
       ]
+    },
+    {
+      "id": 70,
+      "prompt": "Wrap up this change. The test suite passed, I tried the new sign-up flow by hand in the browser, and the confirmation email is untested because staging has no mail server. Where does each of those go?",
+      "expected_output": "The suite is left to CI, the manual run goes in a pull request comment, and only the untested email reaches the pull request description, as a known limitation.",
+      "assertions": [
+        "The passing suite is left to CI and is not restated in any artefact",
+        "The manual browser check is routed to a pull request comment, not the description",
+        "The untested confirmation email is the only part routed to the pull request description",
+        "No Verification, Testing or Test plan section is proposed for the description",
+        "Nothing is posted or edited without approval"
+      ]
     }
   ]
 }

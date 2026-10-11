@@ -126,6 +126,10 @@ Two things that look like testing do belong, each in its own place:
 - **A gap that is a real risk**, such as logic no check exercises. That goes in Notes, in one line:
   "The stored procedure is not deployed, so no test covers the new guard."
 
+**Name the gap and stop.** Do not list what was checked around it to show how small it is: that list
+is the testing narrative back again. "Nobody has signed in through the new server entries yet" is the
+whole note, not the first line of a section of checks that passed.
+
 A manual check a reviewer would want to see goes in a pull request comment, not the description.
 Never write "tests pass", "verified" or "no regressions" anywhere unless you observed it.
 
@@ -302,7 +306,7 @@ the request to schedule it authorises opening it later with the text shown in th
 - **The title and the first sentence alone say what the pull request does.** If not, nothing else on this list matters.
 - Someone who has never opened this code could say what was wrong and why this helps, after one read.
 - `## Summary` is present: what was wrong and what changes, then the cause in plain words.
-- No testing narrative: no commands run, no test names, no counts from a run on your machine, no "verified".
+- No testing narrative: no commands run, no test names, no counts from a run on your machine, no "verified", no list of checks beside a gap.
 - `## What's next` and `## Notes` are absent unless they carry something; Notes has at most three one-line bullets.
 - A measurement appears only when it is the point of the change, and two or more are in a table.
 - No raw class, error or warning name where plain words carry it. The body is not mostly backticks.
