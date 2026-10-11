@@ -1,0 +1,37 @@
+{
+  "title": "Notion MCP server",
+  "description": "Declares Notion's remote MCP server, notion at https://mcp.notion.com/mcp, for Claude Code, Codex and oh-my-pi. Definition only: each person authorises with OAuth, so nothing is stored in the repository.",
+  "depends_on": [
+    "mcp"
+  ],
+  "when": "use_notion",
+  "ops": [
+    {
+      "op": "fill_slot",
+      "path": ".codex/config.toml",
+      "slot": "entries",
+      "key": "notion-mcp",
+      "lines": [
+        "notion = { url = \"https://mcp.notion.com/mcp\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".mcp.json",
+      "slot": "entries",
+      "key": "notion-mcp",
+      "lines": [
+        "    \"notion\": { \"type\": \"http\", \"url\": \"https://mcp.notion.com/mcp\" }"
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".omp/mcp.json",
+      "slot": "entries",
+      "key": "notion-mcp",
+      "lines": [
+        "    \"notion\": { \"type\": \"http\", \"url\": \"https://mcp.notion.com/mcp\" }"
+      ]
+    }
+  ]
+}

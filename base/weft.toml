@@ -32,6 +32,13 @@ description = "Installs the Jira skills and the Atlassian remote MCP server (OAu
 default = "False"
 
 [[question]]
+id = "use_notion"
+kind = "bool"
+prompt = "Keep this project's docs or tasks in Notion?"
+description = "Installs Notion's remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+default = "False"
+
+[[question]]
 id = "use_anki"
 kind = "bool"
 prompt = "Write Anki flashcards about this project?"
