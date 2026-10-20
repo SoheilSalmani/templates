@@ -14,14 +14,14 @@ example = "Demo Service"
 id = "use_github"
 kind = "bool"
 prompt = "Hosted on GitHub?"
-description = "Installs the skills for issues, pull requests, README and repository metadata, which drive gh, and GitHub's remote MCP server (a personal access token each person exports as GITHUB_PAT_TOKEN, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
+description = "Installs the forge skills (issues, pull requests, review replies, READMEs, contributor documentation, repository metadata, scheduled pull requests) with their GitHub mechanics, which drive gh, and GitHub's remote MCP server (a personal access token each person exports as GITHUB_PAT_TOKEN, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. Answer false for a project on GitLab or on no forge; GitHub and GitLab are exclusive."
 default = "True"
 
 [[question]]
 id = "use_gitlab"
 kind = "bool"
 prompt = "Hosted on GitLab?"
-description = "Asked only when use_github is false. Declares GitLab's MCP server for Claude Code, Codex and oh-my-pi (OAuth per person, nothing stored in the repo)."
+description = "Asked only when use_github is false. Installs the same forge skills with their GitLab mechanics, which call GitLab's MCP server first and glab where it falls short, and declares that server for Claude Code, Codex and oh-my-pi (OAuth per person, nothing stored in the repo)."
 default = "False"
 when = "not use_github"
 
