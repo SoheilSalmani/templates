@@ -1,0 +1,55 @@
+{
+  "title": "GitLab MCP server",
+  "description": "Declares GitLab's MCP server, gitlab at the gitlab_mcp_url answer (https://<host>/api/v4/mcp, GitLab.com by default), over HTTP for Claude Code, Codex and oh-my-pi. Definition only: each person authorises with OAuth through dynamic client registration, so nothing is stored in the repository.",
+  "depends_on": [
+    "mcp"
+  ],
+  "when": "use_gitlab",
+  "ops": [
+    {
+      "op": "fill_slot",
+      "path": ".codex/config.toml",
+      "slot": "entries",
+      "key": "gitlab-mcp",
+      "lines": [
+        [
+          "gitlab = { url = \"",
+          {
+            "answer": "gitlab_mcp_url"
+          },
+          "\" }"
+        ]
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".mcp.json",
+      "slot": "entries",
+      "key": "gitlab-mcp",
+      "lines": [
+        [
+          "    \"gitlab\": { \"type\": \"http\", \"url\": \"",
+          {
+            "answer": "gitlab_mcp_url"
+          },
+          "\" }"
+        ]
+      ]
+    },
+    {
+      "op": "fill_slot",
+      "path": ".omp/mcp.json",
+      "slot": "entries",
+      "key": "gitlab-mcp",
+      "lines": [
+        [
+          "    \"gitlab\": { \"type\": \"http\", \"url\": \"",
+          {
+            "answer": "gitlab_mcp_url"
+          },
+          "\" }"
+        ]
+      ]
+    }
+  ]
+}

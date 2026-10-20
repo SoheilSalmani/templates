@@ -31,5 +31,6 @@ check_combinations() {
     "--answer use_linear=false --answer use_jira=true" \
     "--answer use_github=false --answer use_linear=false --answer commit_skills=false --answer commit_mise=false" \
     "--answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_notion=true --answer use_meetings=true --answer use_weft=true" \
+    "--answer use_github=false --answer use_gitlab=true --answer gitlab_mcp_url=https://gitlab.example.com/api/v4/mcp --answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_notion=true --answer use_meetings=true --answer use_weft=true" \
     "$PRIVATE_ANSWERS"
 }

@@ -18,6 +18,23 @@ description = "Installs the skills for issues, pull requests, README and reposit
 default = "True"
 
 [[question]]
+id = "use_gitlab"
+kind = "bool"
+prompt = "Hosted on GitLab?"
+description = "Asked only when use_github is false. Declares GitLab's MCP server for Claude Code, Codex and oh-my-pi (OAuth per person, nothing stored in the repo)."
+default = "False"
+when = "not use_github"
+
+[[question]]
+id = "gitlab_mcp_url"
+kind = "string"
+prompt = "GitLab MCP server URL"
+description = "The MCP endpoint of the GitLab instance the project is on, https://<host>/api/v4/mcp: the default for GitLab.com, or the instance's own host for GitLab Self-Managed or Dedicated. Asked only with use_gitlab. The whole URL is the answer, rather than the host, so that recording never turns a gitlab.com link in a skill into an answer reference."
+example = "https://gitlab.example.com/api/v4/mcp"
+default = "'https://gitlab.com/api/v4/mcp'"
+when = "use_gitlab"
+
+[[question]]
 id = "use_linear"
 kind = "bool"
 prompt = "Track work in Linear?"
