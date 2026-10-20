@@ -13,7 +13,9 @@ For the full machine-readable contract run `weft describe --json` here.
 | id | kind | required | default | description |
 | --- | --- | --- | --- | --- |
 | `project_name` | string | **yes** | — | Human-facing name; becomes the README title and, slugified, the Compose project, the Helm release and namespace, and the local image name. (e.g. `Demo Service`) |
-| `use_github` | bool | no | True | Installs the skills for issues, pull requests, README and repository metadata, which drive gh, and GitHub's remote MCP server (a personal access token each person exports as GITHUB_PAT_TOKEN, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. |
+| `use_github` | bool | no | True | Installs the forge skills (issues, pull requests, review replies, READMEs, contributor documentation, repository metadata, scheduled pull requests) with their GitHub mechanics, which drive gh, and GitHub's remote MCP server (a personal access token each person exports as GITHUB_PAT_TOKEN, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. Answer false for a project on GitLab or on no forge; GitHub and GitLab are exclusive. |
+| `use_gitlab` | bool | no | False | Asked only when use_github is false. Installs the same forge skills with their GitLab mechanics, which call GitLab's MCP server first and glab where it falls short, and declares that server for Claude Code, Codex and oh-my-pi (OAuth per person, nothing stored in the repo). — only asked when `not use_github` |
+| `gitlab_mcp_url` | string | no | https://gitlab.com/api/v4/mcp | The MCP endpoint of the GitLab instance the project is on, https://<host>/api/v4/mcp: the default for GitLab.com, or the instance's own host for GitLab Self-Managed or Dedicated. Asked only with use_gitlab. The whole URL is the answer, rather than the host, so that recording never turns a gitlab.com link in a skill into an answer reference. (e.g. `https://gitlab.example.com/api/v4/mcp`) — only asked when `use_gitlab` |
 | `use_linear` | bool | no | True | Installs the Linear skills and the Linear remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. |
 | `use_jira` | bool | no | False | Installs the Jira skills and the Atlassian remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. |
 | `use_notion` | bool | no | False | Installs Notion's remote MCP server (OAuth per user, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. |
@@ -61,8 +63,9 @@ options (fixed = always selected, blocked = never selectable).
 - **anki** (inherited) _(when `use_anki`)_: Installs anki-flashcards and remembering-what-you-built. They talk to AnkiConnect through the anki MCP server, which the anki-mcp patch declares.
 - **anki-mcp** (inherited) _(when `use_anki`)_: Declares the anki MCP server whose tools anki-flashcards calls, @ankimcp/anki-mcp-server 0.26.0 run by npx over stdio, for Claude Code, Codex and oh-my-pi. It talks to AnkiConnect at its default http://localhost:8765, so the entry is the same on every machine and holds no credential.
 - **dbt-skills** (inherited) _(when `'dbt' in stack_skills`)_: Installs the house SQL and dbt Agent Skills under .agents/skills: the general SQL rules, writing and documenting models, adding unit tests and the tag conventions, next to the general skills the skills patch provides.
-- **github** (inherited) _(when `use_github`)_: Installs the skills for GitHub issues, pull requests, review replies, READMEs, contributor documentation and repository metadata, and one that schedules a pull request for a later day: it moves the branch's commit dates onto that day and leaves a Paseo heartbeat on the agent that was asked, which rebases the branch onto its base and opens the pull request then. They drive gh; GitHub's MCP server is declared by the github-mcp patch.
+- **forge** (inherited) _(when `use_github or use_gitlab`)_: Installs the forge-neutral skills for repository issues, pull requests (GitLab merge requests), review replies, READMEs, contributor documentation and repository metadata, and one that schedules a pull request for a later day by moving the branch's commit dates onto it and leaving a Paseo heartbeat that opens it then. Each SKILL.md points at its own references/forge.md, which the github or gitlab patch writes.
 - **github-mcp** (inherited) _(when `use_github`)_: Declares GitHub's remote MCP server, github at https://api.githubcopilot.com/mcp/, for Claude Code, Codex and oh-my-pi. The server takes a personal access token from these hosts, so each person exports one as GITHUB_PAT_TOKEN, which the entries name rather than hold.
+- **gitlab-mcp** (inherited) _(when `use_gitlab`)_: Declares GitLab's MCP server, gitlab at the gitlab_mcp_url answer (https://<host>/api/v4/mcp, GitLab.com by default), over HTTP for Claude Code, Codex and oh-my-pi. Definition only: each person authorises with OAuth through dynamic client registration, so nothing is stored in the repository.
 - **jira** (inherited) _(when `use_jira`)_: Installs the Jira conventions and the skill for writing tickets through an Atlassian MCP server, which the jira-mcp patch declares.
 - **jira-mcp** (inherited) _(when `use_jira`)_: Declares Atlassian's remote MCP server for Jira, atlassian at https://mcp.atlassian.com/v2/mcp, for Claude Code, Codex and oh-my-pi. Definition only: each person authorises with OAuth, so nothing is stored in the repository.
 - **lightdash-skills** (inherited) _(when `'lightdash' in stack_skills`)_: Installs Lightdash's Agent Skills under .agents/skills, generated by the Lightdash CLI's install-skills at the version its command pins, the one dbt's lightdash patch pins too: developing-in-lightdash for the semantic layer and content as code, effective-dbt-sql, and upgrade-preflight. The installer's version manifests are dropped, so lightdash --version never advises a reinstall over the .claude/skills symlinks; weft update keeps the skills current.
@@ -74,6 +77,8 @@ options (fixed = always selected, blocked = never selectable).
 - **obsidian-mcp** (inherited) _(when `use_obsidian`)_: Declares the MCP server that Obsidian's Local REST API with MCP plugin serves, obsidian at http://127.0.0.1:27123/mcp/, for Claude Code, Codex and oh-my-pi. Each person turns on the plugin's HTTP server and exports its API key as OBSIDIAN_MCP_API_KEY, which the entries name rather than hold.
 - **weft** (inherited) _(when `use_weft`)_: Installs weft-conventions, the house conventions for Weft templates, and the skills for creating a template, extracting one from a working project and splitting one in two.
 - **writing-slides** (inherited) _(when `'slides' in stack_skills`)_: Installs the writing-slides Agent Skill under .agents/skills: how to turn material into a talk of one-idea slides with sentence headlines, visual evidence, builds, code that fits and steps through, and speaker notes, with this deck's syntax and measured limits, its failure modes, and pnpm check followed by a look at every slide, next to the general skills the skills patch provides.
+- **github** (inherited) _(when `use_github`)_: Writes references/forge.md into each forge skill for a project on GitHub: the gh commands and API calls, the settings, plan limits and organisation checks, and the GitHub sources each skill relies on. GitHub's MCP server is declared by github-mcp.
+- **gitlab** (inherited) _(when `use_gitlab`)_: Writes references/forge.md into each forge skill for a project on GitLab, on GitLab.com or a Self-Managed or Dedicated instance: the GitLab MCP server's tools first, glab and glab api where they fall short or a step runs unattended, the tier each feature needs and how to check it, and dated GitLab sources. GitLab's MCP server is declared by gitlab-mcp.
 - **cube**: Adds the Cube project under cube/: an empty cube.py, an example cube on inline rows with the view clients query over it, and .env.example with the data source type. compose.yaml and the dev task run Cube in development mode on this machine, on ports .env can move; every task is a mise file task in .mise/tasks, README.md replaces base's with the setup and the dev loop, and the Cube ignores go at the top of base's .gitignore.
 - **model-checks**: Adds the check task, to run before a pull request: it starts compose.yaml's Cube in production mode without a data source connection, compiles the model, and compares the SQL Cube generates for each golden query in tests/queries with the snapshot beside it, writing the snapshots in the project's own dialect on the first run and on --update. README.md and AGENTS.md gain the rule that it passes before every pull request.
 - **ci** _(when `use_github_actions`)_: Adds a GitHub Actions workflow that runs the check task on every pull request and push to main, with Node from mise.toml and the runner's Docker, so the golden queries' SQL changes show in the pull request and a failing check can block the merge.
@@ -88,41 +93,43 @@ options (fixed = always selected, blocked = never selectable).
 ## Hooks (side-effects, in run order)
 
 `pre` hooks run before any file is written (a failure aborts); `post`
-hooks run after. Effects: **check** = read-only/safe, **setup** =
+hooks run after. A `post` hook runs at creation and, on `weft update`,
+only when one of its inputs changed; without inputs it runs only at
+creation. Effects: **check** = read-only/safe, **setup** =
 idempotent local, **deploy** = external/irreversible (confirm first).
 
-| phase | effect | label | patch | command | when |
-| --- | --- | --- | --- | --- | --- |
-| pre | check | Verify mise is installed | `mise` | `command -v mise` | — |
-| pre | check | Verify Docker is installed | `cube` | `command -v docker` | — |
-| post | setup | Initialise the git repository | `base` | `git init -q -b main` | — |
-| post | setup | Install the pinned toolchain | `mise` | `mise trust -q && mise install -y` | — |
-| post | setup | Mirror .agents/skills into .claude/skills as symlinks | `skills` | `mkdir -p .claude/skills && for d in .agents/skills/*/; do name=$(basename "$d"); ln -sfn "../../.agents/skills/$name" ".claude/skills/$name"; done && find .claude/skills -maxdepth 1 -type l ! -exec test -e {} \; -delete` | — |
-| post | setup | Link the worktree seeding script as git's post-checkout hook | `worktree-seed` | `.agents/seed-worktree.sh link-hook` | — |
-| post | setup | Generate the Helm chart's README from values.yaml | `helm` | `mise run chart:docs` | — |
-| post | setup | Commit the scaffold | `base` | `git add -A && git commit -q -m 'Scaffold repository'` | — |
-| post | deploy | Deploy the data model to Cube Cloud | `cube-cloud` | `mise run deploy` | deploy_cube_cloud |
-| post | deploy | Install the Helm chart in the current Kubernetes context | `kubernetes` | `mise run deploy dev --chart-only` | deploy_kubernetes |
-| post | deploy | Deploy the data model to the current Kubernetes context | `kubernetes` | `mise run deploy dev` | deploy_kubernetes |
+| phase | effect | label | patch | command | when | runs |
+| --- | --- | --- | --- | --- | --- | --- |
+| pre | check | Verify mise is installed | `mise` | `command -v mise` | — | create + every update |
+| pre | check | Verify Docker is installed | `cube` | `command -v docker` | — | create + every update |
+| post | setup | Initialise the git repository | `base` | `git init -q -b main` | — | create only |
+| post | setup | Install the pinned toolchain | `mise` | `mise trust -q && mise install -y` | — | create + update on glob:mise.toml |
+| post | setup | Mirror .agents/skills into .claude/skills as symlinks | `skills` | `mkdir -p .claude/skills && for d in .agents/skills/*/; do name=$(basename "$d"); ln -sfn "../../.agents/skills/$name" ".claude/skills/$name"; done && find .claude/skills -maxdepth 1 -type l ! -exec test -e {} \; -delete` | — | create + update on glob:.agents/skills/** |
+| post | setup | Link the worktree seeding script as git's post-checkout hook | `worktree-seed` | `.agents/seed-worktree.sh link-hook` | — | create + update on glob:.agents/seed-worktree.sh |
+| post | setup | Generate the Helm chart's README from values.yaml | `helm` | `mise run chart:docs` | — | create + update on glob:charts/cube/values.yaml, glob:charts/cube/Chart.yaml, glob:charts/cube/README.md.gotmpl |
+| post | setup | Commit the scaffold | `base` | `git add -A && git commit -q -m 'Scaffold repository'` | — | create only |
+| post | deploy | Deploy the data model to Cube Cloud | `cube-cloud` | `mise run deploy` | deploy_cube_cloud | create + update on glob:cube/** |
+| post | deploy | Install the Helm chart in the current Kubernetes context | `kubernetes` | `mise run deploy dev --chart-only` | deploy_kubernetes | create + update on glob:charts/cube/**, glob:deploy/dev.yaml |
+| post | deploy | Deploy the data model to the current Kubernetes context | `kubernetes` | `mise run deploy dev` | deploy_kubernetes | create + update on glob:cube/**, glob:Dockerfile |
 
 ## Scaffold
 
 ```sh
-weft new . <dest> --answer "project_name=Demo Service" --non-interactive
-weft new . <dest> --preset with-cube-cloud --answer "project_name=Demo Service" --non-interactive
-weft new . <dest> --preset no-helm --answer "project_name=Demo Service" --non-interactive
+weft new cube <dest> --answer "project_name=Demo Service" --non-interactive
+weft new cube <dest> --preset with-cube-cloud --answer "project_name=Demo Service" --non-interactive
+weft new cube <dest> --preset no-helm --answer "project_name=Demo Service" --non-interactive
 ```
 
 Agents can pass answers as JSON instead of flags:
 
 ```sh
-weft new . <dest> --answers-json '{"project_name":"Demo Service"}'
+weft new cube <dest> --answers-json '{"project_name":"Demo Service"}'
 ```
 
 ## Evolve this template
 
 ```sh
-cd "$(weft session new <patch> --template . --answer "project_name=Demo Service" --non-interactive)"
+cd "$(weft session new <patch> --template cube --answer "project_name=Demo Service" --non-interactive)"
 … edit the worktree files with concrete values …
 weft commit --name <patch> --describe "what it does" --yes
 ```
