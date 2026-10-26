@@ -41,10 +41,10 @@ done
 
 # Each stack offers only its own stack skills, so only base can switch them
 # all on at once, and prove the stack skills patches commute with the rest.
-if out="$(weft check "$BASE" --answer "$RECORD_ANSWER" --answer stack_skills=dbt,lightdash,slides 2>&1)"; then
-  printf 'ok    %-10s %s\n' base "--answer stack_skills=dbt,lightdash,slides"
+if out="$(weft check "$BASE" --answer "$RECORD_ANSWER" --answer stack_skills=dbt,lightdash,slides,terraform 2>&1)"; then
+  printf 'ok    %-10s %s\n' base "--answer stack_skills=dbt,lightdash,slides,terraform"
 else
-  printf 'FAIL  %-10s %s\n%s\n' base "--answer stack_skills=dbt,lightdash,slides" "$out"
+  printf 'FAIL  %-10s %s\n%s\n' base "--answer stack_skills=dbt,lightdash,slides,terraform" "$out"
   status=1
 fi
 
