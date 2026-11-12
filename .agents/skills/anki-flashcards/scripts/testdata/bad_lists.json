@@ -5,11 +5,11 @@
     "notes": [
       {
         "fields": {
-          "Tool": "Snowflake",
-          "Front": "How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?",
-          "Back": "<ol>\n  <li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li>\n  <li>Switch clients to the new private key</li>\n  <li><code>UNSET RSA_PUBLIC_KEY</code></li>\n</ol>"
+          "Tool": "Kubernetes",
+          "Front": "How do you run applications in a Kubernetes platform?",
+          "Back": "<ol><li>Define apps in YAML files.</li><li>Send those to Kubernetes API.</li></ol>"
         },
-        "tags": ["snowflake-docs"]
+        "tags": ["kubernetes-docs"]
       },
       {
         "fields": {

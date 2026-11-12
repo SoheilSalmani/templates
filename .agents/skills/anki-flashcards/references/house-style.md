@@ -63,10 +63,17 @@ genuine ambiguity, or when the card presents a concrete case to reason about.
 
 ## Steps
 
-A Back that gives steps is one sentence: the steps in order, separated by commas, the last one
-introduced by "then". Open each clause with its verb, so the steps stay as easy to check one at a
-time as list items would be. The connective carries the order, and the dependency between the steps
-is what lets three of them be one retrieval.
+The limit is the count: a Back holds at most three steps. Four or more is more than one card,
+whether written as a list or as a sentence, and the linter counts list items for that reason.
+
+Two steps are one sentence, joined with "then":
+
+```
+Back:  Add the package to <code>packages.yml</code>, then run <code>dbt deps</code>.
+```
+
+Three steps are an `<ol>`. The numbers show the order and the count, so the reviewer knows how many
+to recall and can check each one. Keep the items short and parallel, each opening with its verb.
 
 Before, a real card from the collection:
 
@@ -79,15 +86,15 @@ Back:  <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch c
 After:
 
 ```
-Back:  Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>.
+Back:  <ol><li>Set the new public key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li>Run <code>UNSET RSA_PUBLIC_KEY</code></li></ol>
 ```
 
-The sentence is also a size limit. Three short steps read as one sentence, and a fourth turns it into
-a run-on, which is the signal to split. Markup hides that signal, because a six-item list looks as
-tidy as a three-item one.
+The third item was a bare command among instructions, and "new key" did not say which of the two
+new keys goes in the property.
 
-`<ol>` has one job: laying out a procedure in a cloze Text, one cloze per `<li>`, each step cut to the
-words that matter, always in the same order so that the position becomes part of the cue:
+When the outline itself must be known, lay the procedure out as a cloze Text instead: one cloze per
+`<li>`, each step cut to the words that matter, always in the same order so that the position
+becomes part of the cue:
 
 ```
 Topic: Networking
@@ -107,7 +114,7 @@ Anki fields hold HTML. Use it sparingly.
 | `<code>` for identifiers, flags, paths, commands, field names | `<b>` or `<strong>` for emphasis |
 | `<i>` for a term being defined or a foreign phrase | `<b>` to mark the answer inside the Back |
 | `<ul><li>` for a closed list of two or three items | `<h1>` to `<h6>`, headings inside a field |
-| `<ol><li>` in a cloze Text laying out a procedure, one cloze per item | `<ol>` on a Back, or around items in no particular order |
+| `<ol><li>` for three ordered steps on a Back, or one cloze per item in a cloze Text | `<ol>` around items in no particular order, or for two steps |
 | `<br>` to separate two short related lines | `<div>` wrappers added by hand |
 | `<img src="...">` for a diagram that is the answer | Tables, unless the fact genuinely is a table |
 | `&amp;`, `&lt;`, `&gt;` escaped correctly | Raw `&` or `<` in text |

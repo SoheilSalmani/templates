@@ -56,7 +56,7 @@ Atomicity and content:
   drop it. Listing members in a different order each review actively damages recall (SuperMemo 9).
 - A procedure is an enumeration. Card what carries knowledge: the step people get wrong, the
   condition that gates the next step, and why a step exists. Skip steps anyone doing the task would
-  infer. Asking for the whole sequence is an optional extra: one sentence for three steps or fewer
+  infer. Asking for the whole sequence is an optional extra: one card for three steps or fewer
   where each leads to the next, or, when a longer outline itself must be known, a cloze with one
   index per step (SuperMemo 10).
 - No yes-or-no and no true-or-false Fronts. A coin flip is not retrieval. Rephrase as an open question.
@@ -89,11 +89,12 @@ Formatting, in full in `references/house-style.md`:
 - `<code>` for identifiers, flags, paths, and commands. `<i>` for a term being defined.
 - No bold, no emoji, no em dash, no curly quotes, no bold-header bullet lists. Sources full of
   emoji headings and bold (Confluence and Notion especially) must be stripped, not mirrored.
-- Steps on a Back are one sentence, in order, joined with commas and "then":
-  `Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>.`
-  No `<ol>` on a Back. Steps that do not fit one readable sentence are more than one card.
-- `<ol>` lays out a procedure inside a cloze Text, one cloze index per `<li>`, never running across
-  two items. Numbers assert order, so never use `<ol>` for a set, criteria, or conditions.
+- Steps on a Back: two are one sentence joined with "then", such as `Add the package to
+  <code>packages.yml</code>, then run <code>dbt deps</code>.` Three are an `<ol>`, one short item
+  per step, each opening with its verb. Four or more are more than one card.
+- `<ol>` also lays out a procedure inside a cloze Text, one cloze index per `<li>`, never running
+  across two items. Numbers assert order and count, so never use `<ol>` for a set, criteria, or
+  conditions.
 - `<ul><li>` only for a closed list of two or three items that belongs on one card.
 - Tags: lowercase kebab-case, sparse, thematic, plus exactly one source tag such as
   `confluence-rcgrwe` or `supermemo-20-rules`.
@@ -117,7 +118,7 @@ Walk the drafted set once and ask:
 When asked to critique or repair cards, fetch them with `mcp__anki__findNotes` and
 `mcp__anki__notesInfo`, run the same audit, and report findings per note id with a concrete
 rewrite for each. Apply changes with `mcp__anki__updateNoteFields` only after approval. Rewording a
-field, such as turning an `<ol>` Back into a sentence, keeps the card's review history. Splitting a
+field, such as making a list's items parallel, keeps the card's review history. Splitting a
 bundled card means creating new notes and deleting the old one, which loses its review history, so
 call that out and let the user decide.
 

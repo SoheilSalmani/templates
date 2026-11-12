@@ -31,9 +31,17 @@
         "fields": {
           "Tool": "Snowflake",
           "Front": "How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?",
-          "Back": "Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>."
+          "Back": "<ol><li>Set the new public key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li>Run <code>UNSET RSA_PUBLIC_KEY</code></li></ol>"
         },
         "tags": ["snowflake-docs"]
+      },
+      {
+        "fields": {
+          "Tool": "dbt",
+          "Front": "How do you install a package such as <code>codegen</code>?",
+          "Back": "Add it to <code>packages.yml</code>, then run <code>dbt deps</code>."
+        },
+        "tags": ["dbt-docs"]
       },
       {
         "fields": {
