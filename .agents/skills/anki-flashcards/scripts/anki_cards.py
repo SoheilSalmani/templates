@@ -362,11 +362,11 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
                 "Back lists four or more items. Asking for a whole set or sequence at once does "
                 "not survive review. Split into one cloze card per item, or cut it.",
             )
-        if re.search(r"<ol\b", raw_back, re.I):
+        if re.search(r"<ol\b", raw_back, re.I) and items < 3:
             report.warn(
                 where,
-                "Back is an ordered list. Write up to three steps as one sentence joined with "
-                "\"then\", or lay a longer procedure out as a cloze with one index per step.",
+                "Back is an ordered list of fewer than three steps. Write them as one sentence "
+                "joined with \"then\".",
             )
 
     if "Text" in fields:

@@ -5,10 +5,10 @@
     {
       "id": 1,
       "prompt": "Make Anki cards from the 'Rotate the RSA_PUBLIC_KEY user properties' section of https://docs.snowflake.com/en/user-guide/key-pair-auth",
-      "expected_output": "A short set shown as a table for approval: at most one card asks for the whole rotation, written as one sentence, and one card asks when the old key can be unset. Nothing is added to Anki yet.",
+      "expected_output": "A short set shown as a table for approval: at most one card asks for the whole rotation, as a three-item numbered list, and one card asks when the old key can be unset. Nothing is added to Anki yet.",
       "assertions": [
-        "No drafted Back contains <ol>",
-        "Any card asking for the whole rotation gives the steps in the source's order in one sentence, with RSA_PUBLIC_KEY_2 and UNSET RSA_PUBLIC_KEY in <code>",
+        "No Back gives more than three steps",
+        "Any card asking for the whole rotation gives the three steps in the source's order as an <ol> whose items each open with a verb, with RSA_PUBLIC_KEY_2 and UNSET RSA_PUBLIC_KEY in <code>",
         "At least one card asks for the condition on the last step: the old key is unset only after clients use the new private key",
         "No card attributes the named key pair's 24-hour grace period to the RSA_PUBLIC_KEY properties",
         "The cards are shown for approval and no addNotes call is made"
@@ -20,7 +20,7 @@
       "expected_output": "No card asks for the whole setup. Cards target the parts that carry knowledge, such as which privileges allow assigning a public key, the minimum key size, and how the fingerprint is verified.",
       "assertions": [
         "No card asks for more than three steps of the setup at once",
-        "No drafted Back contains <ol>",
+        "Any Back that gives two steps is one sentence, not an <ol>",
         "If a cloze lays steps out as an <ol>, each <li> has its own cloze index and no deletion runs across two items",
         "Storing the key files is not carded as a step on its own",
         "The cards are shown for approval and no addNotes call is made"
@@ -29,9 +29,9 @@
     {
       "id": 3,
       "prompt": "Review this card of mine and fix it if needed. Tool: Snowflake. Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property? Back: <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>",
-      "expected_output": "Keeps the card, proposes the Back as one sentence, says the rewrite keeps the review history, and proposes a separate new note on when the old key can be unset. Applies nothing without approval.",
+      "expected_output": "Keeps the card and its numbered list, makes the third item open with a verb, says 'new public key', notes that rewording keeps the review history, and proposes a separate new note on when the old key can be unset. Applies nothing without approval.",
       "assertions": [
-        "The proposed Back is one sentence with the three steps in the original order",
+        "The proposed Back keeps the <ol> with the three steps in the original order, each item opening with a verb",
         "The response says rewording the field keeps the card's review history",
         "The unset condition is proposed as a separate new note, not added to the existing Back",
         "No updateNoteFields or addNotes call is made before the user approves"

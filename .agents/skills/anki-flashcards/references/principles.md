@@ -102,24 +102,29 @@ science agrees with it indirectly. Story events on a causal chain are recalled b
 neighbouring items (Hurlstone, Hitch and Baddeley, 2014). Learners grading their own multi-part
 answers often credit partial or wrong recall (Dunlosky and colleagues, 2011).
 
-### A sentence, not a list, on the Back
+### Lists and sentences on the Back
 
-No study compares list and sentence answers on flashcards, and the indirect evidence points both
-ways, so the house rule rests on what a card needs:
+No study compares list and sentence answers on flashcards. The sources agree on the count rather
+than the markup: Wozniak treats every enumeration as hard, and
+[Woehlke](https://www.lesswrong.com/posts/7Q7DPSk4iGFJd8DRk/an-opinionated-guide-to-using-anki-correctly)
+puts the ceiling at "3 logical bullets". On format, they split by count:
 
-- For a list: documentation style guides number ordered steps (Google, Microsoft, Apple), Nielsen
-  Norman Group sets three or more items as a vertical list, and in Jansen (2014) bulleted lists
-  improved recall of the listed items in three of five studies, less so when the items were
-  heterogeneous. Those readers follow the steps or study the text. A reviewer reads the Back once,
-  to grade a recall.
-- For a sentence: Wozniak wants answers "as short as imaginably possible", and his one recommended
-  whole-sequence item answers in a single inline sentence. Structure can be signalled in words:
-  Mautone and Mayer (2001) signalled a lesson with headings and pointer words such as "because", and
-  learners transferred it better. A clause per step, each opening with its verb, keeps the steps
-  checkable one at a time.
-- Decisive: a sentence caps the size, and markup does not. On 2026-10-25, 107 of the 291 current Q&A
-  Backs written as HTML lists held four or more items, against about one prose Back in nine by the
-  linter's separator count. The list Backs ran a median 94 characters, the prose Backs 51.
+- Two items read better as one line. Nielsen Norman Group: shorter lists "work better embedded in a
+  sentence". Woehlke finds a two-bullet card "quicker to recall as one long bullet". The connective
+  carries the order, as pointer words carried structure in Mautone and Mayer (2001).
+- From three items, a numbered list. Nielsen Norman Group numbers a list when "the order or the
+  final count" matters. Wozniak numbers his own sequence answer, "(1) France and (2) Germany, Italy
+  and the Benelux", and in [knowledge structuring](https://super-memory.com/english/ol/ks.htm) finds
+  that when enumerated items keep their order, "their spatial location will strongly be imprinted".
+  Matuschak keeps lists in a fixed order so the reviewer learns their visual "shape". In Jansen
+  (2014), bulleted lists improved recall of the items in three of five studies. Separate items also
+  make it easy to check an answer one idea at a time, which cuts overconfident self-grading
+  (Dunlosky and colleagues, 2011).
+- The owner of this collection finds that the visible count helps recall.
+
+The size problem is the count, not the markup. On 2026-10-25, 107 of the 291 current Q&A Backs
+written as HTML lists held four or more items. The linter counts list items, so a long list is
+flagged like a long sentence.
 
 ## Interference (SuperMemo 11)
 

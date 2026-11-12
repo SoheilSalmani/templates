@@ -185,7 +185,7 @@ Tags:  confluence-rcgrwe
 Without "as of March 2026" this card silently becomes wrong after the next reorganisation, and there
 is no way to notice during review.
 
-## 9. A procedure as a list
+## 9. A procedure as the only card
 
 A real card from the collection:
 
@@ -196,9 +196,11 @@ Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> prop
 Back:  <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>
 ```
 
-Asking for the whole sequence is defensible here: three steps, each needed before the next. The list
-is the smaller problem. The bigger one is that this is the only card, so the step that can lock
-clients out, unsetting the old key, is tested only as a position in a sequence.
+Three ordered steps, each needed before the next, so one card for the whole sequence is defensible
+and the `<ol>` is the right form. Two small fixes: the third item is a bare command among
+instructions, and "new key" does not say which of the two new keys goes in the property. The bigger
+problem is that this is the only card, so the step that can lock clients out, unsetting the old key,
+is tested only as a position in a sequence.
 
 After, two notes:
 
@@ -206,7 +208,7 @@ After, two notes:
 Q&A (for a tool)
 Tool:  Snowflake
 Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
-Back:  Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>.
+Back:  <ol><li>Set the new public key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li>Run <code>UNSET RSA_PUBLIC_KEY</code></li></ol>
 Tags:  snowflake-docs
 
 Q&A (for a tool)
@@ -216,9 +218,8 @@ Back:  After clients have switched to the new private key.
 Tags:  snowflake-docs
 ```
 
-The first is a field update, so it keeps its review history, and "new public key" settles which of
-the two new keys goes in the property. The second is a new note, and the one to keep if you keep only
-one: it asks for the transition, which is where the procedure goes wrong.
+The first is a field update, so it keeps its review history. The second is a new note, and the one
+to keep if you keep only one: it asks for the transition, which is where the procedure goes wrong.
 
 ## What the whole Sanofi set should have looked like
 
