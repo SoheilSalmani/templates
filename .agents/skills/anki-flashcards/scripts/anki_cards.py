@@ -75,6 +75,8 @@ FILLER_RE = re.compile(
 # "Sanofi R&D: what does ..." and friends. The label belongs in the context field.
 TOPIC_PREFIX_RE = re.compile(r"^\s*([A-Z][^?.!:]{2,40}:)\s")
 SET_SEPARATOR_RE = re.compile(r"[·•;]|,\s|<br\s*/?>", re.I)
+# `&lt;` and its kind end in a semicolon that separates nothing.
+ENTITY_RE = re.compile(r"&(?:[a-z][a-z0-9]*|#\d+|#x[0-9a-f]+);", re.I)
 LIST_ITEM_RE = re.compile(r"<li\b[^>]*>", re.I)
 ORDERED_LIST_RE = re.compile(r"<ol\b[^>]*>(.*?)</ol>", re.I | re.S)
 # A deletion still open at a </li>. Anki parses cloze markers as text, not as HTML.
@@ -354,7 +356,7 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
             report.error(where, "the answer appears inside the Front.")
         raw_back = fields["Back"]
         items = len(LIST_ITEM_RE.findall(raw_back))
-        if items >= 4 or (not items and len(SET_SEPARATOR_RE.findall(raw_back)) >= 3):
+        if items >= 4 or (not items and len(SET_SEPARATOR_RE.findall(ENTITY_RE.sub("", raw_back))) >= 3):
             report.warn(
                 where,
                 "Back lists four or more items. Asking for a whole set or sequence at once does "
