@@ -1,44 +1,166 @@
 {
   "skill_name": "anki-flashcards",
-  "notes": "Score what a procedure card set asks for before how it looks. A whole-sequence card is optional; a card on the transition where the procedure goes wrong is the core. Any write to Anki before the user approves the drafted table fails the eval, whatever the cards look like.",
+  "notes": "Every prompt carries its own source, or the collection state it assumes, so a run never depends on a live page or on today's collection. No input appears in the skill's own examples, so a pass has to come from the rules. The cases follow what this collection is made of: tool docs and procedures, music, cooking, French administration and driving rules, client pages, and reviews of existing cards. Score what each card asks for before how it looks. Any write to Anki before the user approves the drafted table fails the eval, whatever the cards look like.",
   "evals": [
     {
       "id": 1,
-      "prompt": "Make Anki cards from the 'Rotate the RSA_PUBLIC_KEY user properties' section of https://docs.snowflake.com/en/user-guide/key-pair-auth",
-      "expected_output": "A short set shown as a table for approval: at most one card asks for the whole rotation, as a three-item numbered list, and one card asks when the old key can be unset. Nothing is added to Anki yet.",
+      "prompt": "Make Anki cards from this, from the Kubernetes docs page \"Safely Drain a Node\" (read 2026-11-12): \"You can use kubectl drain to safely evict all of your pods from a node before you perform maintenance on the node (e.g. kernel upgrade, hardware maintenance, etc.). Once it returns (without giving an error), you can power down the node (or equivalently, if on a cloud platform, delete the virtual machine backing the node). If you leave the node in the cluster during the maintenance operation, you need to run kubectl uncordon <node name> afterwards to tell Kubernetes that it can resume scheduling new pods onto the node.\"",
+      "expected_output": "A few cards, shown for approval. A card asking for the whole procedure, if there is one, gives drain, maintenance and uncordon as a three-item numbered list, and a separate card asks when uncordon is needed. Nothing is added to Anki yet.",
       "assertions": [
         "No Back gives more than three steps",
-        "Any card asking for the whole rotation gives the three steps in the source's order as an <ol> whose items each open with a verb, with RSA_PUBLIC_KEY_2 and UNSET RSA_PUBLIC_KEY in <code>",
-        "At least one card asks for the condition on the last step: the old key is unset only after clients use the new private key",
-        "No card attributes the named key pair's 24-hour grace period to the RSA_PUBLIC_KEY properties",
+        "Any card asking for the whole procedure gives its three steps in the source's order as an <ol> whose items each open with a verb",
+        "A separate card asks when kubectl uncordon is needed, answered as after the maintenance, for a node left in the cluster",
+        "No card states something the excerpt does not, such as a kubectl flag",
         "The cards are shown for approval and no addNotes call is made"
       ]
     },
     {
       "id": 2,
-      "prompt": "Card the 'Configuring key-pair authentication' section of https://docs.snowflake.com/en/user-guide/key-pair-auth for me.",
-      "expected_output": "No card asks for the whole setup. Cards target the parts that carry knowledge, such as which privileges allow assigning a public key, the minimum key size, and how the fingerprint is verified.",
+      "prompt": "Card this for me, from the Kubernetes docs page \"Upgrading Linux nodes\" (read 2026-11-12). To upgrade a worker node created with kubeadm: upgrade kubeadm and kubectl; run sudo kubeadm upgrade node, which for worker nodes upgrades the local kubelet configuration; drain the node by running kubectl drain <node-to-drain> --ignore-daemonsets on a control plane node; upgrade the kubelet; restart the kubelet with sudo systemctl daemon-reload and sudo systemctl restart kubelet; then bring the node back online by running kubectl uncordon <node-to-uncordon> on a control plane node.",
+      "expected_output": "No card asks for all six steps. Cards target what is easy to get wrong: where drain and uncordon run, that the node is drained before the kubelet is upgraded, and what kubeadm upgrade node does on a worker. If the outline is carded, it is a cloze with one index per step.",
       "assertions": [
-        "No card asks for more than three steps of the setup at once",
-        "Any Back that gives two steps is one sentence, not an <ol>",
-        "If a cloze lays steps out as an <ol>, each <li> has its own cloze index and no deletion runs across two items",
-        "Storing the key files is not carded as a step on its own",
+        "No card asks for more than three steps at once",
+        "At least one card asks about order, such as what must happen before the kubelet is upgraded",
+        "At least one card asks where kubectl drain or kubectl uncordon is run, answered as on a control plane node",
+        "If a cloze lays the steps out as an <ol>, each <li> has its own cloze index and no deletion runs across two items",
         "The cards are shown for approval and no addNotes call is made"
       ]
     },
     {
       "id": 3,
-      "prompt": "Review this card of mine and fix it if needed. Tool: Snowflake. Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property? Back: <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>",
-      "expected_output": "Keeps the card and its numbered list, makes the third item open with a verb, says 'new public key', notes that rewording keeps the review history, and proposes a separate new note on when the old key can be unset. Applies nothing without approval.",
+      "prompt": "Card this for my cooking deck, from Wikipedia's article \"Roux\": \"Roux is a mixture of flour and fat cooked together and used to thicken sauces. Roux is typically made from equal parts of flour and fat by weight. The flour is added to the melted fat or oil on the stove top, blended until smooth, and cooked to the desired level of brownness. A roux can be white, blond (darker), or brown.\"",
+      "expected_output": "Topic cards: the ratio by weight on a card of its own, the method in three steps at most, and what roux is for. The three colours are left out or handled one per cloze, never asked for together.",
       "assertions": [
-        "The proposed Back keeps the <ol> with the three steps in the original order, each item opening with a verb",
-        "The response says rewording the field keeps the card's review history",
-        "The unset condition is proposed as a separate new note, not added to the existing Back",
-        "No updateNoteFields or addNotes call is made before the user approves"
+        "The ratio, equal parts of flour and fat by weight, has a card of its own",
+        "Any card giving the method has at most three steps, two as one sentence joined with \"then\" and three as an <ol>",
+        "No card asks for all three colours in one recall",
+        "Every note uses a topic note type, Q&A by topic or Cloze by topic",
+        "The cards are shown for approval and no addNotes call is made"
       ]
     },
     {
       "id": 4,
+      "prompt": "Card this for my music theory deck, from Wikipedia's article \"Key signature\": \"There can be up to seven sharps in a key signature, appearing in this order: F♯ C♯ G♯ D♯ A♯ E♯ B♯. The key note or tonic of a piece in a major key is a semitone above the last sharp in the signature. For example, the key of D major has a key signature of F♯ and C♯, and the tonic (D) is a semitone above C♯.\"",
+      "expected_output": "The order of sharps as a cloze note with one index per sharp, in order, with the count in the stem, and a separate card on finding the major key from the last sharp. No card asks for all seven sharps in one recall.",
+      "assertions": [
+        "No card asks for all seven sharps in one recall",
+        "The order is a cloze note with one index per sharp, in the source's order",
+        "The cloze stem says there are seven sharps",
+        "A separate card asks how to find a major key's tonic from its key signature, answered as a semitone above the last sharp",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Card this from the Anthropic Python SDK reference (v0.125.0), Messages API: \"temperature: Amount of randomness injected into the response. Defaults to 1.0. Ranges from 0.0 to 1.0. Use temperature closer to 0.0 for analytical / multiple choice, and closer to 1.0 for creative and generative tasks.\"",
+      "expected_output": "Separate cards for the default, the range, and when to go low or high. Cards that give a number say which SDK version it comes from, because API defaults change.",
+      "assertions": [
+        "The default and the range are asked for by different cards",
+        "Every card that gives the default or the range names the SDK version or a date in its text",
+        "A card asks when to use a temperature close to 0.0, answered as analytical or multiple-choice tasks",
+        "No Front asks two questions at once",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add a card for this Chrome shortcut, from Google's Chrome keyboard shortcuts help page: open a new window in Incognito mode is Ctrl + Shift + n on Windows and Linux, and ⌘ + Shift + n on Mac.",
+      "expected_output": "One Keyboard Shortcut note: the action on the Front, Chrome as the Tool, and each platform's keys in its own field.",
+      "assertions": [
+        "The note type is Keyboard Shortcut",
+        "Shortcut (macOS) holds ⌘ + Shift + n, and Shortcut (Windows) and Shortcut (Linux) hold Ctrl + Shift + n",
+        "The Front names the action, not the keys",
+        "The card is shown for approval and no addNote or addNotes call is made"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Card this for me, from entreprendre.service-public.gouv.fr (vérifié le 21 février 2026) : « Le régime fiscal de la micro-entreprise peut s'appliquer aux revenus perçus en 2026 si le chiffre d'affaires HT réalisé au cours de l'année civile 2025 ou 2024 n'a pas dépassé 203 100 € pour une activité de vente de marchandises, et 83 600 € pour une activité de prestation de services ou une activité libérale. Si vous dépassez les seuils de chiffre d'affaires pendant 2 années consécutives, vous basculez automatiquement vers un régime réel d'imposition. »",
+      "expected_output": "Cards in French, in French typography: one card per threshold, each saying it applies to income received in 2026, and one card on what follows two consecutive years over the threshold.",
+      "assertions": [
+        "Every card is in French",
+        "Every question has a space before its question mark",
+        "The two thresholds are asked for by different cards",
+        "Each threshold card says the figure applies to income received in 2026",
+        "A card asks what happens after two consecutive years above the threshold",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Card this for my driving licence deck, from the Code de la route, article R413-2 (version in force on 4 November 2026): « Hors agglomération, la vitesse des véhicules est limitée à : 130 km/h sur les autoroutes ; 110 km/h sur les routes à deux chaussées séparées par un terre-plein central ; 80 km/h sur les autres routes. En cas de pluie ou d'autres précipitations, ces vitesses maximales sont abaissées à : 110 km/h sur les sections d'autoroutes où la limite normale est de 130 km/h ; 100 km/h sur les sections d'autoroutes où cette limite est plus basse ainsi que sur les routes à deux chaussées séparées par un terre-plein central. »",
+      "expected_output": "License cards in French, one limit per card, the rain limits on cards of their own, and no true-or-false questions.",
+      "assertions": [
+        "Every note uses a license note type, Q&A (for a license) or Cloze (for a license)",
+        "Each card asks for one speed limit",
+        "The rain limits are asked for by cards separate from the normal limits",
+        "No Front is a yes-or-no or true-or-false question",
+        "Every card is in French",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Card this page from my client's Confluence and put it in my inbox, it's not urgent. The client is Northwind. Page \"R&D governance\", last edited on 3 November 2026: \"Northwind's R&D portfolio is governed by four committees. The Portfolio Board approves any project budget above €10M. The Safety Committee reviews the benefit-risk profile of every candidate before first-in-human studies. The Target Review Group decides whether a target enters lead optimisation. The Launch Council approves the filing of a marketing authorisation application.\"",
+      "expected_output": "Cards that ask which committee makes which decision, with no card listing all four, no Northwind label on a question, and the structure dated. Every note goes to the top-level Inbox with a client-northwind tag and one source tag.",
+      "assertions": [
+        "No card asks for all four committees in one recall",
+        "Each committee card turns on one committee's decision, not on its name alone",
+        "No Front starts with a Northwind label",
+        "Every card about the committees dates the structure, as of November 2026 or the page's edit date",
+        "Every drafted note's deckName is exactly Inbox",
+        "Every note carries client-northwind and exactly one source tag",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Organize my Anki inbox. Here is what anki_cards.py inbox printed this morning. Work from it and don't run anything yet.\n\nInbox: 14 notes, 15 cards. 6 new, 9 studied, 7 due now, 5 of them more than a week overdue.\nOldest note added 2026-10-20, 23 days ago.\nCurrent decks: Cooking (212 cards), Music Theory (180 cards), Tech (1140 cards).\nSubdeck Inbox::Northwind: 9 notes, 9 without client-northwind.\n\nTool \"Terraform\" (6 notes): most cards with it are in Tech (40).\n  1794100000001  studied, due  added  23d ago  What does terraform plan -refresh-only do?\n  (5 more)\n\nTool \"Kafka\" (5 notes): no current deck has it.\n  1794200000001  studied, due  added  15d ago  What does a consumer group guarantee within a partition?\n  (4 more)\n\nTopic \"Wine pairing\" (3 notes): no current deck has it.\n  1794300000001  new           added   2d ago  Which wine style suits a dish served with a beurre blanc?\n  (2 more)\n\nLint findings on these notes:\n  WARN   Back is 230 characters. Check it is one fact.  [note 1794200000003]",
+      "expected_output": "Opens with the five overdue studied cards and the 23-day wait. Proposes Tech for the Terraform and Kafka notes and Cooking for wine pairing, or asks about it, rather than new decks. Adds client-northwind to the notes in Inbox::Northwind, flags the long Back, and moves nothing yet.",
+      "assertions": [
+        "Before the per-note proposal, the response says studied cards are overdue and the oldest note has waited 23 days",
+        "The Terraform and Kafka notes are proposed for Tech, not for a new deck",
+        "No deck is proposed per Tool or Topic; any new deck is a single broad one whose name is left to the user",
+        "The proposal adds client-northwind to the notes in Inbox::Northwind",
+        "No proposed target deck starts with _Legacy",
+        "No anki_cards.py command or Anki tool is run, and no changeDeck, addTags or updateNoteFields call is made"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Add this to my Python deck (it's under _Legacy2 now, I archived the old tree): Python 3.12 lets an f-string reuse the quotes of the enclosing string inside its replacement fields (PEP 701).",
+      "expected_output": "The card is drafted for Inbox, or the user is asked which current deck to use. Nothing is drafted for the archived deck, and the card names Python 3.12.",
+      "assertions": [
+        "No drafted note targets a deck whose name starts with _Legacy",
+        "The card is drafted for Inbox, or the user is asked which current deck to use",
+        "The card names Python 3.12 or PEP 701 in its text",
+        "No addNotes call is made before the user approves"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Is this card OK? Tool: Git. Front: Which command lists the commits on your current branch that aren't on <code>origin/main</code> yet? Back: <code>git log origin/main..HEAD</code>",
+      "expected_output": "Yes. One retrieval, one right answer, the command in code. No rewrite is proposed and nothing changes.",
+      "assertions": [
+        "The response says the card is fine as it is",
+        "No change to the Front or the Back is proposed",
+        "No updateNoteFields call is made"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Fix this card if it needs it. Tool: Docker. Front: Docker: true or false, a container's writable layer survives docker rm? Back: False. The writable layer is deleted with the container; the image stays unchanged.",
+      "expected_output": "The Front becomes an open question without the Docker label, the fact stays, the response notes that rewording keeps the review history, and nothing changes before approval.",
+      "assertions": [
+        "The proposed Front is not a true-or-false or yes-or-no question",
+        "The proposed Front does not start with a Docker label",
+        "The proposed Back keeps the fact that the writable layer is deleted with the container",
+        "The response says rewording the fields keeps the card's review history",
+        "No updateNoteFields call is made before the user approves"
+      ]
+    },
+    {
+      "id": 14,
       "prompt": "Is this card OK? Topic: Freelance. Front: Quelles sont les deux conditions pour bénéficier du régime mère-fille ? Back: <ol><li>Détention d'au moins 5 % du capital de la filiale.</li><li>Conservation des titres pendant au moins 2 ans.</li></ol>",
       "expected_output": "Flags the ordered list: the two conditions hold together and have no order. Proposes a French rewrite without <ol>.",
       "assertions": [
@@ -49,46 +171,41 @@
       ]
     },
     {
-      "id": 5,
-      "prompt": "Write a runbook for rotating our Snowflake service user's key pair.",
-      "expected_output": "Not a flashcard task. A runbook with numbered steps is the right shape, and the card rules do not apply.",
+      "id": 15,
+      "prompt": "Make cards from this Slack message from my tech lead: \"heads up, the deploy pipeline changed last week, ping me if builds break\"",
+      "expected_output": "No card states what changed, because the message never says. The response says so and asks for the change itself.",
+      "assertions": [
+        "No drafted card states what changed in the pipeline",
+        "The response says the message does not say what changed",
+        "No addNotes call is made"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "I keep forgetting how to undo my last commit but keep the changes. Help me remember it.",
+      "expected_output": "Either drafts a card for approval or answers and offers to card it, and says which it chose. Nothing is added to Anki.",
+      "assertions": [
+        "The response either drafts a card and asks for approval, or answers and offers to make a card",
+        "If a card is drafted, its Front names the goal and its Back is the command",
+        "No addNotes call is made"
+      ]
+    },
+    {
+      "id": 17,
+      "prompt": "Quiz me on today's due cards.",
+      "expected_output": "Not a card-writing task. No cards are drafted.",
+      "assertions": [
+        "No cards are drafted",
+        "No addNotes or updateNoteFields call is made"
+      ]
+    },
+    {
+      "id": 18,
+      "prompt": "Write a runbook for draining a Kubernetes node before kernel maintenance.",
+      "expected_output": "A runbook with numbered steps. The card rules do not apply.",
       "assertions": [
         "No flashcards are drafted",
-        "The runbook is not reduced to a one-sentence answer because of the card house style"
-      ]
-    },
-    {
-      "id": 6,
-      "prompt": "Make cards from the 'Rotate the RSA_PUBLIC_KEY user properties' section of https://docs.snowflake.com/en/user-guide/key-pair-auth and put them in my Inbox. I'm learning this for the Sanofi mission.",
-      "expected_output": "Drafted cards target the top-level Inbox deck, with note type, Tool and tags already chosen, including client-sanofi, and are shown for approval.",
-      "assertions": [
-        "Every drafted note's deckName is exactly Inbox, not Inbox::Sanofi or another subdeck",
-        "Every note has a Tool or Topic value and a source tag",
-        "Every note carries the client-sanofi tag",
-        "No addNotes call is made before the user approves the table"
-      ]
-    },
-    {
-      "id": 7,
-      "prompt": "Organize my Anki inbox.",
-      "expected_output": "Runs the inbox report, opens with the studied cards that are due and how long cards have waited, then proposes a deck and tags per note. Nothing moves before approval.",
-      "assertions": [
-        "anki_cards.py inbox runs before any proposal is made",
-        "Before the per-note proposal, the response states how many studied cards are due and how long the oldest note has waited",
-        "Each note in the proposal has a target deck and the tags to add, including client-sanofi for notes in Inbox::Sanofi",
-        "No proposed target deck starts with _Legacy",
-        "Where no current deck fits, one broad new deck is proposed and its name is left to the user, rather than a deck per Tool",
-        "No changeDeck, addTags or updateNoteFields call is made before the user approves"
-      ]
-    },
-    {
-      "id": 8,
-      "prompt": "Add a card to my Snowflake deck: after ALTER USER ... ROTATE KEY PAIR, Snowflake keeps the prior public key valid for 24 hours by default.",
-      "expected_output": "The only Snowflake deck is archived under _Legacy2, so the card is drafted for Inbox, or the user is asked which current deck to use. Nothing is added to the archive.",
-      "assertions": [
-        "No drafted note targets a deck whose name starts with _Legacy",
-        "The response says the Snowflake deck it found is archived",
-        "The card is drafted for Inbox, or the user is asked which current deck to use"
+        "The runbook is not cut to three steps or reformatted by the card style"
       ]
     }
   ]
