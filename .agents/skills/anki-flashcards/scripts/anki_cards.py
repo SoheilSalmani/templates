@@ -73,6 +73,10 @@ FILLER_RE = re.compile(
 # "Sanofi R&D: what does ..." and friends. The label belongs in the context field.
 TOPIC_PREFIX_RE = re.compile(r"^\s*([A-Z][^?.!:]{2,40}:)\s")
 SET_SEPARATOR_RE = re.compile(r"[·•;]|,\s|<br\s*/?>", re.I)
+LIST_ITEM_RE = re.compile(r"<li\b[^>]*>", re.I)
+ORDERED_LIST_RE = re.compile(r"<ol\b[^>]*>(.*?)</ol>", re.I | re.S)
+# A deletion still open at a </li>. Anki parses cloze markers as text, not as HTML.
+CLOZE_ACROSS_ITEMS_RE = re.compile(r"\{\{c\d+::(?:(?!\}\}).)*?</li>", re.I | re.S)
 
 BACK_WARN, BACK_ERROR = 200, 400
 FRONT_WARN = 160
@@ -347,11 +351,18 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
         if back and front and normalise(back) and normalise(back) in normalise(front):
             report.error(where, "the answer appears inside the Front.")
         raw_back = fields["Back"]
-        if "<ul" not in raw_back.lower() and len(SET_SEPARATOR_RE.findall(raw_back)) >= 3:
+        items = len(LIST_ITEM_RE.findall(raw_back))
+        if items >= 4 or (not items and len(SET_SEPARATOR_RE.findall(raw_back)) >= 3):
             report.warn(
                 where,
-                "Back lists four or more items, which is a set. Asking for a whole set at once "
-                "does not survive review. Split into one cloze card per member, or cut it.",
+                "Back lists four or more items. Asking for a whole set or sequence at once does "
+                "not survive review. Split into one cloze card per item, or cut it.",
+            )
+        if re.search(r"<ol\b", raw_back, re.I):
+            report.warn(
+                where,
+                "Back is an ordered list. Write up to three steps as one sentence joined with "
+                "\"then\", or lay a longer procedure out as a cloze with one index per step.",
             )
 
     if "Text" in fields:
@@ -371,6 +382,21 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
                 report.warn(where, "%d cloze indexes on one note. Consider splitting." % len(indexes))
             if strip_html(re.sub(r"\{\{c\d+::|\}\}", "", text)).strip() == strip_html(text).strip():
                 pass
+        if CLOZE_ACROSS_ITEMS_RE.search(text):
+            report.error(
+                where,
+                "a cloze deletion runs across </li>, which Anki renders as broken HTML. "
+                "Close each deletion inside its own <li>.",
+            )
+        for inner in ORDERED_LIST_RE.findall(text):
+            steps = [set(CLOZE_RE.findall(item)) for item in LIST_ITEM_RE.split(inner)[1:]]
+            clozed = [s for s in steps if s]
+            if len(clozed) >= 2 and len(set.union(*clozed)) == 1:
+                report.warn(
+                    where,
+                    "every step of the ordered list shares one cloze index, so the card asks for "
+                    "the whole sequence. Give each step its own index.",
+                )
 
     tags = note.get("tags") or []
     if not isinstance(tags, list):

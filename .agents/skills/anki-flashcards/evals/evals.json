@@ -1,0 +1,61 @@
+{
+  "skill_name": "anki-flashcards",
+  "notes": "Score what a procedure card set asks for before how it looks. A whole-sequence card is optional; a card on the transition where the procedure goes wrong is the core. Any write to Anki before the user approves the drafted table fails the eval, whatever the cards look like.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Make Anki cards from the 'Rotate the RSA_PUBLIC_KEY user properties' section of https://docs.snowflake.com/en/user-guide/key-pair-auth",
+      "expected_output": "A short set shown as a table for approval: at most one card asks for the whole rotation, written as one sentence, and one card asks when the old key can be unset. Nothing is added to Anki yet.",
+      "assertions": [
+        "No drafted Back contains <ol>",
+        "Any card asking for the whole rotation gives the steps in the source's order in one sentence, with RSA_PUBLIC_KEY_2 and UNSET RSA_PUBLIC_KEY in <code>",
+        "At least one card asks for the condition on the last step: the old key is unset only after clients use the new private key",
+        "No card attributes the named key pair's 24-hour grace period to the RSA_PUBLIC_KEY properties",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Card the 'Configuring key-pair authentication' section of https://docs.snowflake.com/en/user-guide/key-pair-auth for me.",
+      "expected_output": "No card asks for the whole setup. Cards target the parts that carry knowledge, such as which privileges allow assigning a public key, the minimum key size, and how the fingerprint is verified.",
+      "assertions": [
+        "No card asks for more than three steps of the setup at once",
+        "No drafted Back contains <ol>",
+        "If a cloze lays steps out as an <ol>, each <li> has its own cloze index and no deletion runs across two items",
+        "Storing the key files is not carded as a step on its own",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review this card of mine and fix it if needed. Tool: Snowflake. Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property? Back: <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>",
+      "expected_output": "Keeps the card, proposes the Back as one sentence, says the rewrite keeps the review history, and proposes a separate new note on when the old key can be unset. Applies nothing without approval.",
+      "assertions": [
+        "The proposed Back is one sentence with the three steps in the original order",
+        "The response says rewording the field keeps the card's review history",
+        "The unset condition is proposed as a separate new note, not added to the existing Back",
+        "No updateNoteFields or addNotes call is made before the user approves"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Is this card OK? Topic: Freelance. Front: Quelles sont les deux conditions pour bénéficier du régime mère-fille ? Back: <ol><li>Détention d'au moins 5 % du capital de la filiale.</li><li>Conservation des titres pendant au moins 2 ans.</li></ol>",
+      "expected_output": "Flags the ordered list: the two conditions hold together and have no order. Proposes a French rewrite without <ol>.",
+      "assertions": [
+        "The response says the numbering implies an order that two conditions holding together do not have",
+        "The proposed rewrite is in French and keeps the space before the question mark",
+        "The proposed rewrite does not use <ol>",
+        "No condition is added beyond the 5 percent holding and the two-year retention"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Write a runbook for rotating our Snowflake service user's key pair.",
+      "expected_output": "Not a flashcard task. A runbook with numbered steps is the right shape, and the card rules do not apply.",
+      "assertions": [
+        "No flashcards are drafted",
+        "The runbook is not reduced to a one-sentence answer because of the card house style"
+      ]
+    }
+  ]
+}

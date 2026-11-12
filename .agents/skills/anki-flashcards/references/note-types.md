@@ -103,6 +103,7 @@ Three patterns worth copying:
   rather than `shared by all {{c1::test modules}}`.
 
 On index count: three is the ceiling when the blanks are separate facts sharing a sentence, because
-past that the note is a bundle wearing a cloze costume. A genuine closed list is the exception, and
-one index per member is correct there even at five or six. The linter warns above three either way,
-so justify the warning rather than suppressing it.
+past that the note is a bundle wearing a cloze costume. A genuine closed list, or a procedure laid
+out as an `<ol>` with one index per step, is the exception, and one index per member is correct
+there even at five or six. The linter warns above three either way, so justify the warning rather
+than suppressing it.

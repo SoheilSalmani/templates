@@ -1,0 +1,44 @@
+[
+  {
+    "deckName": "Computer Science::Data Engineering::Snowflake",
+    "modelName": "Q&A (for a tool)",
+    "notes": [
+      {
+        "fields": {
+          "Tool": "Snowflake",
+          "Front": "How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?",
+          "Back": "<ol>\n  <li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li>\n  <li>Switch clients to the new private key</li>\n  <li><code>UNSET RSA_PUBLIC_KEY</code></li>\n</ol>"
+        },
+        "tags": ["snowflake-docs"]
+      },
+      {
+        "fields": {
+          "Tool": "Helm",
+          "Front": "What happens when a Helm chart is installed into Kubernetes?",
+          "Back": "<ol><li>Helm reads the chart (downloading if necessary).</li><li>It sends the values into the templates, generating Kubernetes manifests.</li><li>The manifests are sent to Kubernetes.</li><li>Kubernetes creates the requested resources inside of the cluster.</li></ol>"
+        },
+        "tags": ["helm-docs"]
+      }
+    ]
+  },
+  {
+    "deckName": "Computer Science::Software Engineering::JavaScript::npm",
+    "modelName": "Cloze (for a tool)",
+    "notes": [
+      {
+        "fields": {
+          "Tool": "npm",
+          "Text": "By default, <code>npx</code> will first:<br><ol><li>{{c1::check if command exists in local project's binaries,}}</li><li>{{c1::if not there, it will look in <code>PATH</code>,}}</li><li>{{c1::if not there, it will install it in a temporary location.}}</li></ol>"
+        },
+        "tags": ["npm-docs"]
+      },
+      {
+        "fields": {
+          "Tool": "Snowflake",
+          "Text": "Rotating a key held in <code>RSA_PUBLIC_KEY</code>: <ol><li>{{c1::Set the new public key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key}}</li><li>{{c2::<code>UNSET RSA_PUBLIC_KEY</code>}}</li></ol>"
+        },
+        "tags": ["snowflake-docs"]
+      }
+    ]
+  }
+]

@@ -1,8 +1,8 @@
 # Worked examples
 
-Every "before" below is a real card that was added to this collection and then deleted for being bad.
-They came from a Confluence page on Sanofi R&D structure. Read these to calibrate how short a good
-Back is and how much gets cut.
+Every "before" below is a real card from this collection. Most came from a Confluence page on Sanofi
+R&D structure and were deleted for being bad. Read these to calibrate how short a good Back is and
+how much gets cut.
 
 ## 1. Two facts in one card
 
@@ -185,7 +185,42 @@ Tags:  confluence-rcgrwe
 Without "as of March 2026" this card silently becomes wrong after the next reorganisation, and there
 is no way to notice during review.
 
-## What the whole set should have looked like
+## 9. A procedure as a list
+
+A real card from the collection:
+
+```
+Q&A (for a tool)
+Tool:  Snowflake
+Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
+Back:  <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>
+```
+
+Asking for the whole sequence is defensible here: three steps, each needed before the next. The list
+is the smaller problem. The bigger one is that this is the only card, so the step that can lock
+clients out, unsetting the old key, is tested only as a position in a sequence.
+
+After, two notes:
+
+```
+Q&A (for a tool)
+Tool:  Snowflake
+Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
+Back:  Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>.
+Tags:  snowflake-docs
+
+Q&A (for a tool)
+Tool:  Snowflake
+Front: During a key rotation, when can you <code>UNSET RSA_PUBLIC_KEY</code>?
+Back:  After clients have switched to the new private key.
+Tags:  snowflake-docs
+```
+
+The first is a field update, so it keeps its review history, and "new public key" settles which of
+the two new keys goes in the property. The second is a new note, and the one to keep if you keep only
+one: it asks for the transition, which is where the procedure goes wrong.
+
+## What the whole Sanofi set should have looked like
 
 The original run produced 27 notes and 34 cards from that page. A disciplined pass yields roughly
 10 to 12 notes: the GPH role and its two hard obligations, the GPT and its purpose, the project

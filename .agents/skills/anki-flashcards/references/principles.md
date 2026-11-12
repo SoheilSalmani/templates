@@ -9,6 +9,15 @@ Sources:
 - Andy Matuschak, [How to write good prompts: using spaced repetition to create understanding](https://andymatuschak.org/prompts/).
 - Andy Matuschak, [Important attributes of good spaced repetition memory prompts](https://notes.andymatuschak.org/z42J1vxsMjhkdbrqVfoqjiEesSzfaEqurBtoJ).
 
+Behind the procedures section, read 2026-10-25:
+
+- Trabasso and van den Broek (1985), [Causal thinking and the representation of narrative events](https://doi.org/10.1016/0749-596X(85)90049-X), Journal of Memory and Language.
+- Hurlstone, Hitch and Baddeley (2014), [Memory for serial order across domains](https://pubmed.ncbi.nlm.nih.gov/24079725), Psychological Bulletin.
+- Dunlosky, Hartwig, Rawson and Lipko (2011), [Improving college students' evaluation of text learning using idea-unit standards](https://pubmed.ncbi.nlm.nih.gov/20700858), Quarterly Journal of Experimental Psychology.
+- Jansen (2014), [How bulleted lists and enumerations in formatted paragraphs affect recall and evaluation of functional text](https://doi.org/10.1075/idj.21.2.06jan), Information Design Journal.
+- Mautone and Mayer (2001), Signaling as a cognitive guide in multimedia learning, Journal of Educational Psychology 93(2).
+- Nielsen Norman Group, [7 Tips for Presenting Bulleted Lists in Digital Content](https://www.nngroup.com/articles/presenting-bulleted-lists/), and Google's [procedures style guide](https://developers.google.com/style/procedures).
+
 ## The five attributes
 
 Matuschak's test for a prompt. Run a doubtful card against all five.
@@ -50,8 +59,12 @@ in a different order each review has, in Wozniak's words, a disastrous effect on
 individual membership facts, or to the historical sequence that produced the set, or drop it.
 
 An enumeration is ordered: steps in a process, a pipeline, a gate sequence. Better than a set because
-the order forces a consistent traversal, but still hard. Use overlapping cloze deletions so each card
-asks for one step in context rather than the whole chain.
+the order forces a consistent traversal, but still hard. Wozniak's fix is overlapping cloze
+deletions, so each card asks for one step in context rather than the whole chain. Anki's stock cloze
+is the weaker form: each card blanks one step and shows all the others, later ones included. Hiding
+the later steps would need a cloned Cloze note type styled through Anki's `.cloze-inactive` class,
+and this collection has none, so do not promise that behaviour. Procedures get their own section
+below.
 
 A closed list has a fixed, small, known membership: the five R&D pillars, the four criteria for
 selecting a country. Write one cloze card per member on a single note, so each member is retrieved
@@ -61,6 +74,52 @@ the right answer.
 An open list has no fixed membership: "examples of a design pattern", "functions this library
 exposes". Do not write a fill-in-the-blank card. Instead write cards linking each instance to the
 category, cards about the pattern the instances share, and a generative card asking for any example.
+
+## Procedures
+
+A procedure is an enumeration with a purpose, and the purpose decides what to card. Matuschak works
+through a recipe in the prompts essay. A cloze per step over the full step list is "an awfully
+unfocused prompt", so he cuts the procedure down instead:
+
+1. Drop the steps anyone doing the task would infer. Of the recipe's four steps, "the first and
+   fourth steps aren't worth writing prompts about."
+2. Card the keywords: the verb, adverb, or quantity that is easy to get wrong.
+3. Card the transitions: "conditions or heuristics describing when to move between verbs are
+   important." In a key rotation, that is when the old key may be removed.
+4. Card the why: "Explanation-type prompts are especially valuable when studying procedures."
+5. Optionally, one card for the whole sequence. Wozniak grades a whole sequence next to the items
+   that cover its parts (the EU example under rule 9), and lets poems stay whole "due to strong
+   semantic connections" until you stumble, then splits them with cloze. Do the same: three steps
+   at most, each leading to the next, and split the card when it starts to lapse.
+
+When the outline itself must be known, Matuschak's list form is simpler: a numbered cloze, one index
+per step, each step cut to its keywords, in a fixed order. "When each element has a consistent
+(though arbitrary) location, you'll end up learning the list's visual 'shape'."
+
+All of this is practitioner experience, and no controlled study compares procedure cards. Cognitive
+science agrees with it indirectly. Story events on a causal chain are recalled better than dead ends
+(Trabasso and van den Broek, 1985). Ordered recall degrades as a sequence grows, mostly by swapping
+neighbouring items (Hurlstone, Hitch and Baddeley, 2014). Learners grading their own multi-part
+answers often credit partial or wrong recall (Dunlosky and colleagues, 2011).
+
+### A sentence, not a list, on the Back
+
+No study compares list and sentence answers on flashcards, and the indirect evidence points both
+ways, so the house rule rests on what a card needs:
+
+- For a list: documentation style guides number ordered steps (Google, Microsoft, Apple), Nielsen
+  Norman Group sets three or more items as a vertical list, and in Jansen (2014) bulleted lists
+  improved recall of the listed items in three of five studies, less so when the items were
+  heterogeneous. Those readers follow the steps or study the text. A reviewer reads the Back once,
+  to grade a recall.
+- For a sentence: Wozniak wants answers "as short as imaginably possible", and his one recommended
+  whole-sequence item answers in a single inline sentence. Structure can be signalled in words:
+  Mautone and Mayer (2001) signalled a lesson with headings and pointer words such as "because", and
+  learners transferred it better. A clause per step, each opening with its verb, keeps the steps
+  checkable one at a time.
+- Decisive: a sentence caps the size, and markup does not. On 2026-10-25, 107 of the 291 current Q&A
+  Backs written as HTML lists held four or more items, against about one prose Back in nine by the
+  linter's separator count. The list Backs ran a median 94 characters, the prose Backs 51.
 
 ## Interference (SuperMemo 11)
 

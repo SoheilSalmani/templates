@@ -26,6 +26,14 @@
           "Back": "The <code>create-dagster</code> CLI."
         },
         "tags": ["dagster-docs"]
+      },
+      {
+        "fields": {
+          "Tool": "Snowflake",
+          "Front": "How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?",
+          "Back": "Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>."
+        },
+        "tags": ["snowflake-docs"]
       }
     ]
   },
@@ -68,6 +76,13 @@
           "Text": "In the metric system, the prefix {{c1::deci-}} means {{c2::1/10}}."
         },
         "tags": ["si-prefixes"]
+      },
+      {
+        "fields": {
+          "Topic": "Networking",
+          "Text": "The TCP handshake: <ol><li>{{c1::SYN}}</li><li>{{c2::SYN-ACK}}</li><li>{{c3::ACK}}</li></ol>"
+        },
+        "tags": ["rfc-9293"]
       }
     ]
   }
