@@ -81,6 +81,28 @@ LIST_ITEM_RE = re.compile(r"<li\b[^>]*>", re.I)
 ORDERED_LIST_RE = re.compile(r"<ol\b[^>]*>(.*?)</ol>", re.I | re.S)
 # A deletion still open at a </li>. Anki parses cloze markers as text, not as HTML.
 CLOZE_ACROSS_ITEMS_RE = re.compile(r"\{\{c\d+::(?:(?!\}\}).)*?</li>", re.I | re.S)
+# One match per code block: a <pre><code> block matches once, at its outer <pre>.
+CODE_SPAN_RE = re.compile(r"<(code|pre)\b[^>]*>(.*?)</\1>", re.I | re.S)
+# Code laid out over several lines: a <pre> block, or a <code> span broken with <br>.
+MULTILINE_CODE_RE = re.compile(
+    r"<pre\b[^>]*>.*?</pre>|<code\b[^>]*>(?:(?!</code>).)*?(?:<br\s*/?>|\n)(?:(?!</code>).)*</code>",
+    re.I | re.S,
+)
+# A "<" inside code that opens a tag other than the markup fields use: JSX, generics such as
+# List<String>, placeholders such as <release>. The browser takes it for a tag and hides it.
+RAW_TAG_IN_CODE_RE = re.compile(
+    r"<(?!/?(?:code|pre|br|span|b|strong|i|em|u|s|sub|sup|kbd|font|div|p|ul|ol|li|a|img)\b|!--)/?[A-Za-z]"
+)
+EXAMPLE_FRONT_RE = re.compile(
+    r"\b(?:write|give|show|create)\s+(?:an?\s+|some\s+)?(?:examples?|samples?)\b"
+    r"|\b(?:[ée]cri(?:s|vez|re)|donne[sz]?)\s+(?:un|des)\s+exemples?\b",
+    re.I,
+)
+CLOZE_OPEN_RE = re.compile(r"\{\{c\d+::")
+# Past six lines a review takes about twice as long; past twelve it is a program, not a card.
+CODE_LINES_WARN, CODE_LINES_MAX = 6, 12
+# A pattern skeleton ends with the parts it is graded on.
+CHECK_LINE_RE = re.compile(r"\bCheck\s*:")
 
 BACK_WARN, BACK_ERROR = 200, 400
 FRONT_WARN = 160
@@ -114,6 +136,57 @@ def normalise(text: str) -> str:
     text = strip_html(text).lower()
     text = "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
     return re.sub(r"[^a-z0-9 ]", "", text)
+
+
+def code_line_count(raw: str) -> int:
+    """Lines of code in a field: every line of a <pre> block or of a <code> span broken with
+    <br>, and each single-line <code> span when the field holds nothing but code. Identifiers set
+    in <code> inside a sentence are not lines of code."""
+
+    def lines(html: str) -> int:
+        html = re.sub(r"<br\s*/?>", "\n", html, flags=re.I)
+        return sum(1 for line in re.sub(r"<[^>]+>", "", html).split("\n") if line.strip())
+
+    total = 0
+    for block in re.findall(r"<pre\b[^>]*>(.*?)</pre>", raw, re.I | re.S):
+        total += lines(block)
+    rest = re.sub(r"<pre\b[^>]*>.*?</pre>", " ", raw, flags=re.I | re.S)
+    spans = [match.group(2) for match in CODE_SPAN_RE.finditer(rest)]
+    # A list of names in <li> items is a set, which the list check reports.
+    only_code = not LIST_ITEM_RE.search(rest) and not strip_html(CODE_SPAN_RE.sub(" ", rest)).strip(" .,;:")
+    for span in spans:
+        if re.search(r"<br\s*/?>|\n", span, re.I) or only_code:
+            total += lines(span)
+    return total
+
+
+def cloze_deletions(text: str) -> list[tuple[int, int, bool]]:
+    """Each deletion as Anki reads it: (content start, content end, a stray "}" follows).
+
+    "{{cN::" opens a deletion and the first "}}" closes the innermost open one, so code ending
+    in "}" closes its deletion a brace early and leaves that brace outside it.
+    """
+    spans, stack, i = [], [], 0
+    while i < len(text):
+        opener = CLOZE_OPEN_RE.match(text, i)
+        if opener:
+            stack.append(opener.end())
+            i = opener.end()
+        elif text.startswith("}}", i) and stack:
+            start = stack.pop()
+            after = i + 2
+            closes_outer = bool(stack) and text.startswith("}}", after)
+            spans.append((start, i, text.startswith("}", after) and not closes_outer))
+            i = after
+        else:
+            i += 1
+    return spans
+
+
+def inside_code(text: str, index: int) -> bool:
+    before = text[:index]
+    opened = len(re.findall(r"<(?:code|pre)\b", before, re.I))
+    return opened > len(re.findall(r"</(?:code|pre)>", before, re.I))
 
 
 # ---------------------------------------------------------------- check / inspect
@@ -266,6 +339,14 @@ def lint_text(where: str, label: str, raw: str, report: Report) -> None:
         report.warn(where, "%s contains filler (\"note that\", \"basically\", and similar)." % label)
     if re.search(r"<br\s*/?>\s*<br\s*/?>", raw, re.I):
         report.warn(where, "%s has a blank line in it, which usually means two facts." % label)
+    for match in CODE_SPAN_RE.finditer(raw):
+        if RAW_TAG_IN_CODE_RE.search(match.group(2)):
+            report.error(
+                where,
+                "%s has an unescaped < inside code, which Anki renders as an HTML tag and hides. "
+                "Write &lt; instead." % label,
+            )
+            break
 
 
 def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None, report: Report) -> None:
@@ -345,18 +426,28 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
             )
         if len(front) > FRONT_WARN:
             report.warn(where, "Front is %d characters. Tighten it." % len(front))
+        if EXAMPLE_FRONT_RE.search(front):
+            report.warn(
+                where,
+                "Front asks for an example. Any correct example is a right answer, so the Back "
+                "cannot grade it. Name the task so that one answer is right.",
+            )
 
     if "Back" in fields:
         back = strip_html(fields["Back"])
-        if len(back) > BACK_ERROR:
-            report.error(where, "Back is %d characters. That is a bundle, not a card." % len(back))
-        elif len(back) > BACK_WARN:
-            report.warn(where, "Back is %d characters. Check it is one fact." % len(back))
+        raw_back = fields["Back"]
+        # Code is measured in lines below, so the character limits apply to the prose around it.
+        prose = strip_html(MULTILINE_CODE_RE.sub(" ", raw_back))
+        if len(prose) > BACK_ERROR:
+            report.error(where, "Back has %d characters of prose. That is a bundle, not a card." % len(prose))
+        elif len(prose) > BACK_WARN:
+            report.warn(where, "Back has %d characters of prose. Check it is one fact." % len(prose))
         if back and front and normalise(back) and normalise(back) in normalise(front):
             report.error(where, "the answer appears inside the Front.")
-        raw_back = fields["Back"]
         items = len(LIST_ITEM_RE.findall(raw_back))
-        if items >= 4 or (not items and len(SET_SEPARATOR_RE.findall(ENTITY_RE.sub("", raw_back))) >= 3):
+        # Commas and semicolons inside code are syntax, not a list.
+        prose_back = ENTITY_RE.sub("", CODE_SPAN_RE.sub(" ", raw_back))
+        if items >= 4 or (not items and len(SET_SEPARATOR_RE.findall(prose_back)) >= 3):
             report.warn(
                 where,
                 "Back lists four or more items. Asking for a whole set or sequence at once does "
@@ -367,6 +458,21 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
                 where,
                 "Back is an ordered list of fewer than three steps. Write them as one sentence "
                 "joined with \"then\".",
+            )
+        code_lines = code_line_count(raw_back)
+        if code_lines > CODE_LINES_MAX:
+            report.error(
+                where,
+                "Back holds %d lines of code, more than a pattern skeleton. A program is an "
+                "exercise: offer a card that points to it, or blank the line that matters in a "
+                "code cloze." % code_lines,
+            )
+        elif code_lines > CODE_LINES_WARN and not CHECK_LINE_RE.search(prose):
+            report.warn(
+                where,
+                "Back holds %d lines of code. Past six lines a review takes about twice as long: "
+                "keep it only as a pattern skeleton followed by a Check: line naming its parts, or "
+                "blank the line that matters in a code cloze." % code_lines,
             )
 
     if "Text" in fields:
@@ -391,6 +497,35 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
                 where,
                 "a cloze deletion runs across </li>, which Anki renders as broken HTML. "
                 "Close each deletion inside its own <li>.",
+            )
+        hint_in_code = hint_elsewhere = stray_brace = False
+        for start, end, stray in cloze_deletions(text):
+            stray_brace = stray_brace or stray
+            for colons in re.finditer("::", text[start:end]):
+                at = start + colons.start()
+                if re.search(r"\{\{c\d+$", text[:at]):
+                    continue  # the "::" of a nested deletion's opener
+                if inside_code(text, at):
+                    hint_in_code = True
+                else:
+                    hint_elsewhere = True
+        if hint_in_code:
+            report.error(
+                where,
+                "a cloze deletion holds a :: inside code. Anki reads what follows as a hint, shown "
+                "on the front and cut from the answer. Write :<!-- -->: instead.",
+            )
+        elif hint_elsewhere:
+            report.warn(
+                where,
+                "a cloze deletion holds ::, which Anki reads as the start of a hint. Write "
+                ":<!-- -->: unless the hint is intended.",
+            )
+        if stray_brace:
+            report.error(
+                where,
+                "a cloze deletion ends in }, so Anki closes it a brace early and leaves the } "
+                "outside. Write }<!-- -->}} instead.",
             )
         for inner in ORDERED_LIST_RE.findall(text):
             steps = [set(CLOZE_RE.findall(item)) for item in LIST_ITEM_RE.split(inner)[1:]]

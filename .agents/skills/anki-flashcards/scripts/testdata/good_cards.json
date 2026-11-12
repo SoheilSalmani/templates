@@ -101,5 +101,63 @@
         "tags": ["rfc-9293"]
       }
     ]
+  },
+  {
+    "deckName": "Computer Science::Software Engineering",
+    "modelName": "Q&A by topic",
+    "notes": [
+      {
+        "fields": {
+          "Topic": "React",
+          "Front": "Which call caches the result of <code>filterTodos(todos, tab)</code> between renders?",
+          "Back": "<code>useMemo(() =&gt; filterTodos(todos, tab), [todos, tab])</code>"
+        },
+        "tags": ["react-docs"]
+      },
+      {
+        "fields": {
+          "Topic": "pytest",
+          "Front": "How do you assert that calling <code>f()</code> raises <code>SystemExit</code>?",
+          "Back": "<pre><code>with pytest.raises(SystemExit):\n    f()</code></pre>"
+        },
+        "tags": ["pytest-docs"]
+      },
+      {
+        "fields": {
+          "Topic": "Cube template",
+          "Front": "Which command lists the releases <code>mise run deploy</code> made, each with the commit it deployed?",
+          "Back": "<code>helm history &lt;release&gt; --namespace &lt;namespace&gt;</code>"
+        },
+        "tags": ["cube-helm-chart"]
+      },
+      {
+        "fields": {
+          "Topic": "Python",
+          "Front": "Write a generator-based context manager <code>timed</code> that prints how long its block took, even when the block raises.",
+          "Back": "<pre><code>@contextmanager\ndef timed():\n    start = time.perf_counter()\n    try:\n        yield\n    finally:\n        print(time.perf_counter() - start)</code></pre>Check: setup before <code>yield</code>, <code>yield</code> inside <code>try</code>, cleanup in <code>finally</code>."
+        },
+        "tags": ["python-docs"]
+      }
+    ]
+  },
+  {
+    "deckName": "Computer Science::Software Engineering",
+    "modelName": "Cloze by topic",
+    "notes": [
+      {
+        "fields": {
+          "Topic": "Rust",
+          "Text": "Only types that {{c1::implement <code>fmt:<!-- -->:Display</code>}} can be formatted with <code>{{c2::{}<!-- -->}}</code>."
+        },
+        "tags": ["rust-by-example"]
+      },
+      {
+        "fields": {
+          "Topic": "dlt",
+          "Text": "<pre><code>source = rest_api_source({\n    \"{{c1::client}}\": {\"base_url\": \"https://api.example.com/\"},\n    \"{{c2::resources}}\": [\"posts\", \"comments\"],\n})</code></pre>"
+        },
+        "tags": ["dlt-docs"]
+      }
+    ]
   }
 ]

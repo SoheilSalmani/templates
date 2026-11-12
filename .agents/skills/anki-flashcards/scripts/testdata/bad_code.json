@@ -1,0 +1,52 @@
+[
+  {
+    "deckName": "Computer Science::Software Engineering",
+    "modelName": "Q&A by topic",
+    "notes": [
+      {
+        "fields": {
+          "Topic": "React",
+          "Front": "Write an example of a component that uses <code>useMemo()</code>.",
+          "Back": "<pre><code>import { useMemo } from 'react';\n\nfunction TodoList({ todos, tab }) {\n  const visibleTodos = useMemo(\n    () =&gt; filterTodos(todos, tab),\n    [todos, tab]\n  );\n  // ...\n}</code></pre>"
+        },
+        "tags": ["react-docs"]
+      },
+      {
+        "fields": {
+          "Topic": "shadcn/ui",
+          "Front": "Which component holds a submenu inside a sidebar menu item?",
+          "Back": "<pre><code><SidebarMenuSub /></code></pre>"
+        },
+        "tags": ["shadcn-docs"]
+      },
+      {
+        "fields": {
+          "Topic": "dlt",
+          "Front": "How do you load the posts and comments of a REST API into DuckDB with dlt?",
+          "Back": "<pre><code>import dlt\nfrom dlt.sources.rest_api import rest_api_source\n\nsource = rest_api_source({\n    \"client\": {\n        \"base_url\": \"https://api.example.com/\",\n    },\n    \"resources\": [\"posts\", \"comments\"],\n})\n\npipeline = dlt.pipeline(\n    pipeline_name=\"rest_api_example\",\n    destination=\"duckdb\",\n    dataset_name=\"rest_api_data\",\n)\n\nload_info = pipeline.run(source)\nprint(load_info)</code></pre>"
+        },
+        "tags": ["dlt-docs"]
+      }
+    ]
+  },
+  {
+    "deckName": "Computer Science::Software Engineering",
+    "modelName": "Cloze by topic",
+    "notes": [
+      {
+        "fields": {
+          "Topic": "Rust",
+          "Text": "Only types that {{c1::implement <code>fmt::Display</code>}} can be formatted with <code>{{c2::{}}}</code>."
+        },
+        "tags": ["rust-by-example"]
+      },
+      {
+        "fields": {
+          "Topic": "Geography",
+          "Text": "The capital of France is {{c1::Paris::a city}}."
+        },
+        "tags": ["geography"]
+      }
+    ]
+  }
+]

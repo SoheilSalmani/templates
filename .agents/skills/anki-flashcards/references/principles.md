@@ -18,6 +18,19 @@ Behind the procedures section, read 2026-10-25:
 - Mautone and Mayer (2001), Signaling as a cognitive guide in multimedia learning, Journal of Educational Psychology 93(2).
 - Nielsen Norman Group, [7 Tips for Presenting Bulleted Lists in Digital Content](https://www.nngroup.com/articles/presenting-bulleted-lists/), and Google's [procedures style guide](https://developers.google.com/style/procedures).
 
+Behind the code section, read 2026-11-12:
+
+- Pan and Rickard (2018), [Transfer of test-enhanced learning](https://sc-pan.github.io/pdf/PR_2018W.pdf), Psychological Bulletin.
+- Agarwal (2019), [Retrieval practice and Bloom's taxonomy](https://pdf.poojaagarwal.com/Agarwal_2019_JEdPsych.pdf), Journal of Educational Psychology.
+- Rittle-Johnson, Schneider and Star (2015), [Not a one-way street](https://www.uni-trier.de/fileadmin/fb1/prof/PSY/PAE/Team/Schneider/Rittle-JohnsonEtAl2015.pdf), and Rittle-Johnson and Koedinger (2009), [Iterating between lessons on concepts and procedures](https://pact.cs.cmu.edu/koedinger/pubs/Rittle-Johnson,%20Koedinger%202009.pdf).
+- Chen, Kalyuga and Sweller (2015), [The worked example effect, the generation effect, and element interactivity](https://eric.ed.gov/?id=EJ1071512); van Gog and Sweller (2015), [Not new, but nearly forgotten](https://link.springer.com/content/pdf/10.1007/s10648-015-9310-x.pdf), and the reply by Karpicke and Aue (2015), [The testing effect is alive and well with complex materials](https://learninglab.psych.purdue.edu/downloads/2015/2015_Karpicke_Aue_EDPR.pdf).
+- Lipko and colleagues (2009), [Using standards to improve middle school students' accuracy at evaluating the quality of their recall](https://pubmed.ncbi.nlm.nih.gov/20025417), and Dunlosky and Rawson (2012), [Overconfidence produces underachievement](https://eric.ed.gov/?id=EJ964388).
+- Shneiderman (1976), [Exploratory experiments in programmer behavior](https://www.cs.umd.edu/~ben/Shneiderman1976Exploratory.pdf); Adelson (1981), [Problem solving and the development of abstract categories in programming languages](https://link.springer.com/article/10.3758/BF03197568); Soloway and Ehrlich (1984), [Empirical studies of programming knowledge](https://dl.acm.org/doi/10.1109/TSE.1984.5010283).
+- van Merriënboer (1990), [Program completion vs. program generation](https://research.utwente.nl/en/publications/strategies-for-programming-instruction-in-high-school-program-com); Ericson, Margulieux and Rick (2017), [Solving Parsons problems versus fixing and writing code](http://faculty.chas.uni.edu/~schafer/cohort23/Methods/ReadingsBackups/mod2/ParsonsProblems.pdf); Tucker and colleagues (2024), [Prediction versus production for teaching computer programming](https://uclatall.com/pdfs/predictionversusproduction.pdf).
+- Weinman, Fox and Hearst (2021), [Improving instruction of programming patterns with Faded Parsons Problems](https://acelab.berkeley.edu/wp-content/papercite-data/pdf/parsons-chi2021.pdf); Rohrer and Taylor (2007), [The shuffling of mathematics problems improves learning](https://eric.ed.gov/?id=EJ786797).
+- LaToza, Venolia and DeLine (2006), [Maintaining mental models](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/p492-latoza.pdf); LaToza and Myers (2010), [Hard-to-answer questions about code](https://people.cs.gmu.edu/~tlatoza/papers/plateau2010.pdf); Ko, DeLine and Venolia (2007), [Information needs in collocated software development teams](https://faculty.washington.edu/ajko/papers/Ko2007InformationNeeds.pdf); Krüger and Hebig (2020), [What developers (care to) recall](https://wwwiti.cs.uni-magdeburg.de/iti_db/publikationen/ps/auto/KruegerH2020ICSME.pdf); Fritz and colleagues (2010), [A degree-of-knowledge model](https://www.cs.ubc.ca/~fritz/papers/icse10_dok_web.pdf).
+- Practitioners: Wozniak (1993), [SuperMemo as a new tool increasing the productivity of a programmer](https://super-memory.com/articles/programming.htm); Kinsella, [Janki Method](https://www.semicolonandsons.com/articles/janki-method) and [Janki Method Refined](https://www.semicolonandsons.com/articles/janki-method-refined); Nielsen, [Augmenting long-term memory](https://augmentingcognition.com/ltm.html); Matuschak, [Application prompts should vary when repeated](https://notes.andymatuschak.org/zSisETSpZBCgZH4rFNHRcnC); Gwern, [Spaced repetition for efficient learning](https://gwern.net/spaced-repetition); Skerritt, [Memorising LeetCode by using Anki as a scheduler](https://skerritt.blog/memorising-leetcode-by-using-anki-as-a-scheduler/).
+
 ## The five attributes
 
 Matuschak's test for a prompt. Run a doubtful card against all five.
@@ -125,6 +138,84 @@ puts the ceiling at "3 logical bullets". On format, they split by count:
 The size problem is the count, not the markup. On 2026-10-25, 107 of the 291 current Q&A Backs
 written as HTML lists held four or more items. The linter counts list items, so a long list is
 flagged like a long sentence.
+
+## Code and source code
+
+No study compares code-writing cards with prose concept cards for working programmers. The rules in
+`SKILL.md` combine four kinds of evidence, and every one of them is indirect.
+
+You get better at the retrieval you practise. Across 122 experiments, transfer from testing was
+strongest when the practice and the test shared the response (Pan and Rickard, 2018). Fact quizzes
+did not improve higher-order test questions, higher-order quizzes did not improve fact questions,
+and a mix did well on both (Agarwal, 2019, with college and middle-school students and prose
+passages). A card that asks for the call trains typing the call; a card that asks why trains the
+why. Neither substitutes for the other.
+
+No order wins. Conceptual and procedural knowledge build each other in both directions, and no study
+compares concepts first with procedures first. The one classroom ordering experiment found that
+alternating lessons taught procedures better than a block of concepts first, with concepts learned
+about equally (Rittle-Johnson, Schneider and Star, 2015; Rittle-Johnson and Koedinger, 2009, with
+schoolchildren). Practitioners agree on one order only: understand the code and run it, then card it
+(Wozniak, rules 1 and 2; Kinsella; Nielsen).
+
+Short answers. Producing an answer beats studying it for material with few interacting parts, and
+the advantage shrinks or reverses as the parts multiply, unless the learner is already expert
+(Chen, Kalyuga and Sweller, 2015; van Gog and Sweller, 2015). Karpicke and Aue (2015) dispute the
+reversal, but their own reanalysis supports only a small benefit. Long answers are also graded
+leniently: middle-school students credited 73 percent of their wrong definitions with no standard
+and 44 percent with the correct one in view (Lipko and colleagues, 2009), and in college students
+lenient grading went with worse retention (Dunlosky and Rawson, 2012). Experts do not store code
+verbatim. They recall a real program far better than shuffled code, and organise code by what it
+does rather than by syntax (Shneiderman, 1976; Adelson, 1981; Soloway and Ehrlich, 1984).
+
+Completion and prediction fit a card. Novices who completed programs built programs better than
+those who wrote them from scratch (van Merriënboer, 1990), Parsons problems took less time than
+writing for the same learning (Ericson, Margulieux and Rick, 2017), and novices who predicted what
+code prints learned more than those taught by tell-and-practice (Tucker and colleagues, 2024,
+d = 0.36). A code cloze and a "what does this return" card are their card-sized forms. A prediction
+card repeated verbatim turns into recall of one answer, so write variants when the rule is the point
+(Matuschak).
+
+Patterns are worth keeping whole. Experts hold programming plans, generic fragments for stereotyped
+goals, and the rules for combining them (Soloway and Ehrlich, 1984), so a pattern is the unit an
+expert remembers where a particular example is not. Rearranging and completing the lines of a
+pattern taught it better than writing or tracing code, and improved code writing in general as much
+as writing practice did (Weinman, Fox and Hearst, 2021, with 237 students). Producing an answer also
+overtakes studying for complex material once the learner knows the domain (Chen, Kalyuga and
+Sweller, 2015, Experiment 2), which describes a working programmer meeting a pattern in a language
+they already write. A larger card is still harder to grade, which is why a skeleton carries a
+`Check:` line: grading against listed parts cut overconfidence further than seeing the whole answer
+(Lipko and colleagues, 2009). Nielsen keeps a larger question as an integrative card on top of its
+atomic pieces. Knowing when a pattern applies is a separate skill: mixing problem types in practice
+beat blocking them by type a week later (Rohrer and Taylor, 2007, with college students), and a
+review queue already mixes topics.
+
+Whole programs are practice. Spaced repetition keeps a skill and practice raises it (Gwern).
+Matuschak sketches a separate expanding queue of exercises for skills, and Skerritt schedules whole
+LeetCode problems through Anki as pointers, solved outside it each time they fall due.
+
+A codebase. The code stays there to re-read, and it changes by the thousand elements a day (Fritz
+and colleagues, 2010). Developers recall its method-level detail worse than its architecture and
+intent, and say that detail is not worth remembering (Krüger and Hebig, 2020). What they find
+hardest to recover is what the code does not say: 66 percent rated understanding the rationale
+behind code a serious problem (LaToza, Venolia and DeLine, 2006, with Microsoft engineers),
+rationale and intent were the most frequent hard-to-answer questions (LaToza and Myers, 2010), and
+why code was written a particular way was among the searches most often deferred (Ko, DeLine and
+Venolia, 2007). Nielsen cards an API while a project uses it and deletes the cards after, Kinsella
+came to regret his cards on third-party library APIs, and Wozniak cards a call only when reviewing
+it costs less than looking it up.
+
+This collection, read 2026-11-12, computer-science decks. Within the same Tool or Topic, one-line
+code answers had a lower Again rate than prose answers in 16 of 20 shared values (median 17 against
+27 percent) and took a median 7 seconds against 11. At intervals of three weeks or more, one-line
+code answers passed 77 percent of reviews (n = 176) and prose answers over 60 characters 23 percent
+(n = 61). Multi-line code passed 56 to 66 percent at every length, with no drop from two or three
+lines to four to six, but its cost climbed with length: a median 14, 18, 31 and 47 seconds per
+answer at two to three, four to six, seven to ten, and eleven or more lines, with 12, 16, 29 and 42
+percent of answers at Anki's 60-second cap. Scenario cards, which give code or a table and ask for
+the code that uses it, did best among the long ones (12 percent Again, 83 percent passed after three
+weeks, n = 18) at 46 seconds a review. This is observational: what gets written as one line is
+probably also easier, and long answers are graded leniently.
 
 ## Interference (SuperMemo 11)
 
