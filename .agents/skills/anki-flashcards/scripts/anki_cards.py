@@ -6,6 +6,7 @@ Subcommands:
   inspect <deck>            What note types a deck uses, with real field names.
   topics [--like PATTERN]   Existing Topic and Tool values, so you reuse instead of coining.
   lint <draft.json>         Check drafted notes against the mechanical house rules.
+  inbox                     What waits in the Inbox deck, its state, and where it could be filed.
 
 Never writes to the collection. Adding notes stays with the Anki MCP tools so that the
 approval gate in SKILL.md cannot be bypassed by a script.
@@ -17,6 +18,7 @@ With --strict, warnings also exit 1.
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import re
 import sys
@@ -225,13 +227,13 @@ class Report:
         self.warnings[message].append(where)
 
     @staticmethod
-    def render(grouped: defaultdict, prefix: str) -> tuple[list[str], int]:
+    def render(grouped: defaultdict, prefix: str, limit: int | None = 3) -> tuple[list[str], int]:
         lines, total = [], 0
         for message, wheres in grouped.items():
             total += len(wheres)
-            if len(wheres) > 3:
+            if limit is not None and len(wheres) > limit:
                 lines.append("%s%s  [%d notes: %s and %d more]" % (
-                    prefix, message, len(wheres), ", ".join(wheres[:3]), len(wheres) - 3))
+                    prefix, message, len(wheres), ", ".join(wheres[:limit]), len(wheres) - limit))
             else:
                 lines.append("%s%s  [%s]" % (prefix, message, ", ".join(wheres)))
         return lines, total
@@ -502,6 +504,128 @@ def similar(a: str, b: str) -> bool:
     return overlap >= 0.8
 
 
+# ------------------------------------------------------------------------ inbox
+
+INBOX_DECK = "Inbox"
+
+
+def slug(text: str) -> str:
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
+
+
+def excerpt(raw: str, width: int = 70) -> str:
+    text = strip_html(raw)
+    return text if len(text) <= width else text[: width - 3].rstrip() + "..."
+
+
+def count(n: int, noun: str) -> str:
+    return "%d %s%s" % (n, noun, "" if n == 1 else "s")
+
+
+def cards_info(ids: list) -> list[dict]:
+    """cardsInfo in batches, skipping the empty entries AnkiConnect returns for stale ids."""
+    found: list[dict] = []
+    for start in range(0, len(ids), 500):
+        found += [card for card in call("cardsInfo", cards=ids[start : start + 500]) if card]
+    return found
+
+
+def context_of(fields: dict) -> tuple[str, str] | None:
+    field = next((f for f in CONTEXT_FIELDS if f in fields), None)
+    return (field, strip_html(fields[field]["value"])) if field else None
+
+
+def cmd_inbox(_args) -> int:
+    if not connected():
+        print("AnkiConnect is not reachable. Run 'check' first.")
+        return 1
+    in_inbox = '"deck:%s"' % INBOX_DECK
+    cards = cards_info(call("findCards", query=in_inbox))
+    if not cards:
+        print("%s is empty. Nothing to file." % INBOX_DECK)
+        return 0
+    due = set(call("findCards", query=in_inbox + " is:due"))
+    overdue = call("findCards", query=in_inbox + " prop:due<-7")
+    notes = call("notesInfo", notes=sorted({card["note"] for card in cards}))
+    by_note: defaultdict = defaultdict(list)
+    for card in cards:
+        by_note[card["note"]].append(card)
+
+    # Where cards sharing a context value already live, outside the Inbox and the archived trees.
+    homes: defaultdict = defaultdict(Counter)
+    held: Counter = Counter()
+    for card in cards_info(call("findCards", query='-%s -"deck:_Legacy*"' % in_inbox)):
+        held[card["deckName"]] += 1
+        key = context_of(card["fields"])
+        if key and key[1]:
+            homes[key][card["deckName"]] += 1
+    deck_names = sorted(call("deckNames"))
+    current = [
+        deck
+        for deck in deck_names
+        if deck != INBOX_DECK
+        and not deck.startswith(("_Legacy", INBOX_DECK + "::"))
+        and (deck != "Default" or held[deck])
+    ]
+
+    today = datetime.date.today()
+    added = {note["noteId"]: datetime.date.fromtimestamp(note["noteId"] / 1000) for note in notes}
+    studied = [card for card in cards if card["type"] != 0]
+    oldest = min(added.values())
+    print("%s: %s, %s. %d new, %d studied, %d due now, %d of them more than a week overdue." % (
+        INBOX_DECK, count(len(notes), "note"), count(len(cards), "card"),
+        len(cards) - len(studied), len(studied), len(due), len(overdue)))
+    print("Oldest note added %s, %s ago." % (oldest, count((today - oldest).days, "day")))
+    print("Current decks: %s." % (", ".join("%s (%s)" % (d, count(held[d], "card")) for d in current) or "none"))
+
+    subdecks: defaultdict = defaultdict(list)
+    for note in notes:
+        deck = by_note[note["noteId"]][0]["deckName"]
+        if deck != INBOX_DECK:
+            subdecks[deck].append(note)
+    for deck, members in sorted(subdecks.items()):
+        tag = "client-" + slug(deck.split("::", 1)[1])
+        missing = sum(1 for note in members if tag not in note["tags"])
+        print("Subdeck %s: %s, %d without %s." % (deck, count(len(members), "note"), missing, tag))
+    for deck in deck_names:
+        if deck.startswith(INBOX_DECK + "::") and not any(s == deck or s.startswith(deck + "::") for s in subdecks):
+            print("Subdeck %s: empty, for the user to delete." % deck)
+
+    groups: defaultdict = defaultdict(list)
+    for note in notes:
+        groups[context_of(note["fields"])].append(note)
+    report = Report()
+    for key, members in sorted(groups.items(), key=lambda item: (-len(item[1]), str(item[0]))):
+        if key is None:
+            print("\nNo context field (%s):" % count(len(members), "note"))
+        else:
+            home = homes.get(key)
+            where = ("most cards with it are in %s (%d)" % home.most_common(1)[0]) if home else "no current deck has it"
+            print('\n%s "%s" (%s): %s.' % (key[0], key[1], count(len(members), "note"), where))
+        for note in sorted(members, key=lambda n: n["noteId"]):
+            mine = by_note[note["noteId"]]
+            if all(card["type"] == 0 for card in mine):
+                state = "new"
+            else:
+                state = "studied, due" if any(card["cardId"] in due for card in mine) else "studied"
+            order = sorted(note["fields"], key=lambda f: note["fields"][f]["order"])
+            age = (today - added[note["noteId"]]).days
+            print("  %d  %-12s  added %3dd ago  %s" % (
+                note["noteId"], state, age, excerpt(note["fields"][order[0]]["value"])))
+            fields = {name: value["value"] for name, value in note["fields"].items()}
+            lint_note("note %d" % note["noteId"], {"fields": fields, "tags": note["tags"]},
+                      note["modelName"], order, report)
+
+    lines = (Report.render(report.errors, "  ERROR  ", limit=None)[0]
+             + Report.render(report.warnings, "  WARN   ", limit=None)[0])
+    if lines:
+        print("\nLint findings on these notes:")
+        for line in lines:
+            print(line)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -520,6 +644,8 @@ def main() -> int:
     p_lint.add_argument("draft")
     p_lint.add_argument("--strict", action="store_true", help="exit non-zero on warnings too")
     p_lint.set_defaults(func=cmd_lint)
+
+    sub.add_parser("inbox", help="what waits in the Inbox, and where it could go").set_defaults(func=cmd_inbox)
 
     args = parser.parse_args()
     try:

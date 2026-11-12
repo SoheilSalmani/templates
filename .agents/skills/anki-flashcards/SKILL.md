@@ -1,6 +1,6 @@
 ---
 name: anki-flashcards
-description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repo, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and this collection's own note-type and formatting conventions.
+description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repo, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, or to organize the cards waiting in the Inbox deck. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and this collection's own note-type and formatting conventions.
 allowed-tools: Read, Grep, Glob, WebFetch, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/anki_cards.py:*), mcp__anki__listDecks, mcp__anki__modelNames, mcp__anki__modelFieldNames, mcp__anki__findNotes, mcp__anki__notesInfo, mcp__anki__getTags
 ---
 
@@ -34,7 +34,9 @@ When the source is thin or self-contradictory, say so and card only what it actu
    lever you have, so say out loud what you dropped and why.
 4. Pick the deck, the note type, and the `Topic` or `Tool` value. Run
    `anki_cards.py inspect "<deck>"` to see what the deck already uses and to get real field names.
-   Never guess field names. See `references/note-types.md`.
+   Never guess field names. See `references/note-types.md`. When the user asks for the Inbox or says
+   the cards are not urgent, or when no current deck fits, the deck is `Inbox` (see "The Inbox"
+   below). Never add to a deck whose name starts with `_Legacy`.
 5. Draft to a JSON file in the scratchpad directory, one object per note. Shape:
    `{"deckName": ..., "modelName": ..., "notes": [{"fields": {...}, "tags": [...]}]}`
 6. Self-audit against the checklist below, then run
@@ -118,6 +120,36 @@ rewrite for each. Apply changes with `mcp__anki__updateNoteFields` only after ap
 field, such as turning an `<ol>` Back into a sentence, keeps the card's review history. Splitting a
 bundled card means creating new notes and deleting the old one, which loses its review history, so
 call that out and let the user decide.
+
+## The Inbox
+
+`Inbox` is a top-level deck where cards wait to be filed. The user does not study it, so filing is
+what puts its cards into review.
+
+A card sent to the Inbox gets everything but its deck: note type, `Topic` or `Tool`, tags. The
+context field is what the card shows, and the deck never appears in review. A card from client work
+also gets a `client-<name>` tag such as `client-sanofi`, because the client is the one thing a
+deck said that the card does not. New cards go to `Inbox` itself, never to an `Inbox::<client>`
+subdeck. The subdecks that exist empty out as their notes are filed.
+
+When asked to organize or file the Inbox:
+
+1. Run `anki_cards.py inbox`. It groups the waiting notes by context value and shows where cards
+   with that value already live, which cards were studied and are overdue, the client tag each
+   subdeck still needs, and lint findings.
+2. Propose one row per note: target deck, tags to add, and any fix the audit or the linter found.
+   Decks are broad categories the user studies separately, so most notes go to an existing deck.
+   When nothing fits, propose one new broad deck under a placeholder name and ask the user to name
+   it. Never rebuild the nested tree under `_Legacy`. Report a missing source tag rather than
+   guessing one. The source is usually out of reach by now, so audit the form, and flag a doubtful
+   fact instead of rewriting it. Fixes follow "Reviewing existing cards" above.
+3. Lead with what is decaying. Studied cards keep falling due in the Inbox, and a card that has
+   waited more than two weeks is losing the context it was written in.
+4. After approval, apply fixes and new notes first, then add tags with `mcp__anki__addTags`, then
+   move every card of each note with `mcp__anki__changeDeck`. Read the card ids after the fixes,
+   because a new cloze index makes a new card. A move keeps the card's schedule and review history.
+   Hand the user anything these tools cannot do, such as changing a note type, and name any emptied
+   subdeck for them to delete.
 
 ## Reference files
 

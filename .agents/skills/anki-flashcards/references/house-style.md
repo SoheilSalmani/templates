@@ -148,6 +148,11 @@ Rules:
 - Exactly one source tag per card, naming where the fact came from. Format: a short slug for the
   source, for example `confluence-rcgrwe`, `supermemo-20-rules`, `uv-docs`. This is SuperMemo rule 18
   adapted to note types that have no Source field, and it is what makes a stale fact findable later.
+- A card from client work also carries `client-<name>`, for example `client-sanofi` or
+  `client-air-liquide`. It is not the source tag, which still names the document the fact came
+  from. It keeps the client findable once the card leaves the Inbox, where a subdeck used to say it.
+  A source tag that names a client's document, such as `air-liquide-iac-tencent`, stays a source
+  tag, and the client tag goes beside it.
 - Volatility goes in the card text, not the tag. Write "as of March 2026" in the Back or the cloze
   sentence, because tags are invisible during review.
 

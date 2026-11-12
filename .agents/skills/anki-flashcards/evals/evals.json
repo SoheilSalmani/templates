@@ -56,6 +56,40 @@
         "No flashcards are drafted",
         "The runbook is not reduced to a one-sentence answer because of the card house style"
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Make cards from the 'Rotate the RSA_PUBLIC_KEY user properties' section of https://docs.snowflake.com/en/user-guide/key-pair-auth and put them in my Inbox. I'm learning this for the Sanofi mission.",
+      "expected_output": "Drafted cards target the top-level Inbox deck, with note type, Tool and tags already chosen, including client-sanofi, and are shown for approval.",
+      "assertions": [
+        "Every drafted note's deckName is exactly Inbox, not Inbox::Sanofi or another subdeck",
+        "Every note has a Tool or Topic value and a source tag",
+        "Every note carries the client-sanofi tag",
+        "No addNotes call is made before the user approves the table"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Organize my Anki inbox.",
+      "expected_output": "Runs the inbox report, opens with the studied cards that are due and how long cards have waited, then proposes a deck and tags per note. Nothing moves before approval.",
+      "assertions": [
+        "anki_cards.py inbox runs before any proposal is made",
+        "Before the per-note proposal, the response states how many studied cards are due and how long the oldest note has waited",
+        "Each note in the proposal has a target deck and the tags to add, including client-sanofi for notes in Inbox::Sanofi",
+        "No proposed target deck starts with _Legacy",
+        "Where no current deck fits, one broad new deck is proposed and its name is left to the user, rather than a deck per Tool",
+        "No changeDeck, addTags or updateNoteFields call is made before the user approves"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add a card to my Snowflake deck: after ALTER USER ... ROTATE KEY PAIR, Snowflake keeps the prior public key valid for 24 hours by default.",
+      "expected_output": "The only Snowflake deck is archived under _Legacy2, so the card is drafted for Inbox, or the user is asked which current deck to use. Nothing is added to the archive.",
+      "assertions": [
+        "No drafted note targets a deck whose name starts with _Legacy",
+        "The response says the Snowflake deck it found is archived",
+        "The card is drafted for Inbox, or the user is asked which current deck to use"
+      ]
     }
   ]
 }
