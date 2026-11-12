@@ -52,6 +52,11 @@ Atomicity and content:
   when you want both directions of an acronym or pairing, or for a closed list.
 - Never ask for a set ("what are the five pillars"). Convert it into one cloze card per member, or
   drop it. Listing members in a different order each review actively damages recall (SuperMemo 9).
+- A procedure is an enumeration. Card what carries knowledge: the step people get wrong, the
+  condition that gates the next step, and why a step exists. Skip steps anyone doing the task would
+  infer. Asking for the whole sequence is an optional extra: one sentence for three steps or fewer
+  where each leads to the next, or, when a longer outline itself must be known, a cloze with one
+  index per step (SuperMemo 10).
 - No yes-or-no and no true-or-false Fronts. A coin flip is not retrieval. Rephrase as an open question.
 - No card whose answer is inferable from its own Front. If reading the question hands you the answer,
   the card trains nothing.
@@ -82,7 +87,12 @@ Formatting, in full in `references/house-style.md`:
 - `<code>` for identifiers, flags, paths, and commands. `<i>` for a term being defined.
 - No bold, no emoji, no em dash, no curly quotes, no bold-header bullet lists. Sources full of
   emoji headings and bold (Confluence and Notion especially) must be stripped, not mirrored.
-- `<ul><li>` only for a genuinely short closed list that belongs on one card.
+- Steps on a Back are one sentence, in order, joined with commas and "then":
+  `Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>.`
+  No `<ol>` on a Back. Steps that do not fit one readable sentence are more than one card.
+- `<ol>` lays out a procedure inside a cloze Text, one cloze index per `<li>`, never running across
+  two items. Numbers assert order, so never use `<ol>` for a set, criteria, or conditions.
+- `<ul><li>` only for a closed list of two or three items that belongs on one card.
 - Tags: lowercase kebab-case, sparse, thematic, plus exactly one source tag such as
   `confluence-rcgrwe` or `supermemo-20-rules`.
 
@@ -97,13 +107,15 @@ Walk the drafted set once and ask:
 4. Is every answer traceable to the source, with no inference of your own presented as fact?
 5. Does any Front repeat its own Topic or Tool value?
 6. Is any Back longer than it needs to be?
-7. Would you want this card in six months?
+7. For each procedure, does the step that is easiest to get wrong have a card of its own?
+8. Would you want this card in six months?
 
 ## Reviewing existing cards
 
 When asked to critique or repair cards, fetch them with `mcp__anki__findNotes` and
 `mcp__anki__notesInfo`, run the same audit, and report findings per note id with a concrete
-rewrite for each. Apply changes with `mcp__anki__updateNoteFields` only after approval. Splitting a
+rewrite for each. Apply changes with `mcp__anki__updateNoteFields` only after approval. Rewording a
+field, such as turning an `<ol>` Back into a sentence, keeps the card's review history. Splitting a
 bundled card means creating new notes and deleting the old one, which loses its review history, so
 call that out and let the user decide.
 
@@ -117,7 +129,7 @@ Load these as needed rather than up front:
 - `references/house-style.md`. Formatting, HTML, tags, language, and the prose rules for card text.
   Read this before drafting.
 - `references/principles.md`. The research canon with attribution. Read this when a judgement call
-  is genuinely unclear, for example how to handle an open-ended list or whether two cards on one
-  fact is redundancy or waste.
+  is genuinely unclear, for example how to handle an open-ended list, which parts of a procedure to
+  card, or whether two cards on one fact is redundancy or waste.
 - `references/worked-examples.md`. Before-and-after rewrites of real bad cards. Read this if the
   rules above feel abstract, or to calibrate how short a good Back is.

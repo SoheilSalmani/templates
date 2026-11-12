@@ -61,6 +61,43 @@ several. Past 400, you almost certainly have a bundle: split it.
 The Front is normally under 100 characters. Longer is acceptable only when the extra words remove a
 genuine ambiguity, or when the card presents a concrete case to reason about.
 
+## Steps
+
+A Back that gives steps is one sentence: the steps in order, separated by commas, the last one
+introduced by "then". Open each clause with its verb, so the steps stay as easy to check one at a
+time as list items would be. The connective carries the order, and the dependency between the steps
+is what lets three of them be one retrieval.
+
+Before, a real card from the collection:
+
+```
+Tool:  Snowflake
+Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
+Back:  <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>
+```
+
+After:
+
+```
+Back:  Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>.
+```
+
+The sentence is also a size limit. Three short steps read as one sentence, and a fourth turns it into
+a run-on, which is the signal to split. Markup hides that signal, because a six-item list looks as
+tidy as a three-item one.
+
+`<ol>` has one job: laying out a procedure in a cloze Text, one cloze per `<li>`, each step cut to the
+words that matter, always in the same order so that the position becomes part of the cue:
+
+```
+Topic: Networking
+Text:  The TCP handshake: <ol><li>{{c1::SYN}}</li><li>{{c2::SYN-ACK}}</li><li>{{c3::ACK}}</li></ol>
+```
+
+Keep each deletion inside its own `<li>`. Anki parses cloze markers as text, so a deletion that runs
+across `</li><li>` renders as broken HTML. Numbers tell the reader that the order matters, so a set,
+a list of criteria, or two conditions that must both hold never goes in an `<ol>`.
+
 ## HTML
 
 Anki fields hold HTML. Use it sparingly.
@@ -69,7 +106,8 @@ Anki fields hold HTML. Use it sparingly.
 | --- | --- |
 | `<code>` for identifiers, flags, paths, commands, field names | `<b>` or `<strong>` for emphasis |
 | `<i>` for a term being defined or a foreign phrase | `<b>` to mark the answer inside the Back |
-| `<ul><li>` for a short closed list on one card | `<h1>` to `<h6>`, headings inside a field |
+| `<ul><li>` for a closed list of two or three items | `<h1>` to `<h6>`, headings inside a field |
+| `<ol><li>` in a cloze Text laying out a procedure, one cloze per item | `<ol>` on a Back, or around items in no particular order |
 | `<br>` to separate two short related lines | `<div>` wrappers added by hand |
 | `<img src="...">` for a diagram that is the answer | Tables, unless the fact genuinely is a table |
 | `&amp;`, `&lt;`, `&gt;` escaped correctly | Raw `&` or `<` in text |
