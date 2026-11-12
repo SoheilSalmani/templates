@@ -34,6 +34,14 @@
           "Back": "Set the new public key in <code>RSA_PUBLIC_KEY_2</code>, switch clients to the new private key, then <code>UNSET RSA_PUBLIC_KEY</code>."
         },
         "tags": ["snowflake-docs"]
+      },
+      {
+        "fields": {
+          "Tool": "AWS Systems Manager",
+          "Front": "What is the ARN format of an SSM parameter named <code>/app/prod/db-password</code>?",
+          "Back": "<code>arn:&lt;partition&gt;:ssm:&lt;region&gt;:&lt;account&gt;:parameter/app/prod/db-password</code>"
+        },
+        "tags": ["aws-docs"]
       }
     ]
   },
