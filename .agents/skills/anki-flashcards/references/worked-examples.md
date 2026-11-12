@@ -1,8 +1,9 @@
 # Worked examples
 
-Every "before" below is a real card from this collection. Most came from a Confluence page on Sanofi
-R&D structure and were deleted for being bad. Read these to calibrate how short a good Back is and
-how much gets cut.
+Every "before" below started as a real card from this collection. Most came from a client's
+Confluence page on its R&D structure and were deleted for being bad. The client is called Acme here,
+and its committees and figures are renamed. Read these to calibrate how short a good Back is and how
+much gets cut.
 
 ## 1. Two facts in one card
 
@@ -11,8 +12,8 @@ The single most common failure. A Front with "and" in it is two cards.
 Before, note type `Basic`:
 
 ```
-Front: Sanofi R&D: what does the committee <b>IDCC</b> stand for, and what does it decide?
-Back:  <b>Integrated Development &amp; Commercial Council</b> — <b>major investment decisions</b>.
+Front: Acme R&D: what does the committee <b>PIC</b> stand for, and what does it decide?
+Back:  <b>Portfolio Investment Council</b> — <b>major investment decisions</b>.
 ```
 
 Four problems: two questions in one Front, the topic duplicated in the Front, bold used as decoration,
@@ -22,13 +23,13 @@ and an em dash. After, two notes:
 Q&A by topic
 Topic: R&D governance
 Front: Which committee makes major investment decisions?
-Back:  The IDCC.
-Tags:  confluence-rcgrwe
+Back:  The PIC.
+Tags:  confluence-acme-rd
 
 Cloze by topic
 Topic: R&D governance
-Text:  {{c2::IDCC}} stands for {{c1::Integrated Development and Commercial Council}}.
-Tags:  confluence-rcgrwe
+Text:  {{c2::PIC}} stands for {{c1::Portfolio Investment Council}}.
+Tags:  confluence-acme-rd
 ```
 
 The cloze note gives both directions of the acronym from one note, which is SuperMemo rule 17
@@ -40,8 +41,8 @@ Before:
 
 ```
 Basic
-Front: Sanofi R&D: within what deadline must the GPH distribute committee decisions to all core team members?
-Back:  <b>7 business days.</b>
+Front: Acme R&D: within what deadline must the GPL distribute committee decisions to all core team members?
+Back:  <b>5 business days.</b>
 ```
 
 The `Basic` type has no context field, which is why the author reached for a prefix. Switching note
@@ -52,9 +53,9 @@ After:
 ```
 Q&A by topic
 Topic: R&D governance
-Front: Within how long must the GPH distribute committee decisions to core team members?
-Back:  7 business days.
-Tags:  confluence-rcgrwe
+Front: Within how long must the GPL distribute committee decisions to core team members?
+Back:  5 business days.
+Tags:  confluence-acme-rd
 ```
 
 ## 3. A set that should not be a card
@@ -63,8 +64,8 @@ Before:
 
 ```
 Basic
-Front: Sanofi R&D: how is R&D organized at the <b>top level</b>?
-Back:  Around <b>5 main functional pillars</b>, each with its own <b>Function Head</b>:<br><br>Research · Development (DEV) · CMC · TMU · Regulatory Affairs
+Front: Acme R&D: how is R&D organized at the <b>top level</b>?
+Back:  Around <b>5 main functional pillars</b>, each with its own <b>Function Head</b>:<br><br>Research · Development (DEV) · CMC · Medical Affairs · Regulatory Affairs
 ```
 
 Asking for five unordered members at once is SuperMemo rule 9. The order will differ every review.
@@ -73,9 +74,9 @@ others as context:
 
 ```
 Cloze by topic
-Topic: Sanofi R&D
-Text:  The five R&D pillars, each with its own Function Head: {{c1::Research}}, {{c2::Development}}, {{c3::CMC}}, {{c4::TMU}}, {{c5::Regulatory Affairs}}.
-Tags:  confluence-rcgrwe
+Topic: Acme R&D
+Text:  The five R&D pillars, each with its own Function Head: {{c1::Research}}, {{c2::Development}}, {{c3::CMC}}, {{c4::Medical Affairs}}, {{c5::Regulatory Affairs}}.
+Tags:  confluence-acme-rd
 ```
 
 Keep the count in the stem. "The five" tells the reviewer when they are done.
@@ -85,13 +86,13 @@ Keep the count in the stem. "The five" tells the reviewer when they are done.
 Before, seven cards of this shape in one batch:
 
 ```
-Front: Sanofi R&D: what does the committee <b>TWG</b> stand for, and what does it decide?
-Front: Sanofi R&D: what does the committee <b>RWG</b> stand for, and what does it decide?
-Front: Sanofi R&D: what does the committee <b>DWG</b> stand for, and what does it decide?
+Front: Acme R&D: what does the committee <b>TRG</b> stand for, and what does it decide?
+Front: Acme R&D: what does the committee <b>LRG</b> stand for, and what does it decide?
+Front: Acme R&D: what does the committee <b>DRG</b> stand for, and what does it decide?
 ...
 ```
 
-TWG, RWG, DWG, TARC, IDCC, BRAC, PSC in identical wording. Under review these blur into each other,
+TRG, LRG, DRG, TAB, PIC, BRC, LSC in identical wording. Under review these blur into each other,
 which is the interference failure of SuperMemo rule 11. Worse, the batch also contained five reverse
 cards ("which committee makes major investment decisions"), so twelve cards covered seven facts with
 heavy overlap.
@@ -102,14 +103,14 @@ The fix is to card fewer of them and to differentiate by content rather than by 
 Q&A by topic
 Topic: R&D governance
 Front: Which committee decides whether a target moves from M0 to M1?
-Back:  The Target Working Group.
-Tags:  confluence-rcgrwe
+Back:  The Target Review Group.
+Tags:  confluence-acme-rd
 
 Q&A by topic
 Topic: R&D governance
 Front: What decides whether a drug candidate advances between milestone gates?
 Back:  Endorsement by an R&D committee. Nothing advances from M0 through to File without it.
-Tags:  confluence-rcgrwe
+Tags:  confluence-acme-rd
 ```
 
 The second card carries the idea that actually matters. The remaining five acronym expansions are
@@ -120,7 +121,7 @@ glossary lookups, not knowledge worth review time. Cut them, and say you cut the
 Before:
 
 ```
-Front: Sanofi R&D: what does the pillar <b>CMC</b> stand for?
+Front: Acme R&D: what does the pillar <b>CMC</b> stand for?
 Back:  <b>C</b>hemistry, <b>M</b>anufacturing &amp; <b>C</b>ontrol
 ```
 
@@ -132,9 +133,9 @@ Kept version, if kept:
 
 ```
 Cloze by topic
-Topic: Sanofi R&D
+Topic: Acme R&D
 Text:  {{c2::CMC}} stands for {{c1::Chemistry, Manufacturing and Control}}.
-Tags:  confluence-rcgrwe
+Tags:  confluence-acme-rd
 ```
 
 ## 6. Binary card
@@ -176,10 +177,10 @@ structure. Both facts belong in the card:
 
 ```
 Q&A by topic
-Topic: Sanofi R&D
+Topic: Acme R&D
 Front: How many functional pillars was R&D organised around as of March 2026?
 Back:  Five, each with its own Function Head.
-Tags:  confluence-rcgrwe
+Tags:  confluence-acme-rd
 ```
 
 Without "as of March 2026" this card silently becomes wrong after the next reorganisation, and there
@@ -221,10 +222,10 @@ Tags:  snowflake-docs
 The first is a field update, so it keeps its review history. The second is a new note, and the one
 to keep if you keep only one: it asks for the transition, which is where the procedure goes wrong.
 
-## What the whole Sanofi set should have looked like
+## What the whole Acme set should have looked like
 
 The original run produced 27 notes and 34 cards from that page. A disciplined pass yields roughly
-10 to 12 notes: the GPH role and its two hard obligations, the GPT and its purpose, the project
+10 to 12 notes: the GPL role and its two hard obligations, the GPT and its purpose, the project
 manager analogy, the pillar list as one cloze note, the milestone gate mechanism, the matrix
 explanation, and two or three committee facts chosen for what they decide. Everything else on that
 page is a glossary, and glossaries are for looking things up.

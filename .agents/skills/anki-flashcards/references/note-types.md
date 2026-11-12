@@ -50,11 +50,11 @@ Back:  {{FrontSide}}
 `{{cloze:Text}}` on both sides of the card.
 
 So the reviewer already sees the topic on its own styled line. A Front of
-`"Sanofi R&D: which committee approves Gate 4?"` renders as:
+`"Acme R&D: which committee approves Gate 4?"` renders as:
 
 ```
 R&D governance
-Sanofi R&D: which committee approves Gate 4?
+Acme R&D: which committee approves Gate 4?
 ```
 
 Write `"Which committee approves Gate 4?"` and let the field do its job. This is SuperMemo rule 16,

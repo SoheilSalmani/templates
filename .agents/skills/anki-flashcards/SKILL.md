@@ -72,7 +72,7 @@ Atomicity and content:
 Phrasing:
 
 - The Front never carries the `Topic` or `Tool` value as a label prefix. The note type renders it
-  above the question already, so `"Sanofi R&D: which committee ..."` is redundant. Naming the subject
+  above the question already, so `"Acme R&D: which committee ..."` is redundant. Naming the subject
   inside the question is fine when it reads better, as in "What does `--frozen` do in `uv run`?".
 - Shortest wording that stays unambiguous. Cut "What is the ...?" to the noun phrase when it reads
   cleanly, and cut preamble that the Topic line already supplies.
@@ -97,7 +97,7 @@ Formatting, in full in `references/house-style.md`:
   conditions.
 - `<ul><li>` only for a closed list of two or three items that belongs on one card.
 - Tags: lowercase kebab-case, sparse, thematic, plus exactly one source tag such as
-  `confluence-rcgrwe` or `supermemo-20-rules`.
+  `confluence-acme-rd` or `supermemo-20-rules`.
 
 ## Self-audit before showing cards
 
@@ -129,7 +129,7 @@ what puts its cards into review.
 
 A card sent to the Inbox gets everything but its deck: note type, `Topic` or `Tool`, tags. The
 context field is what the card shows, and the deck never appears in review. A card from client work
-also gets a `client-<name>` tag such as `client-sanofi`, because the client is the one thing a
+also gets a `client-<name>` tag such as `client-acme`, because the client is the one thing a
 deck said that the card does not. New cards go to `Inbox` itself, never to an `Inbox::<client>`
 subdeck. The subdecks that exist empty out as their notes are filed.
 
