@@ -72,7 +72,7 @@ CONJUNCTION_OK_RE = re.compile(
 FILLER_RE = re.compile(
     r"\b(note that|it is important to note|keep in mind that|basically|essentially)\b", re.I
 )
-# "Sanofi R&D: what does ..." and friends. The label belongs in the context field.
+# "Acme R&D: what does ..." and friends. The label belongs in the context field.
 TOPIC_PREFIX_RE = re.compile(r"^\s*([A-Z][^?.!:]{2,40}:)\s")
 SET_SEPARATOR_RE = re.compile(r"[·•;]|,\s|<br\s*/?>", re.I)
 # `&lt;` and its kind end in a semicolon that separates nothing.
@@ -413,7 +413,7 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
                 % (tag, re.sub(r"[^a-z0-9]+", "-", str(tag).lower()).strip("-") or "source-slug")
             )
     if not tags:
-        report.warn(where, "no tags. Every card needs a source tag, for example 'confluence-rcgrwe'.")
+        report.warn(where, "no tags. Every card needs a source tag, for example 'confluence-acme-rd'.")
 
 
 def cmd_lint(args) -> int:

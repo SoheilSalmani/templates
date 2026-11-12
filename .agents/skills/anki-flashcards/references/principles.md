@@ -140,7 +140,7 @@ Countermeasures, in order of preference:
 1. Card fewer of them. Six near-identical facts you half-remember are worth less than two you know.
 2. Differentiate by content. Ask for the distinguishing property, not the label. "Which committee
    makes major investment decisions" separates cleanly from "which committee evaluates benefit and
-   risk", where "what does IDCC stand for" and "what does BRAC stand for" do not.
+   risk", where "what does PIC stand for" and "what does BRC stand for" do not.
 3. Add a personal or concrete hook (rules 14 and 15), such as the one decision you actually saw a
    committee make.
 4. Space the introduction. Card two today and two next week rather than six at once.

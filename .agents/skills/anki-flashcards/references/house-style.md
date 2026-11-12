@@ -49,7 +49,7 @@ What is the difference between a temporary setting and a permanent setting in Vi
 Which tool is used to quickly scaffold a Python package containing a Dagster <code>Definitions</code> object?
 ```
 
-What is wrong is `"uv: what does --frozen do?"` or `"Sanofi R&D: which committee approves Gate 4?"`.
+What is wrong is `"uv: what does --frozen do?"` or `"Acme R&D: which committee approves Gate 4?"`.
 The reviewer reads the context line, then reads it again. Drop the prefix, keep the sentence natural.
 
 ## Length
@@ -148,17 +148,17 @@ Straight from the humanizer patterns, restricted to the ones that show up in car
 Rules:
 
 - Lowercase kebab-case. Not Title Case, not `snake_case`, and no `&`.
-  `Sanofi`, `R&D`, `Governance`, `Organization` are all wrong here.
+  `Acme`, `R&D`, `Governance`, `Organization` are all wrong here.
 - Sparse. Many good notes carry zero topical tags because the deck and the Topic field already say
   what the card is about. Add a tag only when it expresses something the deck does not, typically a
   cross-cutting theme you would want to search on later.
 - Exactly one source tag per card, naming where the fact came from. Format: a short slug for the
-  source, for example `confluence-rcgrwe`, `supermemo-20-rules`, `uv-docs`. This is SuperMemo rule 18
+  source, for example `confluence-acme-rd`, `supermemo-20-rules`, `uv-docs`. This is SuperMemo rule 18
   adapted to note types that have no Source field, and it is what makes a stale fact findable later.
-- A card from client work also carries `client-<name>`, for example `client-sanofi` or
-  `client-air-liquide`. It is not the source tag, which still names the document the fact came
+- A card from client work also carries `client-<name>`, for example `client-acme` or
+  `client-globex`. It is not the source tag, which still names the document the fact came
   from. It keeps the client findable once the card leaves the Inbox, where a subdeck used to say it.
-  A source tag that names a client's document, such as `air-liquide-iac-tencent`, stays a source
+  A source tag that names a client's document, such as `globex-iac-guide`, stays a source
   tag, and the client tag goes beside it.
 - Volatility goes in the card text, not the tag. Write "as of March 2026" in the Back or the cloze
   sentence, because tags are invisible during review.
