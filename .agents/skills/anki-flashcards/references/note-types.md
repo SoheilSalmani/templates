@@ -33,6 +33,12 @@ unless the fact genuinely reads better as a cloze.
 | `Language Reactor - Phrase` | Written by the Language Reactor browser extension. Do not hand-author. |
 | `Recipe`, `Coding Exercises`, `Practice Activity`, `Tutorial (platform-specific)`, `Keyboard Layout`, `Vocabulary (Chinese)`, `Alphabet (Vietnamese)` | Purpose-built for one narrow workflow each. Use only when the user asks for that specific kind of note. |
 
+One of these is worth knowing when a source calls for writing a whole function or program, which is
+practice rather than a card. `Coding Exercises` has two fields, `Repository` and `Range`, and its
+one card reads "Finish exercices {{Range}} in the <code>{{Repository}}</code> repository." Anki
+schedules the session, and the work happens in an editor. Offer it instead of a long code Back, and
+only the user can name the repository: never invent one.
+
 ## How the context field renders
 
 This is the reason the Front must not repeat the topic. `Q&A by topic` template:

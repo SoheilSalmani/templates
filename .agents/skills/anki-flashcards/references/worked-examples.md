@@ -222,6 +222,97 @@ Tags:  snowflake-docs
 The first is a field update, so it keeps its review history. The second is a new note, and the one
 to keep if you keep only one: it asks for the transition, which is where the procedure goes wrong.
 
+## 10. A whole program as a card
+
+A real card from the collection, back at a 4-day interval after 32 answers and 28 minutes of review:
+
+```
+Q&A (for a tool)
+Tool:  dlt
+Front: Write an example that uses the REST API source.
+Back:  <pre><code>import dlt
+from dlt.sources.rest_api import rest_api_source
+
+source = rest_api_source({
+    "client": {
+        "base_url": "https://api.example.com/",
+        ...
+    },
+    "resources": ["posts", "comments"],
+})
+...
+load_info = pipeline.run(source)
+...</code></pre>
+```
+
+Twenty-three lines of a documentation example. Any working pipeline is a right answer, so the grade
+is a guess, and every review costs a minute. Three things in it are worth knowing without looking:
+the function that builds the source, the shape of its configuration, and the call that loads it.
+After, three notes:
+
+```
+Q&A (for a tool)
+Tool:  dlt
+Front: Which function builds a dlt source from a REST API configuration?
+Back:  <code>rest_api_source()</code>
+
+Cloze (for a tool)
+Tool:  dlt
+Text:  <pre><code>source = rest_api_source({
+    "{{c1::client}}": {"base_url": "https://api.example.com/"},
+    "{{c2::resources}}": ["posts", "comments"],
+})</code></pre>
+
+Q&A (for a tool)
+Tool:  dlt
+Front: Which call loads a dlt source through a pipeline?
+Back:  <code>pipeline.run(source)</code>
+```
+
+If the user builds these pipelines every week, their shape is a pattern, and one skeleton card on
+top of those three is worth it:
+
+```
+Q&A (for a tool)
+Tool:  dlt
+Front: Write the three calls that load a REST API into DuckDB with dlt, from a configuration <code>config</code>.
+Back:  <pre><code>source = rest_api_source(config)
+pipeline = dlt.pipeline(pipeline_name="...", destination="duckdb", dataset_name="...")
+pipeline.run(source)</code></pre>Check: the source is built first, <code>destination</code> on the pipeline, <code>run</code> takes the source.
+```
+
+Writing the whole pipeline, client settings and all, is an exercise: in an editor, against a real
+API, when the project needs it, or on a schedule through a `Coding Exercises` note if the user keeps
+an exercise repository. Splitting means new notes, so the old card's history goes with it. Say so.
+
+## 11. A set written as code
+
+A real card, at a 1-day interval after 41 answers, 7 lapses and 32 minutes of review:
+
+```
+Q&A by topic
+Topic: shadcn/ui
+Front: What are the components that can compose a sidebar?
+Back:  <ul><li><code>Sidebar</code></li><li><code>SidebarProvider</code></li> ... <li><code>SidebarRail</code></li></ul>
+```
+
+Eighteen names in no fixed order is the set of SuperMemo rule 9, and the code font does not change
+that. The "anatomy of the component" and "what can you import" cards in the same decks are this
+card again. Card the few parts whose role the user needs, from the documentation's own
+descriptions, and look the rest up:
+
+```
+Q&A by topic
+Topic: shadcn/ui
+Front: Which component holds the sidebar's collapsible state?
+Back:  <code>SidebarProvider</code>
+
+Q&A by topic
+Topic: shadcn/ui
+Front: Which part of the sidebar scrolls?
+Back:  <code>SidebarContent</code>
+```
+
 ## What the whole Acme set should have looked like
 
 The original run produced 27 notes and 34 cards from that page. A disciplined pass yields roughly

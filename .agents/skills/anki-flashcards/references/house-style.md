@@ -55,8 +55,10 @@ The reviewer reads the context line, then reads it again. Drop the prefix, keep 
 ## Length
 
 The Back is normally one sentence. Two when the second earns its place, as in the Vim card above
-where the contrast is the fact. Past roughly 200 characters, ask whether you are carding one fact or
-several. Past 400, you almost certainly have a bundle: split it.
+where the contrast is the fact. Past roughly 200 characters of prose, ask whether you are carding one
+fact or several. Past 400, you almost certainly have a bundle: split it. Code is counted in lines
+instead: one when it can be, up to six for lines that belong together, up to twelve for a pattern
+skeleton (see Code below).
 
 The Front is normally under 100 characters. Longer is acceptable only when the extra words remove a
 genuine ambiguity, or when the card presents a concrete case to reason about.
@@ -105,6 +107,135 @@ Keep each deletion inside its own `<li>`. Anki parses cloze markers as text, so 
 across `</li><li>` renders as broken HTML. Numbers tell the reader that the order matters, so a set,
 a list of criteria, or two conditions that must both hold never goes in an `<ol>`.
 
+## Code
+
+Pick the form by what the user will do with the code:
+
+| The user will | Front | Back |
+| --- | --- | --- |
+| Type it | The goal, with the names and values the code needs | The code: one line when it can be, up to six when the lines belong together |
+| Write a pattern again and again | The pattern and its setting, with the names to use | The skeleton, at most twelve lines, then a `Check:` line naming the parts to grade |
+| Read it | A short snippet, asking what it returns, what it is for, or which line is wrong | The value, the purpose in one sentence, or the line and why |
+| Recognise its key line | The snippet as a cloze Text, with the line that matters blanked | None, it is a cloze |
+| Decide with it | Why it is built this way, what must hold, what breaks | One reason, in one sentence |
+
+Real cards from the collection, the target:
+
+```
+Topic: JavaScript
+Front: How do you add or update a value in a <code>Map</code>?
+Back:  <pre><code>map.set(key, value);</code></pre>
+
+Topic: Cube template
+Front: Which command deploys a change to <code>charts/cube</code> or its values to dev while keeping the image the release runs?
+Back:  <code>mise run deploy dev --chart-only</code>.
+```
+
+Drop the period after the second when you next edit it: after a command, a period reads as part of
+the command. One-line code answers are the best-kept cards in this collection's computer-science
+decks, and long code Backs among the costliest (see `principles.md`).
+
+Before, "write an example", a real card:
+
+```
+Topic: React
+Front: Write an example of a component that uses <code>useMemo()</code>.
+Back:  <pre><code>import { useMemo } from 'react';
+
+function TodoList({ todos, tab }) {
+  const visibleTodos = useMemo(
+    () =&gt; filterTodos(todos, tab),
+    [todos, tab]
+  );
+  // ...
+}</code></pre>
+```
+
+Any component that calls `useMemo` is a right answer, so the reviewer grades against one arbitrary
+example, nine lines long. The fact is the call. After:
+
+```
+Topic: React
+Front: Which call caches the result of <code>filterTodos(todos, tab)</code> between renders?
+Back:  <code>useMemo(() =&gt; filterTodos(todos, tab), [todos, tab])</code>
+```
+
+The dependency list is part of the answer, and only one is right: every reactive value the
+calculation reads.
+
+Twins are the other common waste. The collection holds six pairs of Snowflake Scripting blocks, one
+"that can be run in Snowsight" and one for the Snowflake CLI or the Python connector. Within a pair
+the code is the same apart from the wrapper the CLI needs, so twelve cards of 5 to 15 lines test one
+fact. Card the difference and its reason:
+
+```
+Topic: Snowflake Scripting
+Front: How do you run an anonymous block from the Snowflake CLI or the Python connector's <code>execute_string()</code>?
+Back:  Pass it to <code>EXECUTE IMMEDIATE</code> as a string literal: <code>EXECUTE IMMEDIATE $$ ... $$</code>.
+
+Topic: Snowflake Scripting
+Front: Why must the Snowflake CLI receive a Snowflake Scripting block as a string literal?
+Back:  It does not parse Snowflake Scripting blocks correctly, as of November 2026.
+```
+
+A code cloze blanks the line or token that matters, inside a snippet cut to what the blank needs.
+Code carries two characters that Anki's cloze syntax claims. A real card:
+
+```
+Topic: Rust
+Text:  Only types that {{c1::implement <code>fmt::Display</code>}} can be formatted with <code>{{c2::{}}}</code>.
+```
+
+Anki reads whatever follows a `::` inside a deletion as a hint, so the first card shows "Display"
+as the hint of its own blank and its answer stops at "implement fmt". A deletion also ends at the
+first `}}`, so the second card's answer is `{` and the closing brace stays in plain sight. An empty
+HTML comment between the characters fixes both and renders as nothing:
+
+```
+Text:  Only types that {{c1::implement <code>fmt:<!-- -->:Display</code>}} can be formatted with <code>{{c2::{}<!-- -->}}</code>.
+```
+
+Rust and C++ paths, Jinja, Helm and Go templates, JavaScript objects, and format strings all hit
+this. The linter catches both.
+
+A pattern the user writes again and again is the one place for a longer Back. A context manager
+written as a generator, as a skeleton:
+
+```
+Topic: Python
+Front: Write a generator-based context manager <code>timed</code> that prints how long its block took, even when the block raises.
+Back:  <pre><code>@contextmanager
+def timed():
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        print(time.perf_counter() - start)</code></pre>Check: setup before <code>yield</code>, <code>yield</code> inside <code>try</code>, cleanup in <code>finally</code>.
+```
+
+The Front fixes the names and the behaviour, so one skeleton is right, and the Back holds nothing
+incidental: no imports, no usage. The `Check:` line names what the review is graded on, because
+someone grading a long answer from memory credits most near misses. When you show such a card, tell
+the user to write the skeleton out, on paper or in an editor rather than in their head, before
+revealing it, and to press Again when any part on the Check line is missing.
+
+The skeleton is the integrative card. The cards it cannot hold come first: when to reach for the
+pattern, and the part people get wrong.
+
+```
+Topic: Python
+Front: Why does a generator-based context manager put its <code>yield</code> inside <code>try</code>?
+Back:  An exception in the <code>with</code> block is raised at the <code>yield</code>, so only a <code>finally</code> still runs the cleanup.
+```
+
+For a design pattern such as Strategy or Builder, most of what is worth keeping is prose: the
+problem it answers, and what it costs against the simpler alternative. Card the language's own form
+of it as code, which is often shorter than the book's (a Python strategy is usually a function passed
+as an argument), and write a skeleton card only for the patterns the user actually writes. A
+skeleton reviewed in the same words every time turns into recall of that one skeleton. When
+applying the pattern is the point, add a note that sets it in a second context, or make it an
+exercise.
+
 ## HTML
 
 Anki fields hold HTML. Use it sparingly.
@@ -116,8 +247,9 @@ Anki fields hold HTML. Use it sparingly.
 | `<ul><li>` for a closed list of two or three items | `<h1>` to `<h6>`, headings inside a field |
 | `<ol><li>` for three ordered steps on a Back, or one cloze per item in a cloze Text | `<ol>` around items in no particular order, or for two steps |
 | `<br>` to separate two short related lines | `<div>` wrappers added by hand |
+| `<pre><code>` for more than one line of code | A whole program on a Back |
 | `<img src="...">` for a diagram that is the answer | Tables, unless the fact genuinely is a table |
-| `&amp;`, `&lt;`, `&gt;` escaped correctly | Raw `&` or `<` in text |
+| `&amp;`, `&lt;`, `&gt;` escaped correctly, inside code too | Raw `&` or `<` in text or code |
 
 The editor sometimes leaves `<div>` wrappers and `&nbsp;` in existing notes. Do not replicate those
 deliberately, and do not go out of your way to strip them from notes you are not otherwise editing.

@@ -1,6 +1,6 @@
 ---
 name: anki-flashcards
-description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repo, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, or to organize the cards waiting in the Inbox deck. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and this collection's own note-type and formatting conventions.
+description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repository or source code, API docs, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, or to organize the cards waiting in the Inbox deck. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and this collection's own note-type and formatting conventions.
 allowed-tools: Read, Grep, Glob, WebFetch, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/anki_cards.py:*), mcp__anki__listDecks, mcp__anki__modelNames, mcp__anki__modelFieldNames, mcp__anki__findNotes, mcp__anki__notesInfo, mcp__anki__getTags
 ---
 
@@ -31,7 +31,8 @@ When the source is thin or self-contradictory, say so and card only what it actu
    offer to launch it with `open -a Anki`, then wait for AnkiConnect on port 8765.
 3. Write a fact inventory: one line per candidate fact, in plain text, before any card formatting.
    Then cut. Most sources deserve 5 to 15 cards, not one per sentence. Cutting is the main quality
-   lever you have, so say out loud what you dropped and why.
+   lever you have, so say out loud what you dropped and why. From code or API docs, mark each fact
+   with what the user will do with it: type it, read it, or decide with it (see Code below).
 4. Pick the deck, the note type, and the `Topic` or `Tool` value. Run
    `anki_cards.py inspect "<deck>"` to see what the deck already uses and to get real field names.
    Never guess field names. See `references/note-types.md`. When the user asks for the Inbox or says
@@ -51,7 +52,8 @@ Atomicity and content:
 
 - One card, one retrieval. A Front containing "and", "or", a slash, or two question marks is two cards.
 - Prefer a question-and-answer card. Reach for cloze when the fact reads naturally as a sentence,
-  when you want both directions of an acronym or pairing, or for a closed list.
+  when you want both directions of an acronym or pairing, for a closed list, or to blank the line
+  that matters in a code snippet.
 - Never ask for a set ("what are the five pillars"). Convert it into one cloze card per member, or
   drop it. Listing members in a different order each review actively damages recall (SuperMemo 9).
 - A procedure is an enumeration. Card what carries knowledge: the step people get wrong, the
@@ -69,6 +71,32 @@ Atomicity and content:
 - Skip facts that are trivially derivable, that you would look up rather than recall, or that only
   matter once.
 
+Code, from source files, API docs, or a codebase the user works in:
+
+- Card the use. A fact the user will type (a call, a command, a flag, a config key) gets a
+  production card: the Front states the goal with the names and values it needs, and the Back is
+  the code. Code they will read goes on the Front, asking what it returns, what it is for, or which
+  line is wrong. What they will decide with (why it is built this way, what must hold, what breaks)
+  gets a prose card with a one-reason answer. Neither kind trains the other, so mix them within a
+  topic rather than doing one first.
+- Size a code answer by what it holds. One line is the best-kept card. Up to six lines is fine when
+  they belong together, such as an idiom. Past six a review takes about twice as long, so only a
+  pattern the user writes again and again goes further, up to twelve lines, as a skeleton: the
+  Front names the pattern and its setting, the Back holds only the lines that make the pattern and
+  then a `Check:` line naming the parts to grade, and the card sits on top of cards for its key line
+  and for when to use it. Inside a longer snippet, blank the line that matters as a code cloze.
+- Never "Write an example of X": any correct example is right, so the Back cannot grade it. Name the
+  task so that one answer is right.
+- Card a call only when recalling it beats looking it up. Not what the editor completes, such as a
+  full import path.
+- From a codebase, card what the code does not say: why it is written this way, what must hold,
+  where things live at module level, the path a request or a record takes, and the gotchas. Never a
+  verbatim implementation. The code is always there to re-read, and it changes under the card.
+- A whole function, program, or algorithm problem is an exercise, not a Back. Anki can still
+  schedule it: offer a card that points to the exercise, written in an editor and checked against
+  tests, in a deck of its own, or the `Coding Exercises` note type if the user keeps an exercise
+  repository.
+
 Phrasing:
 
 - The Front never carries the `Topic` or `Tool` value as a label prefix. The note type renders it
@@ -85,7 +113,9 @@ Phrasing:
 
 Formatting, in full in `references/house-style.md`:
 
-- Back is normally one short sentence ending in a period.
+- Back is normally one short sentence ending in a period. A code Back is the code alone, with no
+  period: `<code>` for one line, `<pre><code>` for more, and a pattern skeleton ends with its
+  `Check:` line.
 - `<code>` for identifiers, flags, paths, and commands. `<i>` for a term being defined.
 - No bold, no emoji, no em dash, no curly quotes, no bold-header bullet lists. Sources full of
   emoji headings and bold (Confluence and Notion especially) must be stripped, not mirrored.
@@ -96,6 +126,9 @@ Formatting, in full in `references/house-style.md`:
   across two items. Numbers assert order and count, so never use `<ol>` for a set, criteria, or
   conditions.
 - `<ul><li>` only for a closed list of two or three items that belongs on one card.
+- Escape `<`, `>` and `&` inside code, or `List<String>` loses its `<String>`. In a cloze, a `::`
+  inside a deletion starts a hint, and a `}` just before the closing braces ends the deletion early.
+  Break both with `<!-- -->`: `fmt:<!-- -->:Display`, `{}<!-- -->}}`.
 - Tags: lowercase kebab-case, sparse, thematic, plus exactly one source tag such as
   `confluence-acme-rd` or `supermemo-20-rules`.
 
@@ -111,7 +144,9 @@ Walk the drafted set once and ask:
 5. Does any Front repeat its own Topic or Tool value?
 6. Is any Back longer than it needs to be?
 7. For each procedure, does the step that is easiest to get wrong have a card of its own?
-8. Would you want this card in six months?
+8. Does every fact the user will type have a card that makes them produce it? Is every Back over
+   six lines of code a pattern skeleton with its `Check:` line?
+9. Would you want this card in six months?
 
 ## Reviewing existing cards
 
@@ -120,7 +155,9 @@ When asked to critique or repair cards, fetch them with `mcp__anki__findNotes` a
 rewrite for each. Apply changes with `mcp__anki__updateNoteFields` only after approval. Rewording a
 field, such as making a list's items parallel, keeps the card's review history. Splitting a
 bundled card means creating new notes and deleting the old one, which loses its review history, so
-call that out and let the user decide.
+call that out and let the user decide. A long code Back usually becomes a production card for the
+call that matters plus a code cloze for its context, a pattern skeleton when the shape is what the
+user needs, or an exercise for a whole program (worked examples 10 and 11).
 
 ## The Inbox
 
@@ -163,6 +200,7 @@ Load these as needed rather than up front:
   Read this before drafting.
 - `references/principles.md`. The research canon with attribution. Read this when a judgement call
   is genuinely unclear, for example how to handle an open-ended list, which parts of a procedure to
-  card, or whether two cards on one fact is redundancy or waste.
+  card, which facts from code deserve a code card, or whether two cards on one fact is redundancy or
+  waste.
 - `references/worked-examples.md`. Before-and-after rewrites of real bad cards. Read this if the
   rules above feel abstract, or to calibrate how short a good Back is.
