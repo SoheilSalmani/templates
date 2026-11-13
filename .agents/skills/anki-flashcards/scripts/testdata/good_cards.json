@@ -99,6 +99,13 @@
           "Text": "The TCP handshake: <ol><li>{{c1::SYN}}</li><li>{{c2::SYN-ACK}}</li><li>{{c3::ACK}}</li></ol>"
         },
         "tags": ["rfc-9293"]
+      },
+      {
+        "fields": {
+          "Topic": "Web APIs",
+          "Text": "The {{c1::Fetch API}} provides {{c2::an interface for fetching resources, including across the network}}."
+        },
+        "tags": ["mdn-web-docs"]
       }
     ]
   },

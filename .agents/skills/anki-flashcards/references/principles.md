@@ -33,6 +33,8 @@ Behind the code section, read 2026-11-12:
 
 Behind the context line, read 2026-11-12:
 
+- Watkins and Watkins (1975), [Buildup of proactive inhibition as a cue-overload effect](https://doi.org/10.1037/0278-7393.1.4.442), Journal of Experimental Psychology: Human Learning and Memory; Goh and Lu (2012), [Testing the myth of the encoding-retrieval match](https://doi.org/10.3758/s13421-011-0133-9), Memory and Cognition.
+- Carpenter and DeLosh (2006), [Impoverished cue support enhances subsequent retention](https://doi.org/10.3758/BF03193405), Memory and Cognition; Diaz and Benjamin (2011), [The effects of proactive interference and release from PI on judgments of learning](https://doi.org/10.3758/s13421-010-0010-y), Memory and Cognition; Rohrer, Dedrick and Stershic (2015), [Interleaved practice improves mathematics learning](https://doi.org/10.1037/edu0000001), Journal of Educational Psychology.
 - Practitioners and tools: Bjornstad, [Rules for designing precise Anki cards](https://controlaltbackspace.org/precise/#questions-should-be-context-free); RemNote, [Hiding ancestors on flashcards](https://help.remnote.com/en/articles/9631727-hiding-ancestors-on-flashcards); the context line shown by default in [Orbit](https://github.com/andymatuschak/orbit/blob/ed5a530750b6e96e86ea725ef3990c9209fc0028/packages/ui/src/components/Card.tsx#L279-L297), [Obsidian Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition/blob/3d5079f3bcd54531b084040d1c0178f15f681510/src/lang/locale/en.ts#L132-L133), [Logseq](https://github.com/logseq/logseq/blob/29fd2edd015e12963742b985ce6d2311c074e09b/src/main/frontend/extensions/fsrs.cljs#L291-L296) and [Mnemosyne](https://github.com/mnemosyne-proj/mnemosyne/blob/ff4f61e84bea0d6928c29b7798f0f88b90938a0a/mnemosyne/libmnemosyne/review_controllers/SM2_controller.py#L218-L221).
 
 ## The five attributes
@@ -257,6 +259,27 @@ Logseq and Mnemosyne all show one by default. Nielsen, merging his decks into on
 from any other subject. This collection did until 2026-11-12, with a `Tool` field and note types of
 its own, and the split never held: seven of its ten largest topics were software, and 18 values
 appeared in both fields.
+
+### What the line may say
+
+No study tests a topic line on flashcards, so what follows is extrapolated, but it points one way.
+A cue shared by many items does little to bring back any one of them (Watkins and Watkins, 1975),
+and how well a cue singles out its target predicts recall better than how closely it matches the
+study context (Goh and Lu, 2012). The line's job is to rule out other readings of the question, not
+to help recall. Practice retrieval with fewer cues left better memories (Carpenter and DeLosh, 2006),
+so a line that narrows the answer costs retention. Matuschak asks for "enough context that
+reasonable alternative answers are clearly wrong, while not including so much context that you
+encourage pattern matching", and RemNote's help warns that its context display "can result in giving
+the answer away".
+
+Two consequences. Similar facts interfere less when their cues differ (Diaz and Benjamin, 2011), so
+the question, not the line, must tell siblings apart. And a label that announces the category means
+the learner never practises choosing it (Rohrer, Dedrick and Stershic, 2015), so a card asking which
+tool to use must not name the tool above the question.
+
+This collection, read 2026-11-12: 45 notes had a Back or a cloze deletion equal to their own context
+value, 44 of them clozes and 29 in one deck of Web API definitions. Values used by one to three
+notes leaked on 14.7 percent of their notes, values used by more than twenty on 0.2 percent.
 
 ## Legitimate redundancy (SuperMemo 17)
 

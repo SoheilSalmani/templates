@@ -102,13 +102,19 @@ Phrasing:
 - The Front never carries the `Topic` value as a label prefix. The note type renders it above the
   question already, so `"Acme R&D: which committee ..."` is redundant. Naming the subject inside the
   question is fine when it reads better, as in "What does `--frozen` do in `uv run`?".
+- The `Topic` holds what you would already know when you need the fact: the tool you are working
+  in, or the subject you are thinking about. It never holds an answer, so it never names the tool
+  when the card asks which tool to use. If a Back or a cloze deletion equals it, widen it to the
+  subject the card belongs to (`Web APIs`, not `Fetch API`). Prefer a value many cards share: one
+  that only a handful of cards carry works as a hint.
 - Shortest wording that stays unambiguous. Cut "What is the ...?" to the noun phrase when it reads
   cleanly, and cut preamble that the Topic line already supplies.
 - One unambiguous answer. If two answers are defensible, the Front is underspecified: add the
   qualifier that picks one.
 - Watch interference between sibling cards. When a source gives you six parallel items, near-identical
   Fronts will blur together under review. Differentiate by the distinguishing content, or card only
-  the items that carry weight.
+  the items that carry weight. Two Fronts that differ only in their `Topic` are the extreme case: put
+  the name that tells them apart in the question.
 - Match the source language. A French source gets French cards.
 
 Formatting, in full in `references/house-style.md`:
@@ -141,7 +147,7 @@ Walk the drafted set once and ask:
 2. Does any Front ask for two things?
 3. Could any two cards in this batch be confused for each other?
 4. Is every answer traceable to the source, with no inference of your own presented as fact?
-5. Does any Front repeat its own `Topic`?
+5. Does any Front repeat its own `Topic`, and does any `Topic` give away an answer?
 6. Is any Back longer than it needs to be?
 7. For each procedure, does the step that is easiest to get wrong have a card of its own?
 8. Does every fact the user will type have a card that makes them produce it? Is every Back over

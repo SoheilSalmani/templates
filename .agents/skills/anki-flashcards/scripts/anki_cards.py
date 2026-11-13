@@ -106,6 +106,8 @@ CLOZE_OPEN_RE = re.compile(r"\{\{c\d+::")
 CODE_LINES_WARN, CODE_LINES_MAX = 6, 12
 # A pattern skeleton ends with the parts it is graded on.
 CHECK_LINE_RE = re.compile(r"\bCheck\s*:")
+# The file an image shows, which Anki's duplicate check keeps when it strips the HTML.
+MEDIA_SRC_RE = re.compile(r"""<img\b[^>]*?\bsrc=["']?([^"'\s>]+)""", re.I)
 
 BACK_WARN, BACK_ERROR = 200, 400
 FRONT_WARN = 160
@@ -139,6 +141,20 @@ def normalise(text: str) -> str:
     text = strip_html(text).lower()
     text = "".join(c for c in unicodedata.normalize("NFD", text) if not unicodedata.combining(c))
     return re.sub(r"[^a-z0-9 ]", "", text)
+
+
+def as_read(text: str) -> str:
+    """Text as the reviewer reads it, to compare an answer with the context line: no HTML, case
+    folded, without the full stop that ends a sentence. Unlike normalise(), it keeps symbols, so
+    the path ~/.dbt/ stays apart from the topic dbt, and the command sqlfmt . from sqlfmt."""
+    text = unicodedata.normalize("NFKC", strip_html(text)).casefold()
+    return re.sub(r"(?<=\w)[.,;:!?]+$", "", text)
+
+
+def duplicate_key(raw: str) -> str:
+    """What Anki's duplicate check compares: the text without HTML, keeping media file names, so two
+    image cards asking "What is this?" stay apart."""
+    return " ".join([normalise(raw), *MEDIA_SRC_RE.findall(raw)]).strip()
 
 
 def code_line_count(raw: str) -> int:
@@ -399,6 +415,20 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
             )
         elif normalise(front) == normalise(context):
             report.error(where, "%s is just the %s value." % (front_key, context_field))
+    # The note type shows the context value above the question on both sides of the card, so an
+    # answer equal to it is read before it is recalled.
+    context_key = as_read(context)
+    if context_key:
+        answers = [fields["Back"]] if isinstance(fields.get("Back"), str) else []
+        text = fields.get("Text")
+        if isinstance(text, str):
+            answers += [text[start:end].split("::")[0] for start, end, _ in cloze_deletions(text)]
+        if any(as_read(answer) == context_key for answer in answers):
+            report.error(
+                where,
+                "an answer is the %s value, which the card shows above the question. Widen the %s "
+                "to the subject the card belongs to." % (context_field, context_field),
+            )
     if front and front_key == "Front":
         # Catches the topic prefix even on note types with no context field, which is
         # exactly where the habit comes from.
@@ -566,7 +596,7 @@ def cmd_lint(args) -> int:
     if not have_anki:
         print("Note: Anki is closed, so field names and existing duplicates were not verified.\n")
 
-    seen_fronts: dict[str, str] = {}
+    seen_fronts: dict[str, tuple[str, str]] = {}
     total = 0
 
     for batch_no, batch in enumerate(batches, 1):
@@ -597,12 +627,22 @@ def cmd_lint(args) -> int:
 
             fields = note.get("fields") or {}
             front_raw = fields.get("Front") or fields.get("Text") or ""
-            key = normalise(front_raw)
+            context_value = next((fields[f] for f in CONTEXT_FIELDS if f in fields), "")
+            context = normalise(context_value) if isinstance(context_value, str) else ""
+            key = duplicate_key(front_raw)
             if key:
                 if key in seen_fronts:
-                    report.error(where, "duplicate Front, same as %s." % seen_fronts[key])
+                    other, other_context = seen_fronts[key]
+                    if context != other_context:
+                        report.error(
+                            where,
+                            "same Front as %s, told apart only by the context line. Put the name "
+                            "that tells them apart in the question." % other,
+                        )
+                    else:
+                        report.error(where, "duplicate Front, same as %s." % other)
                 else:
-                    for other_key, other_where in seen_fronts.items():
+                    for other_key, (other_where, _) in seen_fronts.items():
                         if similar(key, other_key):
                             report.warn(
                                 where,
@@ -610,7 +650,7 @@ def cmd_lint(args) -> int:
                                 % other_where,
                             )
                             break
-                    seen_fronts[key] = where
+                    seen_fronts[key] = (where, context)
 
     print("Linted %d note(s) across %d batch(es)." % (total, len(batches)))
     error_lines, error_count = Report.render(report.errors, "  ERROR  ")
