@@ -33,7 +33,7 @@ When the source is thin or self-contradictory, say so and card only what it actu
    Then cut. Most sources deserve 5 to 15 cards, not one per sentence. Cutting is the main quality
    lever you have, so say out loud what you dropped and why. From code or API docs, mark each fact
    with what the user will do with it: type it, read it, or decide with it (see Code below).
-4. Pick the deck, the note type, and the `Topic` or `Tool` value. Run
+4. Pick the deck, the note type, and the `Topic` value (`Tool` on a `Keyboard Shortcut`). Run
    `anki_cards.py inspect "<deck>"` to see what the deck already uses and to get real field names.
    Never guess field names. See `references/note-types.md`. When the user asks for the Inbox or says
    the cards are not urgent, or when no current deck fits, the deck is `Inbox` (see "The Inbox"
@@ -99,9 +99,9 @@ Code, from source files, API docs, or a codebase the user works in:
 
 Phrasing:
 
-- The Front never carries the `Topic` or `Tool` value as a label prefix. The note type renders it
-  above the question already, so `"Acme R&D: which committee ..."` is redundant. Naming the subject
-  inside the question is fine when it reads better, as in "What does `--frozen` do in `uv run`?".
+- The Front never carries the `Topic` value as a label prefix. The note type renders it above the
+  question already, so `"Acme R&D: which committee ..."` is redundant. Naming the subject inside the
+  question is fine when it reads better, as in "What does `--frozen` do in `uv run`?".
 - Shortest wording that stays unambiguous. Cut "What is the ...?" to the noun phrase when it reads
   cleanly, and cut preamble that the Topic line already supplies.
 - One unambiguous answer. If two answers are defensible, the Front is underspecified: add the
@@ -141,7 +141,7 @@ Walk the drafted set once and ask:
 2. Does any Front ask for two things?
 3. Could any two cards in this batch be confused for each other?
 4. Is every answer traceable to the source, with no inference of your own presented as fact?
-5. Does any Front repeat its own Topic or Tool value?
+5. Does any Front repeat its own `Topic`?
 6. Is any Back longer than it needs to be?
 7. For each procedure, does the step that is easiest to get wrong have a card of its own?
 8. Does every fact the user will type have a card that makes them produce it? Is every Back over
@@ -164,11 +164,11 @@ user needs, or an exercise for a whole program (worked examples 10 and 11).
 `Inbox` is a top-level deck where cards wait to be filed. The user does not study it, so filing is
 what puts its cards into review.
 
-A card sent to the Inbox gets everything but its deck: note type, `Topic` or `Tool`, tags. The
-context field is what the card shows, and the deck never appears in review. A card from client work
-also gets a `client-<name>` tag such as `client-acme`, because the client is the one thing a
-deck said that the card does not. New cards go to `Inbox` itself, never to an `Inbox::<client>`
-subdeck. The subdecks that exist empty out as their notes are filed.
+A card sent to the Inbox gets everything but its deck: note type, `Topic`, tags. The `Topic` is
+what the card shows, and the deck never appears in review. A card from client work also gets a
+`client-<name>` tag such as `client-acme`, because the client is the one thing a deck said that the
+card does not. New cards go to `Inbox` itself, never to an `Inbox::<client>` subdeck. The subdecks
+that exist empty out as their notes are filed.
 
 When asked to organize or file the Inbox:
 

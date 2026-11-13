@@ -9,15 +9,15 @@ ordinary text, not less.
 These are verbatim. They are the target.
 
 ```
-Tool:  uv
+Topic: uv
 Front: What does the <code>--frozen</code> option do when using <code>uv run</code>?
 Back:  Run without updating the lockfile.
 
-Tool:  Vim
+Topic: Vim
 Front: What is the difference between a temporary setting and a permanent setting in Vim?
 Back:  A temporary setting (e.g., <code>:set number</code>) is lost when Vim closes. A permanent setting is written to vimrc and persists across sessions.
 
-Tool:  Dagster
+Topic: Dagster
 Front: Which tool is used to quickly scaffold a Python package containing a Dagster <code>Definitions</code> object?
 Back:  The <code>create-dagster</code> CLI.
 
@@ -40,7 +40,7 @@ Back, no "Note that", no headers inside a field.
 ## The context field, precisely
 
 The rule is about label prefixes, not about the word appearing at all. These three Fronts all sit on
-notes whose `Tool` is `uv`, `Vim`, and `Dagster`, and all three are correct, because the subject is
+notes whose `Topic` is `uv`, `Vim`, and `Dagster`, and all three are correct, because the subject is
 part of the sentence rather than a heading bolted to the front of it:
 
 ```
@@ -80,7 +80,7 @@ to recall and can check each one. Keep the items short and parallel, each openin
 Before, a real card from the collection:
 
 ```
-Tool:  Snowflake
+Topic: Snowflake
 Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
 Back:  <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>
 ```

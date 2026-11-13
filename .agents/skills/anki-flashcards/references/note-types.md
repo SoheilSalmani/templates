@@ -1,34 +1,35 @@
 # Note types in this collection
 
-Counts taken from the live collection on 2026-08-10. "Current" excludes the `_Legacy` deck tree.
-Re-check with `anki_cards.py inspect` rather than trusting these numbers indefinitely.
+Counts taken from the live collection on 2026-11-12. "Current" excludes the `_Legacy` and `_Legacy2`
+deck trees, where the old deck hierarchy is archived. Re-check with `anki_cards.py inspect` rather
+than trusting these numbers indefinitely.
 
 ## Pick from these
 
 | Note type | Fields | Current / total | Use for |
 | --- | --- | --- | --- |
-| `Q&A (for a tool)` | `Front`, `Tool`, `Back` | 1738 / 1819 | Software, CLIs, libraries, services, frameworks, SaaS products |
-| `Cloze (for a tool)` | `Text`, `Tool` | 927 / 971 | Tool facts that read better as one sentence with a blank |
-| `Q&A by topic` | `Front`, `Topic`, `Back` | 811 / 828 | Everything that is not a tool: concepts, domains, finance, org structure, science |
-| `Cloze by topic` | `Text`, `Topic` | 559 / 559 | Sentence-shaped facts, acronym pairs, closed lists, numeric values in context |
-| `Keyboard Shortcut` | `Front`, `Tool`, `Shortcut`, `Shortcut (macOS)`, `Shortcut (Windows)`, `Shortcut (Linux)` | 66 / 67 | Key bindings, with per-OS variants when they differ |
-| `Q&A (for a license)` | `Front`, `License`, `Back` | 64 / 64 | Driving and professional licence material |
-| `Cloze (for a license)` | `Text`, `License` | 25 / 25 | Same, sentence-shaped |
-| `Image Occlusion (for a topic)` | `Occlusion`, `Topic`, `Image`, `Header`, `Back Extra`, `Comments` | 6 / 6 | Diagrams, maps, anatomy, UI screenshots |
-| `Image Occlusion (for a tool)` | same, with `Tool` | 5 / 5 | Tool UI screenshots |
-| `Q&A (for a body part)` | `Front`, `Body part`, `Back` | 11 / 11 | Anatomy and physical training |
-| `Cloze (for a body part)` | `Text`, `Body part` | 4 / 4 | Same, sentence-shaped |
+| `Q&A by topic` | `Front`, `Topic`, `Back` | 56 / 3180 | Any question and answer: tools, concepts, domains, finance, licences, science |
+| `Cloze by topic` | `Text`, `Topic` | 9 / 1760 | Sentence-shaped facts, acronym pairs, closed lists, code with the line that matters blanked |
+| `Keyboard Shortcut` | `Front`, `Tool`, `Shortcut`, `Shortcut (macOS)`, `Shortcut (Windows)`, `Shortcut (Linux)` | 0 / 85 | Key bindings, with per-OS variants when they differ |
+| `Image Occlusion (for a topic)` | `Occlusion`, `Topic`, `Image`, `Header`, `Back Extra`, `Comments` | 0 / 19 | Diagrams, maps, anatomy, UI screenshots |
 
-The first four carry 96 percent of current notes. Default to `Q&A (for a tool)` or `Q&A by topic`
-unless the fact genuinely reads better as a cloze.
+The first two carry 98 percent of these notes. Default to `Q&A by topic` unless the fact genuinely
+reads better as a cloze.
+
+Tools, licences and body parts had note types of their own until 2026-11-12, with the context field
+named `Tool`, `License` or `Body part`. They differed from the topic types only in that name and in
+the colour of the line, and the split did not hold: seven of the ten largest topics were software.
+Every one of those notes now sits in a topic type with its value in `Topic`, and the old types are
+empty. Only `Keyboard Shortcut` and `Tutorial (platform-specific)` still call the field `Tool`.
 
 ## Do not use for new cards
 
 | Note type | Why |
 | --- | --- |
-| `Basic` | Legacy. 3773 of its 3922 notes sit in `_Legacy`. It has no context field, so authors end up prefixing the Front with the topic by hand, which is the exact mistake this skill exists to prevent. |
-| `Cloze` | Legacy, 10 notes. Superseded by `Cloze by topic`. |
-| `Basic (and reversed card)` | Legacy, 9 current notes. For a two-direction fact use one cloze note with `c1` and `c2` instead. |
+| `Q&A (for a tool)`, `Cloze (for a tool)`, `Image Occlusion (for a tool)`, `Q&A (for a license)`, `Cloze (for a license)`, `Q&A (for a body part)`, `Cloze (for a body part)` | Empty since their notes moved to the topic types on 2026-11-12. Use the topic type, with the tool, licence or body part as the `Topic`. |
+| `Basic` | Legacy, 3783 notes, all in the archived trees. It has no context field, and only one Front in six names its subject, so the others leaned on the deck they were filed in. |
+| `Cloze` | Legacy, now empty. Its 10 notes moved to `Cloze by topic` on 2026-11-12, with an empty `Topic`. |
+| `Basic (and reversed card)` | Legacy, 81 notes, all in the archived trees. For a two-direction fact use one cloze note with `c1` and `c2` instead. |
 | `Basic (optional reversed card)`, `Basic (type in the answer)`, `Basic (and reversed card) (without question in answer)`, `Alphabet` | Zero notes. Not part of this collection's practice. |
 | `Language Reactor - Phrase` | Written by the Language Reactor browser extension. Do not hand-author. |
 | `Recipe`, `Coding Exercises`, `Practice Activity`, `Tutorial (platform-specific)`, `Keyboard Layout`, `Vocabulary (Chinese)`, `Alphabet (Vietnamese)` | Purpose-built for one narrow workflow each. Use only when the user asks for that specific kind of note. |
@@ -51,9 +52,8 @@ Back:  {{FrontSide}}
        {{Back}}
 ```
 
-`Q&A (for a tool)` and the other scoped variants are identical with `{{Tool}}`, `{{License}}`, or
-`{{Body part}}` in place of `{{Topic}}`. The cloze variants render the same context line above
-`{{cloze:Text}}` on both sides of the card.
+`Cloze by topic` renders the same line above `{{cloze:Text}}` on both sides of the card, and
+`Keyboard Shortcut` renders its `Tool` field the same way.
 
 So the reviewer already sees the topic on its own styled line. A Front of
 `"Acme R&D: which committee approves Gate 4?"` renders as:
@@ -68,23 +68,29 @@ context cues simplify wording, built into the note type.
 
 ## Choosing the context value
 
-`Topic` and `Tool` are free text, so consistency is on you. Reuse a value that already exists in the
-collection instead of coining a near-duplicate. Check with:
+`Topic` is free text, so consistency is on you. Reuse a value that already exists in the collection
+instead of coining a near-duplicate. Check with:
 
 ```bash
 python3 scripts/anki_cards.py topics --like "R&D"
 ```
 
-Existing values are short noun phrases naming the subject, not sentences and not hierarchies:
-`Causal Inference`, `Ableton Live`, `Mutuelle`, `PEA`, `Bot Detection`, `Server-sent events`,
-`Music Theory`, `Ingredient`. Match that register. The value usually mirrors the leaf deck name.
+The filter matches text, not meaning, so search under every name the subject goes by:
+`--like JS` finds `Next.js` but not `JavaScript`, the value 32 notes use.
+
+Existing values are short noun phrases naming a tool or a subject, not sentences and not
+hierarchies: `Causal Inference`, `Ableton Live`, `Mutuelle`, `PEA`, `Snowflake`,
+`Server-sent events`, `Music Theory`, `Permis B`. Match that register.
+
+Decks no longer say what a card is about: `Inbox` holds every tool, and the decks are broad. The
+`Topic` is the only place a card's subject shows during review.
 
 ## Two traps that break a batch
 
-1. `Cloze by topic` and `Cloze (for a tool)` have no `Back Extra` field. Only `Text` and the context
-   field. The MCP `modelFieldNames` tool helpfully returns an `example` object mentioning
-   `Back Extra` for anything cloze-shaped, which is wrong for these two. Passing that key rejects
-   the whole batch. The plain legacy `Cloze` type is the only one that has it.
+1. `Cloze by topic` has no `Back Extra` field, only `Text` and `Topic`. The MCP `modelFieldNames`
+   tool helpfully returns an `example` object mentioning `Back Extra` for anything cloze-shaped,
+   which is wrong here. Passing that key rejects the whole batch. The plain legacy `Cloze` type, now
+   empty, is the one that has it.
 2. `mcp__anki__addNotes` takes one `deckName` and one `modelName` per call, capped at 100 notes.
    A mixed set of Q&A and cloze cards therefore needs one call per model. Duplicates are skipped
    individually, but a validation error such as an empty required field or a bad tag rejects the

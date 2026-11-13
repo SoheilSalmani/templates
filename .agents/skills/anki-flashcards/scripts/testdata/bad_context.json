@@ -1,0 +1,16 @@
+[
+  {
+    "deckName": "Inbox",
+    "modelName": "Q&A (for a tool)",
+    "notes": [
+      {
+        "fields": {
+          "Tool": "uv",
+          "Front": "What does the <code>--frozen</code> option do when using <code>uv run</code>?",
+          "Back": "Run without updating the lockfile."
+        },
+        "tags": ["uv-docs"]
+      }
+    ]
+  }
+]
