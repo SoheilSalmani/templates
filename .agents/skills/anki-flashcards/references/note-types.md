@@ -82,6 +82,22 @@ Existing values are short noun phrases naming a tool or a subject, not sentences
 hierarchies: `Causal Inference`, `Ableton Live`, `Mutuelle`, `PEA`, `Snowflake`,
 `Server-sent events`, `Music Theory`, `Permis B`. Match that register.
 
+The value is what the reviewer would already know at the moment they need the fact: the tool they
+are working in, or the subject they are thinking about. Pick it at that level, never at the level of
+the thing a card asks for. Read on 2026-11-12:
+
+- Never an answer. A value equal to a Back or a cloze deletion prints the answer above the question.
+  That was true of 45 notes, 29 of them in a deck of Web API definitions where each API had become
+  its own topic, as in `{{c1::Fetch API}}` under the topic `Fetch API`. The deck's own subject,
+  `Web APIs`, was the right value. The linter rejects such a note (worked example 12).
+- Broad and shared. Values used by one to three notes leaked an answer on 15 percent of their notes,
+  values used by more than twenty on 0.2 percent. A value many cards share tells subjects apart; one
+  that only a few cards share works as a hint.
+- Never the tool when the card asks which tool to use. "Which tool both lints and formats Python,
+  replacing Flake8 and Black?" goes under `Python`, not `Ruff`.
+- Never the only difference between two cards. Four notes asked "Give the Literal interface." under
+  `hast`, `mdast`, `nlcst` and `xast`. The name that tells them apart goes in the question.
+
 Decks no longer say what a card is about: `Inbox` holds every tool, and the decks are broad. The
 `Topic` is the only place a card's subject shows during review.
 

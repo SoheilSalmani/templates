@@ -52,6 +52,10 @@ Which tool is used to quickly scaffold a Python package containing a Dagster <co
 What is wrong is `"uv: what does --frozen do?"` or `"Acme R&D: which committee approves Gate 4?"`.
 The reviewer reads the context line, then reads it again. Drop the prefix, keep the sentence natural.
 
+The line is read before the question, so it is part of the cue: it never holds an answer, and two
+cards never differ by the line alone. How to pick its value is in `note-types.md`, "Choosing the
+context value".
+
 ## Length
 
 The Back is normally one sentence. Two when the second earns its place, as in the Vim card above

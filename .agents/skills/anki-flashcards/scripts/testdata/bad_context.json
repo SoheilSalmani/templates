@@ -1,6 +1,49 @@
 [
   {
     "deckName": "Inbox",
+    "modelName": "Cloze by topic",
+    "notes": [
+      {
+        "fields": {
+          "Topic": "Fetch API",
+          "Text": "The {{c1::Fetch API}} provides {{c2::an interface for fetching resources, including across the network}}."
+        },
+        "tags": ["mdn-web-docs"]
+      }
+    ]
+  },
+  {
+    "deckName": "Inbox",
+    "modelName": "Q&A by topic",
+    "notes": [
+      {
+        "fields": {
+          "Topic": "CodeMirror",
+          "Front": "Which package exports <code>basicSetup</code>?",
+          "Back": "<code>codemirror</code>"
+        },
+        "tags": ["codemirror-docs"]
+      },
+      {
+        "fields": {
+          "Topic": "mdast",
+          "Front": "Which field holds the text of a <code>Literal</code> node?",
+          "Back": "<code>value</code>"
+        },
+        "tags": ["syntax-tree-docs"]
+      },
+      {
+        "fields": {
+          "Topic": "hast",
+          "Front": "Which field holds the text of a <code>Literal</code> node?",
+          "Back": "<code>value</code>"
+        },
+        "tags": ["syntax-tree-docs"]
+      }
+    ]
+  },
+  {
+    "deckName": "Inbox",
     "modelName": "Q&A (for a tool)",
     "notes": [
       {

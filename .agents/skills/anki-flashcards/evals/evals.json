@@ -269,6 +269,28 @@
         "anki_cards.py lint reports no error on the draft",
         "The cards are shown for approval and no addNotes call is made"
       ]
+    },
+    {
+      "id": 24,
+      "prompt": "Is this card OK? Topic: Trino. Text: {{c1::Trino}} is an {{c2::open source, distributed SQL query engine}} designed to query data from disparate data sources at any scale.",
+      "expected_output": "No. The Topic line prints Trino above the sentence, so the c1 card shows its own answer. Proposes a Topic that names no answer, such as a wider data subject, or dropping the c1 deletion, keeps the c2 fact, says a field change keeps the review history, and changes nothing before approval.",
+      "assertions": [
+        "The response says the c1 card gives its answer away because the Topic line reads Trino",
+        "The proposed fix leaves no deletion equal to the Topic: a wider Topic, or the c1 deletion removed",
+        "The c2 deletion and its fact are kept",
+        "No updateNoteFields call is made before the user approves"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "Card this from the AWS documentation (read 2026-11-12): \"AWS Secrets Manager can rotate secrets automatically on a schedule. Parameter Store, a capability of AWS Systems Manager, also stores secrets, but it does not rotate them.\"",
+      "expected_output": "A card asking which AWS service rotates secrets automatically, answered AWS Secrets Manager, under a Topic that does not name the answer, such as Amazon Web Services. No Topic equals a Back or a deletion, and nothing is added yet.",
+      "assertions": [
+        "A card asks which AWS service rotates secrets on a schedule, answered AWS Secrets Manager",
+        "That card's Topic is not AWS Secrets Manager, Secrets Manager or another value that names the answer",
+        "No drafted Back or cloze deletion equals its note's Topic",
+        "The cards are shown for approval and no addNotes call is made"
+      ]
     }
   ]
 }

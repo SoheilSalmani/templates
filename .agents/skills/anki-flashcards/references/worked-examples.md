@@ -313,6 +313,30 @@ Front: Which part of the sidebar scrolls?
 Back:  <code>SidebarContent</code>
 ```
 
+## 12. A context line that gives the answer away
+
+A real card, from a deck of Web API definitions where each API had become its own topic, 41 of
+them across 183 notes:
+
+```
+Cloze by topic
+Topic: Fetch API
+Text:  The {{c1::Fetch API}} provides {{c2::an interface for fetching resources (including across the network)}}.
+```
+
+The note type prints the `Topic` above the sentence on both sides of every card, so the first card
+shows "Fetch API" directly above "The [...] provides an interface for fetching resources". In that
+deck, 29 notes gave an answer away like this. The deck's own subject was the right value:
+
+```
+Cloze by topic
+Topic: Web APIs
+Text:  The {{c1::Fetch API}} provides {{c2::an interface for fetching resources (including across the network)}}.
+```
+
+A field update, so both cards keep their review history. The linter rejects a Back or a deletion
+that equals the context value.
+
 ## What the whole Acme set should have looked like
 
 The original run produced 27 notes and 34 cards from that page. A disciplined pass yields roughly
