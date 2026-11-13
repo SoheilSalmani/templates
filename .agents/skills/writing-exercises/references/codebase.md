@@ -83,4 +83,4 @@ It shows the inventory as a table, feature, count, decision, so the learner sees
 | closures and iterators | about 500 | exercise 2, inside a real task |
 | lifetimes | about 400 | exercises 3 and 4 |
 | trait objects | 4 | skipped: barely used |
-| integer types | many | skipped: carded under `Tool:Rust` |
+| integer types | many | skipped: carded under `Topic:Rust` |

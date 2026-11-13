@@ -11762,7 +11762,7 @@
         "| closures and iterators | about 500 | exercise 2, inside a real task |",
         "| lifetimes | about 400 | exercises 3 and 4 |",
         "| trait objects | 4 | skipped: barely used |",
-        "| integer types | many | skipped: carded under `Tool:Rust` |"
+        "| integer types | many | skipped: carded under `Topic:Rust` |"
       ],
       "mode": 420
     },
@@ -11786,7 +11786,7 @@
         "Reach the collection through the anki MCP server when the session has it: `findNotes` with an Anki search, then `notesInfo` on the ids. Without the server, AnkiConnect answers the same actions on `localhost:8765`. Both read; neither writes:",
         "",
         "```bash",
-        "curl -s localhost:8765 -d '{\"action\": \"findNotes\", \"version\": 6, \"params\": {\"query\": \"\\\"Tool:Rust\\\" macro\"}}'",
+        "curl -s localhost:8765 -d '{\"action\": \"findNotes\", \"version\": 6, \"params\": {\"query\": \"\\\"Topic:Rust\\\" macro\"}}'",
         "curl -s localhost:8765 -d '{\"action\": \"notesInfo\", \"version\": 6, \"params\": {\"notes\": [1712345678901]}}'",
         "```",
         "",
@@ -11794,8 +11794,8 @@
         "",
         "Search each subject twice:",
         "",
-        "- **By its context field**, to see everything carded about it: `\"Tool:Rust\"` matches the field exactly, case aside, and `\"Topic:Rust*\"` matches topics that start with the name. Collections name these fields differently; `notesInfo` on one match shows the field names.",
-        "- **By each concept's own words within the subject**: `\"Tool:Rust\" lifetime`, `\"Tool:Rust\" trait`.",
+        "- **By its context field**, to see everything carded about it: `\"Topic:Rust\"` matches the field exactly, case aside, and `\"Topic:Rust*\"` matches topics that start with the name. Collections name this field differently; `notesInfo` on one match shows the field names.",
+        "- **By each concept's own words within the subject**: `\"Topic:Rust\" lifetime`, `\"Topic:Rust\" trait`.",
         "",
         "Read the fronts that match. A count says nothing about which facts are carded.",
         "",
@@ -11836,7 +11836,7 @@
         "",
         "## Reporting",
         "",
-        "The reply says, for every concept considered, which way it went and why, in one line each: \"exercise 4\", \"skipped: 12 cards under `Tool:Rust`\", \"flashcards: not carded\", \"skipped: `rust-activities` item 7, done\". It names any store that could not be checked. After writing the set, where the learner schedules exercise reviews in Anki, it proposes one review note for each part of the set, and adds them only once the learner approves, as `anki-flashcards` does for any card. In a README whose numbering restarts under each section, a bare range is ambiguous, so the note names the section as well."
+        "The reply says, for every concept considered, which way it went and why, in one line each: \"exercise 4\", \"skipped: 12 cards under `Topic:Rust`\", \"flashcards: not carded\", \"skipped: `rust-activities` item 7, done\". It names any store that could not be checked. After writing the set, where the learner schedules exercise reviews in Anki, it proposes one review note for each part of the set, and adds them only once the learner approves, as `anki-flashcards` does for any card. In a README whose numbering restarts under each section, a bare range is ambiguous, so the note names the section as well."
       ],
       "mode": 420
     },
