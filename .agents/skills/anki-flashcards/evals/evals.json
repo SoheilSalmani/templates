@@ -89,9 +89,9 @@
     {
       "id": 8,
       "prompt": "Card this for my driving licence deck, from the Code de la route, article R413-2 (version in force on 4 November 2026): « Hors agglomération, la vitesse des véhicules est limitée à : 130 km/h sur les autoroutes ; 110 km/h sur les routes à deux chaussées séparées par un terre-plein central ; 80 km/h sur les autres routes. En cas de pluie ou d'autres précipitations, ces vitesses maximales sont abaissées à : 110 km/h sur les sections d'autoroutes où la limite normale est de 130 km/h ; 100 km/h sur les sections d'autoroutes où cette limite est plus basse ainsi que sur les routes à deux chaussées séparées par un terre-plein central. »",
-      "expected_output": "License cards in French, one limit per card, the rain limits on cards of their own, and no true-or-false questions.",
+      "expected_output": "Topic cards in French, with the licence or the rule as the Topic, one limit per card, the rain limits on cards of their own, and no true-or-false questions.",
       "assertions": [
-        "Every note uses a license note type, Q&A (for a license) or Cloze (for a license)",
+        "Every note uses a topic note type, Q&A by topic or Cloze by topic",
         "Each card asks for one speed limit",
         "The rain limits are asked for by cards separate from the normal limits",
         "No Front is a yes-or-no or true-or-false question",
@@ -115,12 +115,12 @@
     },
     {
       "id": 10,
-      "prompt": "Organize my Anki inbox. Here is what anki_cards.py inbox printed this morning. Work from it and don't run anything yet.\n\nInbox: 14 notes, 15 cards. 6 new, 9 studied, 7 due now, 5 of them more than a week overdue.\nOldest note added 2026-10-20, 23 days ago.\nCurrent decks: Cooking (212 cards), Music Theory (180 cards), Tech (1140 cards).\nSubdeck Inbox::Northwind: 9 notes, 9 without client-northwind.\n\nTool \"Terraform\" (6 notes): most cards with it are in Tech (40).\n  1794100000001  studied, due  added  23d ago  What does terraform plan -refresh-only do?\n  (5 more)\n\nTool \"Kafka\" (5 notes): no current deck has it.\n  1794200000001  studied, due  added  15d ago  What does a consumer group guarantee within a partition?\n  (4 more)\n\nTopic \"Wine pairing\" (3 notes): no current deck has it.\n  1794300000001  new           added   2d ago  Which wine style suits a dish served with a beurre blanc?\n  (2 more)\n\nLint findings on these notes:\n  WARN   Back is 230 characters. Check it is one fact.  [note 1794200000003]",
+      "prompt": "Organize my Anki inbox. Here is what anki_cards.py inbox printed this morning. Work from it and don't run anything yet.\n\nInbox: 14 notes, 15 cards. 6 new, 9 studied, 7 due now, 5 of them more than a week overdue.\nOldest note added 2026-10-20, 23 days ago.\nCurrent decks: Cooking (212 cards), Music Theory (180 cards), Tech (1140 cards).\nSubdeck Inbox::Northwind: 9 notes, 9 without client-northwind.\n\nTopic \"Terraform\" (6 notes): most cards with it are in Tech (40).\n  1794100000001  studied, due  added  23d ago  What does terraform plan -refresh-only do?\n  (5 more)\n\nTopic \"Kafka\" (5 notes): no current deck has it.\n  1794200000001  studied, due  added  15d ago  What does a consumer group guarantee within a partition?\n  (4 more)\n\nTopic \"Wine pairing\" (3 notes): no current deck has it.\n  1794300000001  new           added   2d ago  Which wine style suits a dish served with a beurre blanc?\n  (2 more)\n\nLint findings on these notes:\n  WARN   Back is 230 characters. Check it is one fact.  [note 1794200000003]",
       "expected_output": "Opens with the five overdue studied cards and the 23-day wait. Proposes Tech for the Terraform and Kafka notes and Cooking for wine pairing, or asks about it, rather than new decks. Adds client-northwind to the notes in Inbox::Northwind, flags the long Back, and moves nothing yet.",
       "assertions": [
         "Before the per-note proposal, the response says studied cards are overdue and the oldest note has waited 23 days",
         "The Terraform and Kafka notes are proposed for Tech, not for a new deck",
-        "No deck is proposed per Tool or Topic; any new deck is a single broad one whose name is left to the user",
+        "No deck is proposed per Topic value; any new deck is a single broad one whose name is left to the user",
         "The proposal adds client-northwind to the notes in Inbox::Northwind",
         "No proposed target deck starts with _Legacy",
         "No anki_cards.py command or Anki tool is run, and no changeDeck, addTags or updateNoteFields call is made"
@@ -139,7 +139,7 @@
     },
     {
       "id": 12,
-      "prompt": "Is this card OK? Tool: Git. Front: Which command lists the commits on your current branch that aren't on <code>origin/main</code> yet? Back: <code>git log origin/main..HEAD</code>",
+      "prompt": "Is this card OK? Topic: Git. Front: Which command lists the commits on your current branch that aren't on <code>origin/main</code> yet? Back: <code>git log origin/main..HEAD</code>",
       "expected_output": "Yes. One retrieval, one right answer, the command in code. No rewrite is proposed and nothing changes.",
       "assertions": [
         "The response says the card is fine as it is",
@@ -149,7 +149,7 @@
     },
     {
       "id": 13,
-      "prompt": "Fix this card if it needs it. Tool: Docker. Front: Docker: true or false, a container's writable layer survives docker rm? Back: False. The writable layer is deleted with the container; the image stays unchanged.",
+      "prompt": "Fix this card if it needs it. Topic: Docker. Front: Docker: true or false, a container's writable layer survives docker rm? Back: False. The writable layer is deleted with the container; the image stays unchanged.",
       "expected_output": "The Front becomes an open question without the Docker label, the fact stays, the response notes that rewording keeps the review history, and nothing changes before approval.",
       "assertions": [
         "The proposed Front is not a true-or-false or yes-or-no question",

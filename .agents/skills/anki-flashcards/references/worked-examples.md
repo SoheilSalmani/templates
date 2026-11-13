@@ -143,7 +143,7 @@ Tags:  confluence-acme-rd
 A real card from the collection, kept here as a counterexample:
 
 ```
-Tool:  Helm
+Topic: Helm
 Front: True or False: Multiple chart versions may contain the same app version.
 Back:  True
 ```
@@ -152,7 +152,7 @@ Fifty percent recall from guessing, and it tests nothing about the relationship.
 question:
 
 ```
-Tool:  Helm
+Topic: Helm
 Front: What is the relationship between a chart version and the app version it packages?
 Back:  Many-to-one. Several chart versions can package the same app version.
 ```
@@ -162,7 +162,7 @@ Back:  Many-to-one. Several chart versions can package the same app version.
 Not everything long is wrong. This card from the collection stays as it is:
 
 ```
-Tool:  Vim
+Topic: Vim
 Front: What is the difference between a temporary setting and a permanent setting in Vim?
 Back:  A temporary setting (e.g., <code>:set number</code>) is lost when Vim closes. A permanent setting is written to vimrc and persists across sessions.
 ```
@@ -191,8 +191,8 @@ is no way to notice during review.
 A real card from the collection:
 
 ```
-Q&A (for a tool)
-Tool:  Snowflake
+Q&A by topic
+Topic: Snowflake
 Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
 Back:  <ol><li>Set the new key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li><code>UNSET RSA_PUBLIC_KEY</code></li></ol>
 ```
@@ -206,14 +206,14 @@ is tested only as a position in a sequence.
 After, two notes:
 
 ```
-Q&A (for a tool)
-Tool:  Snowflake
+Q&A by topic
+Topic: Snowflake
 Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
 Back:  <ol><li>Set the new public key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li>Run <code>UNSET RSA_PUBLIC_KEY</code></li></ol>
 Tags:  snowflake-docs
 
-Q&A (for a tool)
-Tool:  Snowflake
+Q&A by topic
+Topic: Snowflake
 Front: During a key rotation, when can you <code>UNSET RSA_PUBLIC_KEY</code>?
 Back:  After clients have switched to the new private key.
 Tags:  snowflake-docs
@@ -227,8 +227,8 @@ to keep if you keep only one: it asks for the transition, which is where the pro
 A real card from the collection, back at a 4-day interval after 32 answers and 28 minutes of review:
 
 ```
-Q&A (for a tool)
-Tool:  dlt
+Q&A by topic
+Topic: dlt
 Front: Write an example that uses the REST API source.
 Back:  <pre><code>import dlt
 from dlt.sources.rest_api import rest_api_source
@@ -251,20 +251,20 @@ the function that builds the source, the shape of its configuration, and the cal
 After, three notes:
 
 ```
-Q&A (for a tool)
-Tool:  dlt
+Q&A by topic
+Topic: dlt
 Front: Which function builds a dlt source from a REST API configuration?
 Back:  <code>rest_api_source()</code>
 
-Cloze (for a tool)
-Tool:  dlt
+Cloze by topic
+Topic: dlt
 Text:  <pre><code>source = rest_api_source({
     "{{c1::client}}": {"base_url": "https://api.example.com/"},
     "{{c2::resources}}": ["posts", "comments"],
 })</code></pre>
 
-Q&A (for a tool)
-Tool:  dlt
+Q&A by topic
+Topic: dlt
 Front: Which call loads a dlt source through a pipeline?
 Back:  <code>pipeline.run(source)</code>
 ```
@@ -273,8 +273,8 @@ If the user builds these pipelines every week, their shape is a pattern, and one
 top of those three is worth it:
 
 ```
-Q&A (for a tool)
-Tool:  dlt
+Q&A by topic
+Topic: dlt
 Front: Write the three calls that load a REST API into DuckDB with dlt, from a configuration <code>config</code>.
 Back:  <pre><code>source = rest_api_source(config)
 pipeline = dlt.pipeline(pipeline_name="...", destination="duckdb", dataset_name="...")

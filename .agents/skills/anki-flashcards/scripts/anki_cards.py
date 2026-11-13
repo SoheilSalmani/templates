@@ -4,7 +4,7 @@
 Subcommands:
   check                     Is AnkiConnect reachable, and which profile is open.
   inspect <deck>            What note types a deck uses, with real field names.
-  topics [--like PATTERN]   Existing Topic and Tool values, so you reuse instead of coining.
+  topics [--like PATTERN]   Existing context values, so you reuse instead of coining.
   lint <draft.json>         Check drafted notes against the mechanical house rules.
   inbox                     What waits in the Inbox deck, its state, and where it could be filed.
 
@@ -30,23 +30,26 @@ from collections import Counter, defaultdict
 ANKI_URL = "http://localhost:8765"
 
 LEGACY_MODELS = {
-    "Basic": "no context field, so authors end up prefixing the Front with the topic by hand",
+    "Basic": "no context field, and five of its Fronts in six never name their subject",
     "Cloze": "superseded by 'Cloze by topic'",
+    "Q&A (for a tool)": "merged into 'Q&A by topic' on 2026-11-12, with the tool as the Topic",
+    "Cloze (for a tool)": "merged into 'Cloze by topic' on 2026-11-12, with the tool as the Topic",
+    "Image Occlusion (for a tool)": "merged into 'Image Occlusion (for a topic)' on 2026-11-12",
+    "Q&A (for a license)": "merged into 'Q&A by topic' on 2026-11-12, with the licence as the Topic",
+    "Cloze (for a license)": "merged into 'Cloze by topic' on 2026-11-12, with the licence as the Topic",
+    "Q&A (for a body part)": "merged into 'Q&A by topic' on 2026-11-12, with the body part as the Topic",
+    "Cloze (for a body part)": "merged into 'Cloze by topic' on 2026-11-12, with the body part as the Topic",
     "Basic (and reversed card)": "use one cloze note with c1 and c2 instead",
     "Basic (optional reversed card)": "unused in this collection",
     "Basic (type in the answer)": "unused in this collection",
     "Basic (and reversed card) (without question in answer)": "unused in this collection",
 }
 
-# Field that carries the rendered context line, per note type suffix.
-CONTEXT_FIELDS = ("Topic", "Tool", "License", "Body part")
+# Field that carries the rendered context line: Topic, or Tool on Keyboard Shortcut and
+# Tutorial (platform-specific).
+CONTEXT_FIELDS = ("Topic", "Tool")
 
-CLOZE_MODELS_WITHOUT_BACK_EXTRA = {
-    "Cloze by topic",
-    "Cloze (for a tool)",
-    "Cloze (for a license)",
-    "Cloze (for a body part)",
-}
+CLOZE_MODELS_WITHOUT_BACK_EXTRA = {"Cloze by topic"}
 
 EMOJI_RE = re.compile(
     "["
@@ -773,7 +776,7 @@ def main() -> int:
     p_inspect.add_argument("deck")
     p_inspect.set_defaults(func=cmd_inspect)
 
-    p_topics = sub.add_parser("topics", help="existing Topic and Tool values")
+    p_topics = sub.add_parser("topics", help="existing context values")
     p_topics.add_argument("--like", help="substring filter")
     p_topics.set_defaults(func=cmd_topics)
 

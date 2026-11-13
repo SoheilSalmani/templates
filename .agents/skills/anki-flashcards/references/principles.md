@@ -31,6 +31,10 @@ Behind the code section, read 2026-11-12:
 - LaToza, Venolia and DeLine (2006), [Maintaining mental models](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/p492-latoza.pdf); LaToza and Myers (2010), [Hard-to-answer questions about code](https://people.cs.gmu.edu/~tlatoza/papers/plateau2010.pdf); Ko, DeLine and Venolia (2007), [Information needs in collocated software development teams](https://faculty.washington.edu/ajko/papers/Ko2007InformationNeeds.pdf); Krüger and Hebig (2020), [What developers (care to) recall](https://wwwiti.cs.uni-magdeburg.de/iti_db/publikationen/ps/auto/KruegerH2020ICSME.pdf); Fritz and colleagues (2010), [A degree-of-knowledge model](https://www.cs.ubc.ca/~fritz/papers/icse10_dok_web.pdf).
 - Practitioners: Wozniak (1993), [SuperMemo as a new tool increasing the productivity of a programmer](https://super-memory.com/articles/programming.htm); Kinsella, [Janki Method](https://www.semicolonandsons.com/articles/janki-method) and [Janki Method Refined](https://www.semicolonandsons.com/articles/janki-method-refined); Nielsen, [Augmenting long-term memory](https://augmentingcognition.com/ltm.html); Matuschak, [Application prompts should vary when repeated](https://notes.andymatuschak.org/zSisETSpZBCgZH4rFNHRcnC); Gwern, [Spaced repetition for efficient learning](https://gwern.net/spaced-repetition); Skerritt, [Memorising LeetCode by using Anki as a scheduler](https://skerritt.blog/memorising-leetcode-by-using-anki-as-a-scheduler/).
 
+Behind the context line, read 2026-11-12:
+
+- Practitioners and tools: Bjornstad, [Rules for designing precise Anki cards](https://controlaltbackspace.org/precise/#questions-should-be-context-free); RemNote, [Hiding ancestors on flashcards](https://help.remnote.com/en/articles/9631727-hiding-ancestors-on-flashcards); the context line shown by default in [Orbit](https://github.com/andymatuschak/orbit/blob/ed5a530750b6e96e86ea725ef3990c9209fc0028/packages/ui/src/components/Card.tsx#L279-L297), [Obsidian Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition/blob/3d5079f3bcd54531b084040d1c0178f15f681510/src/lang/locale/en.ts#L132-L133), [Logseq](https://github.com/logseq/logseq/blob/29fd2edd015e12963742b985ce6d2311c074e09b/src/main/frontend/extensions/fsrs.cljs#L291-L296) and [Mnemosyne](https://github.com/mnemosyne-proj/mnemosyne/blob/ff4f61e84bea0d6928c29b7798f0f88b90938a0a/mnemosyne/libmnemosyne/review_controllers/SM2_controller.py#L218-L221).
+
 ## The five attributes
 
 Matuschak's test for a prompt. Run a doubtful card against all five.
@@ -205,7 +209,7 @@ Venolia, 2007). Nielsen cards an API while a project uses it and deletes the car
 came to regret his cards on third-party library APIs, and Wozniak cards a call only when reviewing
 it costs less than looking it up.
 
-This collection, read 2026-11-12, computer-science decks. Within the same Tool or Topic, one-line
+This collection, read 2026-11-12, computer-science decks. Within the same context value, one-line
 code answers had a lower Again rate than prose answers in 16 of 20 shared values (median 17 against
 27 percent) and took a median 7 seconds against 11. At intervals of three weeks or more, one-line
 code answers passed 77 percent of reviews (n = 176) and prose answers over 60 characters 23 percent
@@ -242,8 +246,17 @@ Every word in a card is read on every review, so redundant words have a recurrin
 benefit. The SuperMemo example compresses "What does GRE stand for in biochemistry?" to
 `bioch: GRE`, moving the domain out of the question and into a context label.
 
-This collection's note types implement that label as the `Topic` and `Tool` fields. Using them is not
-optional politeness, it is the mechanism that lets Fronts stay short without becoming ambiguous.
+This collection's note types implement that label as the `Topic` field (`Tool` on `Keyboard
+Shortcut`). Using it is not optional politeness, it is the mechanism that lets Fronts stay short
+without becoming ambiguous: on 2026-11-12, 70 percent of the Q&A Fronts did not contain their own
+context value. Every practitioner and tool surveyed shows such a cue before the question. Wozniak's
+label "puts your brain immediately in the right context", Bjornstad wants the topic "stated at the
+beginning or near the beginning of the question", and Orbit, Obsidian Spaced Repetition, RemNote,
+Logseq and Mnemosyne all show one by default. Nielsen, merging his decks into one, had to rewrite
+"How to delete a word?" as "In Emacs, how to delete a word?". None of them treats a tool differently
+from any other subject. This collection did until 2026-11-12, with a `Tool` field and note types of
+its own, and the split never held: seven of its ten largest topics were software, and 18 values
+appeared in both fields.
 
 ## Legitimate redundancy (SuperMemo 17)
 
