@@ -26,6 +26,16 @@
   margin-left: 0.125rem;
 }
 
+#source {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: gray;
+}
+
+#source a {
+  color: inherit;
+}
+
 .cloze {
   font-weight: bold;
   color: blue;

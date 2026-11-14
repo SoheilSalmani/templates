@@ -275,31 +275,44 @@ Straight from the humanizer patterns, restricted to the ones that show up in car
 - No filler openers: "Note that", "It is important to note that", "Basically", "Essentially".
 - Sentence case for anything heading-like.
 
+## Source
+
+Every card on the skill's note types says where its fact came from, so that the fact can be
+checked, judged, and updated when the page changes (SuperMemo rule 18). The note type shows the
+`Source` under the answer, in small type, and it is never part of what is recalled.
+
+- A link to the exact page, with the page title as the link text. If the link dies, the title still
+  says what it was:
+  `<a href="https://docs.snowflake.com/en/user-guide/key-pair-auth">Snowflake docs: Key-pair authentication</a>`.
+- Plain text when the source has no URL: a book and its chapter, a talk, or
+  `Conversation, 12 November 2026`. Never guess an address.
+- Every card from one page carries the same `Source`. `"source:*docs.snowflake.com*"` finds every
+  card from that site, and `source:` with nothing after it finds the cards that have none.
+- From a repository, link the file on its forge, under the repository's own address, as
+  `remembering-what-you-built` describes.
+
+Volatility goes in the card text, not in the `Source`. Write "as of March 2026" in the Back or the
+cloze sentence: the `Source` says where a fact came from, not how long it holds.
+
 ## Tags
 
-Examples of good tags: `causal-inference`, `regime-social`, `browser-support`, `access-control`,
-`cdp-limitations`, `abbreviation`, `config`, `exemple`.
+Tags are for what no field and no note type says. The skill writes one kind: `client::<name>` on a
+card from client work, such as `client::acme` or `client::globex`. It keeps the client findable once
+the card leaves the Inbox, where a subdeck used to say it, and `tag:client` finds every client's
+cards at once. The client's own document is still the `Source`.
 
-Rules:
+Nothing else is a tag:
 
-- Lowercase kebab-case. Not Title Case, not `snake_case`, and no `&`.
-  `Acme`, `R&D`, `Governance`, `Organization` are all wrong here.
-- Sparse. Many good notes carry zero topical tags because the deck and the Topic field already say
-  what the card is about. Add a tag only when it expresses something the deck does not, typically a
-  cross-cutting theme you would want to search on later.
-- Exactly one source tag per card, naming where the fact came from. Format: a short slug for the
-  source, for example `confluence-acme-rd`, `supermemo-20-rules`, `uv-docs`. This is SuperMemo rule 18
-  adapted to note types that have no Source field, and it is what makes a stale fact findable later.
-- A card from client work also carries `client-<name>`, for example `client-acme` or
-  `client-globex`. It is not the source tag, which still names the document the fact came
-  from. It keeps the client findable once the card leaves the Inbox, where a subdeck used to say it.
-  A source tag that names a client's document, such as `globex-iac-guide`, stays a source
-  tag, and the client tag goes beside it.
-- Volatility goes in the card text, not the tag. Write "as of March 2026" in the Back or the cloze
-  sentence, because tags are invisible during review.
+- The subject is the `Topic`.
+- Where the fact came from is the `Source`.
+- The kind of card is its note type: `note:"Keyboard Shortcut"` finds every shortcut.
+- How fast a card is to review is in Anki's review log, and a guess made while writing the card is
+  wrong more often than right (`principles.md`, "Tags").
+- A card to fix gets a flag during review.
 
-A collection may already hold uppercase acronym tags such as `NYSE` or `TODO`. Leave them, and do not
-add more.
+Anki writes `leech`, `marked`, `duplicate` and `db-check` itself. Never add one, and remove `leech`
+only as part of a fix the user approved. Any other tag already in a collection is the user's: leave
+it unless asked to clean up.
 
 ## Language
 

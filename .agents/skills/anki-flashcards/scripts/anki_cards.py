@@ -40,6 +40,9 @@ ASSETS = Path(__file__).resolve().parent.parent / "assets"
 # The field each of those note types shows on its own line above the question.
 CONTEXT_FIELD = "Topic"
 
+# Where a card's fact came from, shown under its answer: a link to the page, or plain text.
+SOURCE_FIELD = "Source"
+
 # A top-level deck whose name starts with "_" is an archive: nothing is added or filed there.
 # Anki reads "_" in a search as any one character, so the search escapes it.
 ARCHIVE_PREFIX = "_"
@@ -55,7 +58,11 @@ EMOJI_RE = re.compile(
     "]"
 )
 CLOZE_RE = re.compile(r"\{\{c(\d+)::")
-TAG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+# The one tag the skill writes. A subject, a source and a kind of card each have a place of their own.
+CLIENT_TAG_RE = re.compile(r"^client::[a-z0-9]+(-[a-z0-9]+)*$")
+# Tags Anki writes itself: for a leech, Mark Note, Tag Duplicates, and Check Database.
+ANKI_TAGS = {"leech", "marked", "duplicate", "db-check"}
+SOURCE_LINK_RE = re.compile(r"""<a\b[^>]*?\bhref\s*=\s*["']([^"']*)["'][^>]*>(.*?)</a>""", re.I | re.S)
 BINARY_RE = re.compile(r"^\s*(true or false|vrai ou faux|yes or no)\b", re.I)
 BOLD_LI_RE = re.compile(r"<li>\s*<(b|strong)>[^<]*:", re.I)
 HEADING_RE = re.compile(r"</?h[1-6]\b", re.I)
@@ -216,7 +223,8 @@ def note_types() -> dict[str, dict]:
 
 def drift(spec: dict, model: dict) -> list[str]:
     """What keeps a note type in the collection from working as the skill's own. Styling is the
-    user's to change, so only the fields, the kind of note type and the context line count."""
+    user's to change, so only the fields, the kind of note type, the context line and the source
+    line count."""
     have = [field["name"] for field in model["flds"]]
     problems = []
     for index, field in enumerate(spec["inOrderFields"]):
@@ -229,6 +237,9 @@ def drift(spec: dict, model: dict) -> list[str]:
     if CONTEXT_FIELD in spec["inOrderFields"] and CONTEXT_FIELD in have:
         if not all("{{%s}}" % CONTEXT_FIELD in template["qfmt"] for template in model["tmpls"]):
             problems.append("does not show {{%s}} on every question" % CONTEXT_FIELD)
+    if SOURCE_FIELD in spec["inOrderFields"] and SOURCE_FIELD in have:
+        if not all("{{%s}}" % SOURCE_FIELD in template["afmt"] for template in model["tmpls"]):
+            problems.append("does not show {{%s}} on every answer" % SOURCE_FIELD)
     return problems
 
 
@@ -403,14 +414,44 @@ def lint_text(where: str, label: str, raw: str, report: Report) -> None:
             break
 
 
+def lint_source(where: str, raw: str, report: Report) -> None:
+    """A Source is a link whose text names the page, or plain text when there is no URL."""
+    links = SOURCE_LINK_RE.findall(raw)
+    if not links and re.fullmatch(r"https?://\S+", strip_html(raw), re.I):
+        report.warn(
+            where,
+            "Source is a bare address, which the card shows as text you cannot open. Make it a "
+            "link whose text is the page title.",
+        )
+    for href, text in links:
+        if not re.match(r"https?://", href.strip(), re.I):
+            report.error(where, "a Source link does not point to a web address (http or https).")
+        label = strip_html(text)
+        if not label or re.match(r"https?://", label, re.I):
+            report.warn(
+                where,
+                "a Source link shows its address. Use the page title as the link text, so the "
+                "source still says what it was if the link dies.",
+            )
+
+
+def client_tag(tag: str) -> str | None:
+    """The client tag that a near miss such as client-acme or Client::Acme stands for."""
+    match = re.match(r"^client(?:::|-|_)(.+)$", tag, re.I)
+    return "client::" + slug(match.group(1)) if match else None
+
+
 def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None, report: Report) -> None:
     fields = note.get("fields") or {}
     if not isinstance(fields, dict) or not fields:
         report.error(where, "no fields.")
         return
 
+    spec_fields = note_types().get(model, {}).get("inOrderFields", [])
+    # A note type made before the skill had a Source field is reported once, below.
+    source_missing = SOURCE_FIELD in spec_fields and model_fields is not None and SOURCE_FIELD not in model_fields
     if model_fields is not None:
-        unknown = [k for k in fields if k not in model_fields]
+        unknown = [k for k in fields if k not in model_fields and not (k == SOURCE_FIELD and source_missing)]
         for key in unknown:
             hint = ""
             if key == "Back Extra" and note_types().get(model, {}).get("isCloze"):
@@ -429,6 +470,23 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
         if not raw.strip() and key in (model_fields or [])[:1]:
             report.error(where, "field %r is empty." % key)
         lint_text(where, "field %r" % key, raw, report)
+
+    if source_missing:
+        report.error(
+            where,
+            "%r in this collection has no %s field, and AnkiConnect drops a field the note type "
+            "lacks without an error. Add it first: note-types.md, \"Setting them up\"." % (model, SOURCE_FIELD),
+        )
+    elif SOURCE_FIELD in spec_fields:
+        source = fields.get(SOURCE_FIELD)
+        if not isinstance(source, str) or not strip_html(source):
+            report.error(
+                where,
+                "no %s. Link the page the fact came from, with its title as the link text, or "
+                "name the source in plain text when it has no URL." % SOURCE_FIELD,
+            )
+        else:
+            lint_source(where, source, report)
 
     context_field = CONTEXT_FIELD if CONTEXT_FIELD in fields else None
     context = strip_html(fields.get(context_field, "")) if context_field else ""
@@ -609,14 +667,25 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
     if not isinstance(tags, list):
         report.error(where, "tags must be a list.")
         tags = []
-    for tag in tags:
-        if not TAG_RE.match(str(tag)):
-            report.error(
-                where, "tag %r is not lowercase kebab-case. Use for example %r."
-                % (tag, re.sub(r"[^a-z0-9]+", "-", str(tag).lower()).strip("-") or "source-slug")
-            )
-    if not tags:
-        report.warn(where, "no tags. Every card needs a source tag, for example 'confluence-acme-rd'.")
+    stray = []
+    for tag in (str(tag) for tag in tags):
+        if CLIENT_TAG_RE.match(tag):
+            continue
+        meant = client_tag(tag)
+        if meant:
+            report.error(where, "tag %r: write a client tag as %r." % (tag, meant))
+        elif tag.lower() in ANKI_TAGS:
+            report.error(where, "tag %r is one Anki adds itself. Never add it." % tag)
+        else:
+            stray.append(tag)
+    if stray:
+        # The tags go beside the note, so every note with stray tags shares one finding.
+        report.error(
+            "%s (%s)" % (where, ", ".join(stray)),
+            "carries tags the skill does not write. Its only tag is client::<name>. The subject goes "
+            "in %s, where the fact came from in %s, and the kind of card is its note type."
+            % (CONTEXT_FIELD, SOURCE_FIELD),
+        )
 
 
 def cmd_lint(args) -> int:
@@ -809,7 +878,7 @@ def cmd_inbox(_args) -> int:
         if deck != INBOX_DECK:
             subdecks[deck].append(note)
     for deck, members in sorted(subdecks.items()):
-        tag = "client-" + slug(deck.split("::", 1)[1])
+        tag = "client::" + slug(deck.split("::", 1)[1])
         missing = sum(1 for note in members if tag not in note["tags"])
         print("Subdeck %s: %s, %d without %s." % (deck, count(len(members), "note"), missing, tag))
     for deck in deck_names:

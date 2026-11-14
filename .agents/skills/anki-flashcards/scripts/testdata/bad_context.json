@@ -6,9 +6,9 @@
       {
         "fields": {
           "Topic": "Fetch API",
-          "Text": "The {{c1::Fetch API}} provides {{c2::an interface for fetching resources, including across the network}}."
-        },
-        "tags": ["mdn-web-docs"]
+          "Text": "The {{c1::Fetch API}} provides {{c2::an interface for fetching resources, including across the network}}.",
+          "Source": "<a href=\"https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API\">MDN: Fetch API</a>"
+        }
       }
     ]
   },
@@ -20,25 +20,25 @@
         "fields": {
           "Topic": "CodeMirror",
           "Front": "Which package exports <code>basicSetup</code>?",
-          "Back": "<code>codemirror</code>"
-        },
-        "tags": ["codemirror-docs"]
+          "Back": "<code>codemirror</code>",
+          "Source": "<a href=\"https://codemirror.net/docs/ref/\">CodeMirror reference manual</a>"
+        }
       },
       {
         "fields": {
           "Topic": "mdast",
           "Front": "Which field holds the text of a <code>Literal</code> node?",
-          "Back": "<code>value</code>"
-        },
-        "tags": ["syntax-tree-docs"]
+          "Back": "<code>value</code>",
+          "Source": "<a href=\"https://github.com/syntax-tree/mdast\">mdast specification</a>"
+        }
       },
       {
         "fields": {
           "Topic": "hast",
           "Front": "Which field holds the text of a <code>Literal</code> node?",
-          "Back": "<code>value</code>"
-        },
-        "tags": ["syntax-tree-docs"]
+          "Back": "<code>value</code>",
+          "Source": "<a href=\"https://github.com/syntax-tree/hast\">hast specification</a>"
+        }
       }
     ]
   },
@@ -50,8 +50,7 @@
         "fields": {
           "Front": "What does the <code>--frozen</code> option do when using <code>uv run</code>?",
           "Back": "Run without updating the lockfile."
-        },
-        "tags": ["uv-docs"]
+        }
       }
     ]
   }

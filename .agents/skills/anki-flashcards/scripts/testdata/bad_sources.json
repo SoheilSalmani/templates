@@ -1,0 +1,42 @@
+[
+  {
+    "deckName": "Inbox",
+    "modelName": "Q&A by topic",
+    "notes": [
+      {
+        "fields": {
+          "Topic": "Git",
+          "Front": "Which command shows the commits that touched one file?",
+          "Back": "<code>git log -- &lt;file&gt;</code>"
+        },
+        "tags": ["git-docs", "fast"]
+      },
+      {
+        "fields": {
+          "Topic": "Git",
+          "Front": "Which command lists the commits on your branch that are not on <code>origin/main</code> yet?",
+          "Back": "<code>git log origin/main..HEAD</code>",
+          "Source": "https://git-scm.com/docs/git-log"
+        }
+      },
+      {
+        "fields": {
+          "Topic": "Snowflake",
+          "Front": "During a key rotation, when can you <code>UNSET RSA_PUBLIC_KEY</code>?",
+          "Back": "After clients have switched to the new private key.",
+          "Source": "<a href=\"https://docs.snowflake.com/en/user-guide/key-pair-auth\">https://docs.snowflake.com/en/user-guide/key-pair-auth</a>"
+        },
+        "tags": ["client-acme"]
+      },
+      {
+        "fields": {
+          "Topic": "Python",
+          "Front": "Which built-in returns the largest item in an iterable?",
+          "Back": "<code>max()</code>",
+          "Source": "<a href=\"file:///Users/me/Downloads/python-cheatsheet.pdf\">Python cheat sheet</a>"
+        },
+        "tags": ["leech", "Client::Acme"]
+      }
+    ]
+  }
+]

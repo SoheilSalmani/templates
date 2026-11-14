@@ -23,12 +23,12 @@ Q&A by topic
 Topic: R&D governance
 Front: Which committee makes major investment decisions?
 Back:  The PIC.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 
 Cloze by topic
 Topic: R&D governance
 Text:  {{c2::PIC}} stands for {{c1::Portfolio Investment Council}}.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 ```
 
 The cloze note gives both directions of the acronym from one note, which is SuperMemo rule 17
@@ -54,7 +54,7 @@ Q&A by topic
 Topic: R&D governance
 Front: Within how long must the GPL distribute committee decisions to core team members?
 Back:  5 business days.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 ```
 
 ## 3. A set that should not be a card
@@ -75,7 +75,7 @@ others as context:
 Cloze by topic
 Topic: Acme R&D
 Text:  The five R&D pillars, each with its own Function Head: {{c1::Research}}, {{c2::Development}}, {{c3::CMC}}, {{c4::Medical Affairs}}, {{c5::Regulatory Affairs}}.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 ```
 
 Keep the count in the stem. "The five" tells the reviewer when they are done.
@@ -103,13 +103,13 @@ Q&A by topic
 Topic: R&D governance
 Front: Which committee decides whether a target moves from M0 to M1?
 Back:  The Target Review Group.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 
 Q&A by topic
 Topic: R&D governance
 Front: What decides whether a drug candidate advances between milestone gates?
 Back:  Endorsement by an R&D committee. Nothing advances from M0 through to File without it.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 ```
 
 The second card carries the idea that actually matters. The remaining five acronym expansions are
@@ -134,7 +134,7 @@ Kept version, if kept:
 Cloze by topic
 Topic: Acme R&D
 Text:  {{c2::CMC}} stands for {{c1::Chemistry, Manufacturing and Control}}.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 ```
 
 ## 6. Binary card
@@ -179,7 +179,7 @@ Q&A by topic
 Topic: Acme R&D
 Front: How many functional pillars was R&D organised around as of March 2026?
 Back:  Five, each with its own Function Head.
-Tags:  confluence-acme-rd
+Source: <a href="https://wiki.acme.example/rd-governance">R&D governance</a>
 ```
 
 Without "as of March 2026" this card silently becomes wrong after the next reorganisation, and there
@@ -209,13 +209,13 @@ Q&A by topic
 Topic: Snowflake
 Front: How do you rotate a key held in a user's <code>RSA_PUBLIC_KEY</code> property?
 Back:  <ol><li>Set the new public key in <code>RSA_PUBLIC_KEY_2</code></li><li>Switch clients to the new private key</li><li>Run <code>UNSET RSA_PUBLIC_KEY</code></li></ol>
-Tags:  snowflake-docs
+Source: <a href="https://docs.snowflake.com/en/user-guide/key-pair-auth">Snowflake docs: Key-pair authentication</a>
 
 Q&A by topic
 Topic: Snowflake
 Front: During a key rotation, when can you <code>UNSET RSA_PUBLIC_KEY</code>?
 Back:  After clients have switched to the new private key.
-Tags:  snowflake-docs
+Source: <a href="https://docs.snowflake.com/en/user-guide/key-pair-auth">Snowflake docs: Key-pair authentication</a>
 ```
 
 The first is a field update, so it keeps its review history. The second is a new note, and the one

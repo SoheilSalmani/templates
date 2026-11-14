@@ -1,6 +1,6 @@
 {
   "skill_name": "remembering-what-you-built",
-  "notes": "Score restraint first. Finding something to card when the change deserves nothing is the primary failure, and \"nothing here is worth remembering\", given with a reason, is a passing answer for most changes. Carding from the diff rather than from the artefact that outlives it is a failure, as is carding a design still in flight, a signature or file layout the code answers faster, a rule a test already enforces, or a rule that lives in a skill the agent loads when the task matches. Proposing a new card for a renamed thing before sweeping for the cards that claim the old name fails. Every card must carry the project slug as its single source tag. Choosing a note type, field, or formatting here is a failure, because anki-flashcards owns those. Writing to the collection without going through anki-flashcards and its approval table is a critical failure, and so is reporting a sweep as clean when Anki was never reached.",
+  "notes": "Score restraint first. Finding something to card when the change deserves nothing is the primary failure, and \"nothing here is worth remembering\", given with a reason, is a passing answer for most changes. Carding from the diff rather than from the artefact that outlives it is a failure, as is carding a design still in flight, a signature or file layout the code answers faster, a rule a test already enforces, or a rule that lives in a skill the agent loads when the task matches. Proposing a new card for a renamed thing before sweeping for the cards that claim the old name fails. Every card's Source must link under the project's repository address, or name the project the same way every time. Choosing a note type, field, or formatting here is a failure, because anki-flashcards owns those. Writing to the collection without going through anki-flashcards and its approval table is a critical failure, and so is reporting a sweep as clean when Anki was never reached.",
   "evals": [
     {
       "id": 1,
@@ -19,7 +19,7 @@
       "assertions": [
         "The flag clears the type-it-unaided test, and the test is named",
         "The card is written from the command's current help output or documentation, not from the diff",
-        "The project slug is used as the single source tag",
+        "The card's Source links under the project's repository address",
         "anki-flashcards drafts and shows its approval table before anything is added"
       ]
     },
@@ -28,7 +28,7 @@
       "prompt": "The `sync` command is now called `pull`.",
       "expected_output": "The stale sweep first, then an edit rather than a new card.",
       "assertions": [
-        "Existing cards are searched by the project tag plus the old name before anything else",
+        "Existing cards are searched by the project's address in Source plus the old name before anything else",
         "Findings are reported per note with what each claims and what is now true",
         "It proposes updating the affected notes rather than adding a second card for the new name",
         "Deletion is not proposed unless asked"

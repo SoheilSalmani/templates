@@ -48,11 +48,11 @@ Leave it when any of these holds:
 
 Both are about one project, so both carry the project as their context value. Which note type expresses each is decided by `anki-flashcards`, which knows the collection; do not choose it here.
 
-## The project is the source tag
+## The project is the source
 
-`anki-flashcards` requires exactly one source tag per card, naming where the fact came from, so that a fact which later goes stale can be found again. For a project, that tag is the project's own slug, the same one every time.
+`anki-flashcards` gives every card a `Source` naming where its fact came from, so that a fact which later goes stale can be found again. For a project, that is a file in the project's repository, so every card links under the same address: the repository's web page on its forge, from `git remote get-url origin`. An SSH remote such as `git@github.com:owner/repo.git` is `https://github.com/owner/repo`, and a card from its README links `https://github.com/owner/repo/blob/main/README.md`. A project with no remote gets its name in plain text, written the same way every time.
 
-**This is the whole reason the next section can work.** A project's cards with no shared tag cannot be swept, and an untagged card about a moving target is a card nobody will ever correct.
+**This is the whole reason the next section can work.** `"source:*github.com/owner/repo*"` finds every card about the project. A card whose source points anywhere else cannot be swept, and an unswept card about a moving target is a card nobody will ever correct.
 
 ## Cards the change just made false
 
@@ -60,7 +60,7 @@ A renamed command, a flipped default, a reversed decision: the cards claiming th
 
 **Sweep before writing anything new.** A rename usually means an edit, not a new card.
 
-1. Search the collection for the project's source tag, plus the old name or the affected term.
+1. Search the collection for cards whose `Source` is under the project's address, plus the old name or the affected term.
 2. Report what turned up, per note, saying what it claims and what is now true.
 3. Propose the narrowest fix: **update** where the fact simply moved, **suspend** where the feature is gone but may return, **delete** only when asked.
 
@@ -72,7 +72,7 @@ When Anki is unreachable, say the collection was not searched. Never report a cl
 
 This skill selects facts. It writes nothing to the collection.
 
-Hand the selection to `anki-flashcards` with the source you read and the project slug, and let it draft, format, audit, and show its approval table. That table is the single gate before anything is added, and routing around it is the one failure that costs months of review time.
+Hand the selection to `anki-flashcards` with the files you read and the repository's address, and let it draft, format, audit, and show its approval table. That table is the single gate before anything is added, and routing around it is the one failure that costs months of review time.
 
 ## Before you finish
 
@@ -81,6 +81,6 @@ Hand the selection to `anki-flashcards` with the source you read and the project
 - Nothing still in flight was carded.
 - "Nothing worth remembering" was genuinely available, and was used when it was true.
 - The sweep for cards the change invalidated ran before any new card was proposed.
-- Every card carries the project's slug as its source tag.
+- Every card's `Source` links under the project's repository address, or names the project the same way every time.
 - No note type, field, or formatting rule was decided here.
 - Nothing reached the collection except through `anki-flashcards` and its approval table.
