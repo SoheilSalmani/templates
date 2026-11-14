@@ -3,52 +3,52 @@
   "noteTypes": [
     {
       "modelName": "Q&A by topic",
-      "inOrderFields": ["Front", "Topic", "Back"],
+      "inOrderFields": ["Front", "Topic", "Back", "Source"],
       "isCloze": false,
       "cardTemplates": [
         {
           "Name": "Card 1",
           "Front": "<p id=\"topic\">{{Topic}}</p>\n<p>{{Front}}</p>",
-          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}\n\n{{#Source}}<p id=\"source\">{{Source}}</p>{{/Source}}"
         }
       ]
     },
     {
       "modelName": "Cloze by topic",
-      "inOrderFields": ["Text", "Topic"],
+      "inOrderFields": ["Text", "Topic", "Source"],
       "isCloze": true,
       "cardTemplates": [
         {
           "Name": "Cloze",
           "Front": "<p id=\"topic\">{{Topic}}</p>\n<p>{{cloze:Text}}</p>",
-          "Back": "<p id=\"topic\">{{Topic}}</p>\n<p>{{cloze:Text}}</p>"
+          "Back": "<p id=\"topic\">{{Topic}}</p>\n<p>{{cloze:Text}}</p>\n\n{{#Source}}<p id=\"source\">{{Source}}</p>{{/Source}}"
         }
       ]
     },
     {
       "modelName": "Keyboard Shortcut",
-      "inOrderFields": ["Front", "Topic", "Shortcut", "Shortcut (macOS)", "Shortcut (Windows)", "Shortcut (Linux)"],
+      "inOrderFields": ["Front", "Topic", "Shortcut", "Shortcut (macOS)", "Shortcut (Windows)", "Shortcut (Linux)", "Source"],
       "isCloze": false,
       "cardTemplates": [
         {
           "Name": "Card 1",
           "Front": "{{#Shortcut}}\n<p id=\"topic\">{{Topic}}</p>\n<p>{{Front}}</p>\n{{/Shortcut}}",
-          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut}}"
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut}}\n\n{{#Source}}<p id=\"source\">{{Source}}</p>{{/Source}}"
         },
         {
           "Name": "Card 2",
           "Front": "{{#Shortcut (macOS)}}\n<p id=\"topic\">{{Topic}} <span id=\"os\">macOS</span></p>\n<p>{{Front}}</p>\n{{/Shortcut (macOS)}}",
-          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (macOS)}}"
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (macOS)}}\n\n{{#Source}}<p id=\"source\">{{Source}}</p>{{/Source}}"
         },
         {
           "Name": "Card 3",
           "Front": "{{#Shortcut (Windows)}}\n<p id=\"topic\">{{Topic}} <span id=\"os\">Windows</span></p>\n<p>{{Front}}</p>\n{{/Shortcut (Windows)}}",
-          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (Windows)}}"
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (Windows)}}\n\n{{#Source}}<p id=\"source\">{{Source}}</p>{{/Source}}"
         },
         {
           "Name": "Card 4",
           "Front": "{{#Shortcut (Linux)}}\n<p id=\"topic\">{{Topic}} <span id=\"os\">Linux</span></p>\n<p>{{Front}}</p>\n{{/Shortcut (Linux)}}",
-          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (Linux)}}"
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (Linux)}}\n\n{{#Source}}<p id=\"source\">{{Source}}</p>{{/Source}}"
         }
       ]
     },

@@ -102,26 +102,26 @@
     {
       "id": 9,
       "prompt": "Card this page from my client's Confluence and put it in my inbox, it's not urgent. The client is Northwind. Page \"R&D governance\", last edited on 3 November 2026: \"Northwind's R&D portfolio is governed by four committees. The Portfolio Board approves any project budget above €10M. The Safety Committee reviews the benefit-risk profile of every candidate before first-in-human studies. The Target Review Group decides whether a target enters lead optimisation. The Launch Council approves the filing of a marketing authorisation application.\"",
-      "expected_output": "Cards that ask which committee makes which decision, with no card listing all four, no Northwind label on a question, and the structure dated. Every note goes to the top-level Inbox with a client-northwind tag and one source tag.",
+      "expected_output": "Cards that ask which committee makes which decision, with no card listing all four, no Northwind label on a question, and the structure dated. Every note goes to the top-level Inbox with the client::northwind tag and a Source naming the Confluence page in plain text, since the prompt gives no address.",
       "assertions": [
         "No card asks for all four committees in one recall",
         "Each committee card turns on one committee's decision, not on its name alone",
         "No Front starts with a Northwind label",
         "Every card about the committees dates the structure, as of November 2026 or the page's edit date",
         "Every drafted note's deckName is exactly Inbox",
-        "Every note carries client-northwind and exactly one source tag",
+        "Every note's only tag is client::northwind, and its Source names the R&D governance page in plain text, with no invented address",
         "The cards are shown for approval and no addNotes call is made"
       ]
     },
     {
       "id": 10,
-      "prompt": "Organize my Anki inbox. Here is what anki_cards.py inbox printed this morning. Work from it and don't run anything yet.\n\nInbox: 14 notes, 15 cards. 6 new, 9 studied, 7 due now, 5 of them more than a week overdue.\nOldest note added 2026-10-20, 23 days ago.\nCurrent decks: Cooking (212 cards), Music Theory (180 cards), Tech (1140 cards).\nSubdeck Inbox::Northwind: 9 notes, 9 without client-northwind.\n\nTopic \"Terraform\" (6 notes): most cards with it are in Tech (40).\n  1794100000001  studied, due  added  23d ago  What does terraform plan -refresh-only do?\n  (5 more)\n\nTopic \"Kafka\" (5 notes): no current deck has it.\n  1794200000001  studied, due  added  15d ago  What does a consumer group guarantee within a partition?\n  (4 more)\n\nTopic \"Wine pairing\" (3 notes): no current deck has it.\n  1794300000001  new           added   2d ago  Which wine style suits a dish served with a beurre blanc?\n  (2 more)\n\nLint findings on these notes:\n  WARN   Back is 230 characters. Check it is one fact.  [note 1794200000003]",
-      "expected_output": "Opens with the five overdue studied cards and the 23-day wait. Proposes Tech for the Terraform and Kafka notes and Cooking for wine pairing, or asks about it, rather than new decks. Adds client-northwind to the notes in Inbox::Northwind, flags the long Back, and moves nothing yet.",
+      "prompt": "Organize my Anki inbox. Here is what anki_cards.py inbox printed this morning. Work from it and don't run anything yet.\n\nInbox: 14 notes, 15 cards. 6 new, 9 studied, 7 due now, 5 of them more than a week overdue.\nOldest note added 2026-10-20, 23 days ago.\nCurrent decks: Cooking (212 cards), Music Theory (180 cards), Tech (1140 cards).\nSubdeck Inbox::Northwind: 9 notes, 9 without client::northwind.\n\nTopic \"Terraform\" (6 notes): most cards with it are in Tech (40).\n  1794100000001  studied, due  added  23d ago  What does terraform plan -refresh-only do?\n  (5 more)\n\nTopic \"Kafka\" (5 notes): no current deck has it.\n  1794200000001  studied, due  added  15d ago  What does a consumer group guarantee within a partition?\n  (4 more)\n\nTopic \"Wine pairing\" (3 notes): no current deck has it.\n  1794300000001  new           added   2d ago  Which wine style suits a dish served with a beurre blanc?\n  (2 more)\n\nLint findings on these notes:\n  WARN   Back is 230 characters. Check it is one fact.  [note 1794200000003]",
+      "expected_output": "Opens with the five overdue studied cards and the 23-day wait. Proposes Tech for the Terraform and Kafka notes and Cooking for wine pairing, or asks about it, rather than new decks. Adds client::northwind to the notes in Inbox::Northwind, flags the long Back, and moves nothing yet.",
       "assertions": [
         "Before the per-note proposal, the response says studied cards are overdue and the oldest note has waited 23 days",
         "The Terraform and Kafka notes are proposed for Tech, not for a new deck",
         "No deck is proposed per Topic value; any new deck is a single broad one whose name is left to the user",
-        "The proposal adds client-northwind to the notes in Inbox::Northwind",
+        "The proposal adds client::northwind to the notes in Inbox::Northwind",
         "No proposed target deck is an archive, a top-level deck whose name starts with _",
         "No anki_cards.py command or Anki tool is run, and no changeDeck, addTags or updateNoteFields call is made"
       ]
@@ -301,6 +301,18 @@
         "No createModel call is made before the user approves",
         "No drafted note uses Basic or another note type outside the skill's four",
         "No addNotes call is made"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "Card this from the git documentation, https://git-scm.com/docs/git-switch: \"-c <new-branch>, --create <new-branch>: Create a new branch named <new-branch> starting at <start-point> before switching to the branch. This is the transactional equivalent of git branch <new-branch> followed by git switch <new-branch>.\" Tag the cards git and fast, so I can find them later and do the quick ones on my phone.",
+      "expected_output": "A card asking for the command that creates a branch and switches to it, answered git switch -c, whose Source links to the git-switch page with the page title as its text. No git or fast tag: the response says the Topic and a Source search already find the cards, and that Anki's review log, not a tag, knows which cards are quick. Nothing is added yet.",
+      "assertions": [
+        "A card asks for the command that creates a branch and switches to it, answered git switch -c with a branch name",
+        "Every drafted note's Source is a link to https://git-scm.com/docs/git-switch whose text is a title, not the address",
+        "No drafted note carries a git, fast or any other tag",
+        "The response says why it adds no git or fast tag, rather than dropping the request silently",
+        "The cards are shown for approval and no addNotes call is made"
       ]
     }
   ]

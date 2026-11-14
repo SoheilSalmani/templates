@@ -37,6 +37,12 @@ Behind the context line, read 2026-11-12:
 - Carpenter and DeLosh (2006), [Impoverished cue support enhances subsequent retention](https://doi.org/10.3758/BF03193405), Memory and Cognition; Diaz and Benjamin (2011), [The effects of proactive interference and release from PI on judgments of learning](https://doi.org/10.3758/s13421-010-0010-y), Memory and Cognition; Rohrer, Dedrick and Stershic (2015), [Interleaved practice improves mathematics learning](https://doi.org/10.1037/edu0000001), Journal of Educational Psychology.
 - Practitioners and tools: Bjornstad, [Rules for designing precise Anki cards](https://controlaltbackspace.org/precise/#questions-should-be-context-free); RemNote, [Hiding ancestors on flashcards](https://help.remnote.com/en/articles/9631727-hiding-ancestors-on-flashcards); the context line shown by default in [Orbit](https://github.com/andymatuschak/orbit/blob/ed5a530750b6e96e86ea725ef3990c9209fc0028/packages/ui/src/components/Card.tsx#L279-L297), [Obsidian Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition/blob/3d5079f3bcd54531b084040d1c0178f15f681510/src/lang/locale/en.ts#L132-L133), [Logseq](https://github.com/logseq/logseq/blob/29fd2edd015e12963742b985ce6d2311c074e09b/src/main/frontend/extensions/fsrs.cljs#L291-L296) and [Mnemosyne](https://github.com/mnemosyne-proj/mnemosyne/blob/ff4f61e84bea0d6928c29b7798f0f88b90938a0a/mnemosyne/libmnemosyne/review_controllers/SM2_controller.py#L218-L221).
 
+Behind the sources and tags sections, read 2026-11-12:
+
+- Anki manual, [Using tags](https://docs.ankiweb.net/editing.html#using-tags); Bjornstad, [Organizing your cards](https://controlaltbackspace.org/organizing-cards/).
+- Whittaker, Matthews, Cerruti, Badenes and Tang (2011), [Am I wasting my time organizing email? A study of email refinding](https://doi.org/10.1145/1978942.1979457), CHI; Golder and Huberman (2006), [Usage patterns of collaborative tagging systems](https://doi.org/10.1177/0165551506062337), Journal of Information Science; Hearst (2006), [Clustering versus faceted categories for information exploration](https://people.ischool.berkeley.edu/~hearst/papers/cacm06.pdf), Communications of the ACM.
+- Logan (1988), [Toward an instance theory of automatization](https://philpapers.org/rec/LOGTAI), Psychological Review.
+
 ## The five attributes
 
 Matuschak's test for a prompt. Run a doubtful card against all five.
@@ -324,5 +330,31 @@ Record where a fact came from, so you can verify it, judge its reliability, and 
 changes. Stamp anything volatile with a date or version: statistics with the year collected, software
 behaviour with the version, org structures and prices with the date read.
 
-With these note types, the source goes in a tag and the date goes in the visible card text, because
-tags are not shown during review. See `house-style.md`.
+Each of those uses means reopening the page, so the source is a link to it, in the `Source` field,
+and the date goes in the visible card text. Wozniak's placement fits: sources "should accompany your
+items but should not be part of the learned knowledge", so the link sits under the answer and never
+on the question. Bjornstad starts with a tag for a whole book and adds a field only once he wants
+the exact page, because fussing over precision can make adding cards painful. An agent writes the
+field, so the exact page costs nothing. One collection read on 2026-11-12 kept its sources as tags:
+`aws-docs` sat on 44 notes, and none of its 544 source-tagged notes recorded which page a fact came
+from.
+
+## Tags
+
+Anki's manual gives tags one piece of advice: think "in advance about how you want to use them". A
+tag belongs to the note, so every card of the note shares it. Research on personal information adds
+two cautions. People rarely find things again by tag: in Whittaker and colleagues' field study of
+email, tags were 1 percent of the ways people reached a message again, search 18 percent. And
+vocabularies coined as you go drift into synonyms and mismatched levels of detail (Golder and
+Huberman), while one short list per independent question holds up (Hearst). So a tag here answers
+the one question no field or note type answers, which client a card belongs to, and everything else
+has a place of its own.
+
+The same collection held 207 distinct tags on 757 of its 8,966 notes, 87 of them used once, with
+pairs such as `fingerprint` and `fingerprinting`. A tag for cards that review fast was considered
+and dropped. Anki times a review from the question to the grade, and only 2 of the collection's
+5,135 cards with three or more reviews had a median of a second or less. Among 2,208 cards with
+eight or more reviews, a guess from the card's shape (shortcut, acronym, one-word answer) picked
+cards that took four seconds or less over their three latest reviews 30 percent of the time,
+against 54 percent for a guess from the card's own earlier times. Speed comes from practice as much
+as from the card (Logan), and Anki's review log already records it.

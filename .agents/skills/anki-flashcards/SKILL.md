@@ -70,7 +70,7 @@ Atomicity and content:
 - Ask "why" and "how" as well as "what". An explanation card holds better than a bare label, and
   gives the fact something to hang on.
 - Date-stamp volatile facts inside the card text: figures, versions, org charts, prices, headcounts.
-  Write "as of March 2026" in the card, not just in a tag.
+  Write "as of March 2026" in the card, not in the `Source`.
 - Skip facts that are trivially derivable, that you would look up rather than recall, or that only
   matter once.
 
@@ -138,8 +138,11 @@ Formatting, in full in `references/house-style.md`:
 - Escape `<`, `>` and `&` inside code, or `List<String>` loses its `<String>`. In a cloze, a `::`
   inside a deletion starts a hint, and a `}` just before the closing braces ends the deletion early.
   Break both with `<!-- -->`: `fmt:<!-- -->:Display`, `{}<!-- -->}}`.
-- Tags: lowercase kebab-case, sparse, thematic, plus exactly one source tag such as
-  `confluence-acme-rd` or `supermemo-20-rules`.
+- `Source` on every card: a link to the page the fact came from, with the page title as the link
+  text, such as `<a href="https://docs.astral.sh/uv/reference/cli/">uv CLI reference</a>`, or the
+  source in plain text when it has no URL.
+- Tags: only `client::<name>`, on a card from client work. The subject is the `Topic`, the source
+  is the `Source`, and the kind of card is its note type, so none of them is a tag.
 
 ## Self-audit before showing cards
 
@@ -149,7 +152,8 @@ Walk the drafted set once and ask:
    ambiguous, or not worth remembering. Fix it or cut it.
 2. Does any Front ask for two things?
 3. Could any two cards in this batch be confused for each other?
-4. Is every answer traceable to the source, with no inference of your own presented as fact?
+4. Is every answer traceable to the page its `Source` names, with no inference of your own
+   presented as fact?
 5. Does any Front repeat its own `Topic`, and does any `Topic` give away an answer?
 6. Is any Back longer than it needs to be?
 7. For each procedure, does the step that is easiest to get wrong have a card of its own?
@@ -173,11 +177,11 @@ user needs, or an exercise for a whole program (worked examples 10 and 11).
 `Inbox` is a top-level deck where cards wait to be filed. The user does not study it, so filing is
 what puts its cards into review.
 
-A card sent to the Inbox gets everything but its deck: note type, `Topic`, tags. The `Topic` is
-what the card shows, and the deck never appears in review. A card from client work also gets a
-`client-<name>` tag such as `client-acme`, because the client is the one thing a deck said that the
-card does not. New cards go to `Inbox` itself, never to a subdeck such as `Inbox::<client>`, and
-any subdeck empties out as its notes are filed.
+A card sent to the Inbox gets everything but its deck: note type, `Topic`, `Source`, tags. The
+`Topic` is what the card shows, and the deck never appears in review. A card from client work also
+gets a `client::<name>` tag such as `client::acme`, because the client is the one thing a deck said
+that the card does not. New cards go to `Inbox` itself, never to a subdeck such as
+`Inbox::<client>`, and any subdeck empties out as its notes are filed.
 
 When asked to organize or file the Inbox:
 
@@ -187,26 +191,29 @@ When asked to organize or file the Inbox:
 2. Propose one row per note: target deck, tags to add, and any fix the audit or the linter found.
    Decks are broad categories the user studies separately, so most notes go to an existing deck.
    When nothing fits, propose one new broad deck under a placeholder name and ask the user to name
-   it. Never rebuild the nested tree of an archived deck. Report a missing source tag rather than
+   it. Never rebuild the nested tree of an archived deck. Report a missing `Source` rather than
    guessing one. The source is usually out of reach by now, so audit the form, and flag a doubtful
-   fact instead of rewriting it. Fixes follow "Reviewing existing cards" above.
+   fact instead of rewriting it. A note that names its source in a tag instead gets that name
+   moved into `Source` as plain text, and the tag removed. Fixes follow "Reviewing existing cards"
+   above.
 3. Lead with what is decaying. Studied cards keep falling due in the Inbox, and a card that has
    waited more than two weeks is losing the context it was written in.
-4. After approval, apply fixes and new notes first, then add tags with `mcp__anki__addTags`, then
-   move every card of each note with `mcp__anki__changeDeck`. Read the card ids after the fixes,
-   because a new cloze index makes a new card. A move keeps the card's schedule and review history.
-   Hand the user anything these tools cannot do, such as changing a note type, and name any emptied
-   subdeck for them to delete.
+4. After approval, apply fixes and new notes first, then add tags with `mcp__anki__addTags` and
+   remove moved source tags with `mcp__anki__removeTags`, then move every card of each note with
+   `mcp__anki__changeDeck`. Read the card ids after the fixes, because a new cloze index makes a
+   new card. A move keeps the card's schedule and review history. Hand the user anything these
+   tools cannot do, such as changing a note type, and name any emptied subdeck for them to delete.
 
 ## Reference files
 
 Load these as needed rather than up front:
 
 - `references/note-types.md`. The skill's four note types, defined in `assets/note-types.json` and
-  `assets/card.css`: their fields, how they render, which to pick, how to set up one that is missing,
-  and the two API traps that break batches. Read this before choosing a note type.
-- `references/house-style.md`. Formatting, HTML, tags, language, and the prose rules for card text.
-  Read this before drafting.
+  `assets/card.css`: their fields, how they render, which to pick, how to set up one that is missing
+  or older than its `Source` field, and the API traps that break a batch or drop a field. Read this
+  before choosing a note type.
+- `references/house-style.md`. Formatting, HTML, the `Source` field, tags, language, and the prose
+  rules for card text. Read this before drafting.
 - `references/principles.md`. The research canon with attribution. Read this when a judgement call
   is genuinely unclear, for example how to handle an open-ended list, which parts of a procedure to
   card, which facts from code deserve a code card, or whether two cards on one fact is redundancy or

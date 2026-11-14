@@ -6,12 +6,13 @@ Every card this skill writes uses one of four note types. They are defined in
 
 | Note type | Fields | Use for |
 | --- | --- | --- |
-| `Q&A by topic` | `Front`, `Topic`, `Back` | Any question and answer: tools, concepts, domains, rules, science |
-| `Cloze by topic` | `Text`, `Topic` | Sentence-shaped facts, acronym pairs, closed lists, a code line blanked in context |
-| `Keyboard Shortcut` | `Front`, `Topic`, `Shortcut`, `Shortcut (macOS)`, `Shortcut (Windows)`, `Shortcut (Linux)` | Key bindings. `Shortcut` when the keys are the same everywhere, the per-OS fields when they differ |
+| `Q&A by topic` | `Front`, `Topic`, `Back`, `Source` | Any question and answer: tools, concepts, domains, rules, science |
+| `Cloze by topic` | `Text`, `Topic`, `Source` | Sentence-shaped facts, acronym pairs, closed lists, a code line blanked in context |
+| `Keyboard Shortcut` | `Front`, `Topic`, `Shortcut`, `Shortcut (macOS)`, `Shortcut (Windows)`, `Shortcut (Linux)`, `Source` | Key bindings. `Shortcut` when the keys are the same everywhere, the per-OS fields when they differ |
 | `Coding Exercises` | `Repository`, `Range` | A pointer to exercises worked in an editor, never a card about code |
 
-Default to `Q&A by topic` unless the fact genuinely reads better as a cloze.
+Default to `Q&A by topic` unless the fact genuinely reads better as a cloze. The three card types end
+with `Source`, shown under the answer: what goes in it is in `house-style.md`, "Source".
 
 `Coding Exercises` is for a source that calls for writing a whole function or program, which is
 practice rather than a card. Its one card reads "Finish exercises {{Range}} in the
@@ -27,16 +28,25 @@ invent one.
   approve, call `mcp__anki__createModel` with the arguments `anki_cards.py note-type "<name>"`
   prints. Adding a note type does not force a one-way sync.
 - **Differs.** The type exists but lacks a field, is the wrong kind, or does not show `{{Topic}}`
-  on its question. Report what differs and leave the fix to the user, because it changes notes
-  they already review. Renaming a field keeps every note, its templates follow, and it needs no
-  one-way sync. Adding, removing or reordering fields, and deleting a note type, force one.
+  on its question or `{{Source}}` on its answer. Report what differs and leave the fix to the user,
+  because it changes notes they already review. Renaming a field keeps every note, its templates
+  follow, and it needs no one-way sync. Adding, removing or reordering fields, and deleting a note
+  type, force one.
+
+A type made before the skill had a `Source` field differs by that field, and that difference cannot
+wait: AnkiConnect drops a field the note type lacks, so the linter refuses cards for the type until
+the field exists. Adding a field forces a one-way sync, so have the user sync every device first.
+Then, in Tools › Manage Note Types › Fields, they add `Source`, which goes last, and paste the
+`{{#Source}}` line from `anki_cards.py note-type "<name>"` at the end of each back template. They
+sync again and choose to upload.
 
 Styling is the user's to change. `check` never compares colours or layout.
 
 Image occlusion is not in the file. Anki's occlusion editor works only on note types derived from
 its built-in Image Occlusion type, which `createModel` cannot make. For a diagram, have the user
-add a copy of that type in Tools › Manage Note Types, give it a `Topic` field, and show
-`<p id="topic">{{Topic}}</p>` above the image on its front.
+add a copy of that type in Tools › Manage Note Types, give it `Topic` and `Source` fields, show
+`<p id="topic">{{Topic}}</p>` above the image on its front, and end its back with the same
+`{{#Source}}` line as the other types.
 
 ## Other note types in a collection
 
@@ -57,6 +67,7 @@ Front: <p id="topic">{{Topic}}</p>
 Back:  {{FrontSide}}
        <hr id=answer>
        {{Back}}
+       {{#Source}}<p id="source">{{Source}}</p>{{/Source}}
 ```
 
 `Cloze by topic` renders the same line above `{{cloze:Text}}` on both sides of the card, and
@@ -106,15 +117,18 @@ the thing a card asks for:
 With broad decks and an `Inbox`, the deck does not say what a card is about. The `Topic` is the only
 place a card's subject shows during review.
 
-## Two traps that break a batch
+## Three API traps
 
-1. `Cloze by topic` has no `Back Extra` field, only `Text` and `Topic`. The MCP `modelFieldNames`
-   tool helpfully returns an `example` object mentioning `Back Extra` for anything cloze-shaped,
-   which is wrong here. Passing that key rejects the whole batch.
+1. `Cloze by topic` has no `Back Extra` field, only `Text`, `Topic` and `Source`. The MCP
+   `modelFieldNames` tool helpfully returns an `example` object mentioning `Back Extra` for anything
+   cloze-shaped, which is wrong here. Passing that key rejects the whole batch.
 2. `mcp__anki__addNotes` takes one `deckName` and one `modelName` per call, capped at 100 notes.
    A mixed set of Q&A and cloze cards therefore needs one call per model. Duplicates are skipped
    individually, but a validation error such as an empty required field or a bad tag rejects the
    entire batch, so lint before sending.
+3. AnkiConnect drops a field the note type does not have, without an error. A `Source` sent to a
+   type made before the field existed is lost, which is why the linter checks field names against
+   the collection whenever Anki is up.
 
 ## Cloze conventions
 
