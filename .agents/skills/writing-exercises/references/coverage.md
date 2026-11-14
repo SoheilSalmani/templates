@@ -40,27 +40,27 @@ git -C activities grep -n -i -E 'lifetime|borrow' master -- '*/README.md'
 grep -n -i -E 'lifetime|borrow' */README.md
 ```
 
-An item whose number has an `Exercise N` commit was done, on the activity's branch or in the older repository:
+An item's `Exercise N` commit is its answer. In an older repository the learner wrote it, so the item was done; in the activities repository the answers are written with the set, so a commit there shows what the set covers, not what the learner did:
 
 ```bash
 git -C activities log --oneline --grep='^Exercise 7$' rust --
 git -C rust-activities log --oneline --grep='^Exercise 7$'
 ```
 
-An item without one is still waiting for the learner. Read the item before counting it: a `TODO` or a one-word note covers nothing.
+Either way, an item that practises a concept covers it: skip the concept if the learner did the item, and point them at it if not. Read the item before counting it: a `TODO` or a one-word note covers nothing.
 
 ## Deciding
 
 | The concept is | and | then |
 | --- | --- | --- |
-| theory: a definition, a rule, a default, a name, a syntax form, a trade-off stated in a sentence | carded | skip it |
+| theory: a definition, a rule, a default, a name, a syntax form, a trade-off stated in a sentence, why an answer works | carded | skip it |
 | theory | not carded | flashcards: list it for `anki-flashcards`, which drafts the cards and asks before adding them |
 | practice: writing code with it, operating the tool, finding a bug, choosing under real constraints | practised by an exercise the learner did | skip it, or bring it back unannounced inside a later task |
 | practice | written up but not done | point the learner at that item instead of writing it again |
 | practice | not practised anywhere | write an exercise |
 | not needed by the target, or barely used by the codebase | | skip it |
 
-When a concept is both, split it: its facts go on cards, and the doing gets an exercise only if a real task needs it.
+When a concept is both, split it: its facts go on cards, and the doing gets an exercise only if a real task needs it. Writing the answers turns up more theory, such as why a prediction comes out as it does; it joins the flashcard list, never a `Solution` block.
 
 ## Reporting
 

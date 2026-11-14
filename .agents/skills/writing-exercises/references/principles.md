@@ -23,16 +23,16 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 
 - **Retrieval beats rereading**, even though rereading feels better at the time. Retrieval wins at two days and a week; rereading wins only at five minutes, and raises confidence while lowering recall (Roediger & Karpicke 2006, *abstract*). Dunlosky et al. (2013) rate practice testing and spacing the only two high-utility techniques of ten, and rereading low. **So**: every item is an outcome the learner produces, never a recipe to follow or a page to reread.
 - **Generating beats reading**, by about 0.40 SD across 86 studies, more when the learner generates the whole answer (0.55) than part of it (0.32), and about zero for nonwords (Bertsch et al. 2007). **So**: the learner writes the whole unit of code. A name nobody could derive, such as a magic file name, is a nonword: name it, link it, and don't make the learner guess it.
-- **Feedback helps on average (d = 0.48), most when it carries information (0.99) and least as reward or punishment (0.24)** (Wisniewski, Zierer & Hattie 2020). Over a third of feedback interventions made performance worse, and feedback aimed at the person rather than the task does least, praise included (Kluger & DeNisi 1996, *abstract*; Hattie & Timperley 2007). **So**: the solution is the feedback: an answer that works, to compare with. No praise.
+- **Feedback helps on average (d = 0.48), most when it carries information (0.99) and least as reward or punishment (0.24)** (Wisniewski, Zierer & Hattie 2020). Over a third of feedback interventions made performance worse, and feedback aimed at the person rather than the task does least, praise included (Kluger & DeNisi 1996, *abstract*; Hattie & Timperley 2007). **So**: the answer is the feedback: a commit that works, to compare with. No praise.
 - **Feedback helps after an attempt, not before.** Studies that kept answers out of reach until the learner tried show a benefit; studies that did not are inconsistent (Shute 2008, citing Bangert-Drowns et al. 1991). **So**: the solution is hidden until the learner has tried.
-- **A failed attempt followed by the answer beats reading the answer**, for guesses that were sure to fail (Kornell, Hays & Bjork 2009, *abstract*; Richland, Kornell & Kao 2009, *abstract*), provided correction follows and analyses the error (Metcalfe 2017, *abstract*). **So**: predict items are worth writing even when most predictions will be wrong, as long as the solution explains the actual behaviour.
+- **A failed attempt followed by the answer beats reading the answer**, for guesses that were sure to fail (Kornell, Hays & Bjork 2009, *abstract*; Richland, Kornell & Kao 2009, *abstract*), provided correction follows and analyses the error (Metcalfe 2017, *abstract*). **So**: predict items are worth writing even when most predictions will be wrong. The solution gives the actual result, and the analysis goes on a flashcard; see where the evidence is weak.
 - **Judging your learning with the answer in view misleads you** (Koriat & Bjork 2005, *abstract*). **So**: open the solution only after a real attempt, and let a recall item, on a later day, test what reading it only seemed to teach.
 
 ## Exercise or flashcard
 
 - **Facts are best kept by spaced retrieval.** Practice testing and distributed practice are the only two techniques of ten rated high utility (Dunlosky et al. 2013), and a spaced flashcard is both at once. Hermans recommends flashcards for learning a new language's syntax (Hermans 2021, *The Programmer's Brain*, chapter 3; table of contents and opening only).
 - **Skills are kept by doing them.** The four-component model separates supportive information, the theory a task draws on, from the learning tasks themselves, and keeps drill for routines that must become automatic (van Merriënboer 2019). Memory depends on how closely the processing at study matches the processing it is later used for (Morris, Bransford & Franks 1977, *abstract*).
-- **So**: what can be stated in a sentence goes on a card, and an exercise is kept for what has to be done. A concept with both sides gets both, once each.
+- **So**: what can be stated in a sentence goes on a card, and an exercise is kept for what has to be done. A concept with both sides gets both, once each. The same split runs through a solution: its commands and results stay, and its sentences of why are cards.
 
 ## Real tasks
 
@@ -42,7 +42,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 ## Hints
 
 - **Learners click straight through hints to the answer.** In intelligent tutors, 68% of the hint levels before the last were viewed for under a second, and this help abuse went with poorer learning. Hints that state the principle helped understanding; answer-giving hints helped only when the learner explained them (Aleven, Roll, McLaren & Koedinger 2016).
-- **So**: no hints. A learner who is stuck opens the solution, which carries what helped in a hint, the principle and the likely wrong turn, along with the answer.
+- **So**: no hints. A learner who is stuck opens the answer; the principle a hint would have stated is on a flashcard.
 
 ## How much to guide
 
@@ -67,7 +67,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 - **Reading and predicting go with writing.** Skill at tracing code correlated with skill at writing it (r = .63), and explaining code in plain English correlated at r = .56 (Lopez, Whalley, Robbins & Lister 2008). PRIMM's order, predict, run, investigate, modify, then make, beat the comparison classes in a quasi-experiment with 11- to 14-year-olds (Sentance, Waite & Kallia 2019). **So**: predict items before build items when a feature behaves in a way the learner might not expect.
 - **False friends hinder transfer**: features similar in syntax and different in semantics across languages (Brown, Hermans & Margulieux 2024). **So**: aim predict and break items at the places where this tool looks like one the learner knows.
 - **Finding a bug is the hard part.** Once students found a bug, they fixed it 97% of the time (Fitzgerald et al. 2008, *abstract*). **So**: a fix-the-bug item trains finding; describe the symptom, not the location.
-- **Comparing two cases beats studying them separately** (d = 0.50 over 57 experiments), especially when the learner looks for what they share and the principle comes after the comparison (Alfieri, Nokes-Malach & Schunn 2013, *abstract*). **So**: compare items name the principle in the solution, not in the prompt.
+- **Comparing two cases beats studying them separately** (d = 0.50 over 57 experiments), especially when the learner looks for what they share and the principle comes after the comparison (Alfieri, Nokes-Malach & Schunn 2013, *abstract*). **So**: compare items never name the principle; it goes on a flashcard, met after the comparison.
 
 ## The shape of a set
 
@@ -75,7 +75,7 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 - **Design backwards from the final performance** (McTighe & Wiggins 2012). Wilson's version: write the program the learner should finish with, remove its hardest part to make the last exercise, and repeat (Wilson 2019, *Teaching Tech Together*). **So**: write the capstone first.
 - **Break the skill into subskills, practise the most important first, learn enough to self-correct, and remove the barriers to practising** (Kaufman 2013, *The First 20 Hours*, excerpt). **So**: the day-one loop comes first, and exercise 1 is a quick, visible win.
 - **Teach what the tool is, not a tour of its features**: the skills learners need to do things, and the model of how the tool runs (The Carpentries, lesson design training; Wilson 2019). Teach the concepts the tool actually has, not those other tools have (Exercism, syllabus docs).
-- **Doing beats reading by a wide margin**: in one online course, extra practice was associated with more than six times the learning of extra reading or watching (Koedinger et al. 2015, correlational). **So**: the README is the title and the list, and each item as few words as its task allows.
+- **Doing beats reading by a wide margin**: in one online course, extra practice was associated with more than six times the learning of extra reading or watching (Koedinger et al. 2015, correlational). **So**: the README is the title and the list, and each item and each solution as few words as its task allows.
 - **Learning styles are a myth**: there is virtually no evidence that matching instruction to a preferred style helps (Pashler, McDaniel, Rohrer & Bjork 2008, *abstract*). **So**: no "visual" or "hands-on" variants. Match the format to the content.
 
 ## Wording
@@ -93,9 +93,10 @@ Condensed from three literature reviews made for this skill in October 2026, on 
 
 - No study compares a project with drills for developers learning a tool. The project spine with drills only for routines is an inference from the four-component model and from transfer research.
 - Spacing ratios come from fact learning; applying them to code is inference.
-- Productive failure was studied mostly in school maths, in groups, with a teacher guiding the comparison afterwards. A learner alone has neither, which is why the solution must carry the comparison.
+- Productive failure was studied mostly in school maths, in groups, with a teacher guiding the comparison afterwards. A learner alone has neither, which is why every item ends in something to compare with: a working commit, or a result.
 - Dropping hints extends the finding that hints get skipped to experienced developers, and follows the learner's own preference for less to read.
 - No study compares an item with a check sentence against one whose only feedback is a solution to compare with. Dropping the check follows the learner's preference for less to read; the feedback findings above are met by the solution, read after the attempt.
+- Keeping the why out of the solution also follows the learner's preference: answers that read in seconds, with the knowledge on flashcards. Correction that analyses the error helped right after a failed attempt (Metcalfe 2017, *abstract*); a card brings that analysis back later, on Anki's schedule, and no study here compares the two.
 
 ## Sources
 

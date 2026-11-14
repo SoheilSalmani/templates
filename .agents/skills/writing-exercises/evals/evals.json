@@ -1,16 +1,17 @@
 {
   "skill_name": "writing-exercises",
-  "notes": "Score the exercises a learner would get, not how much method the reply describes. A set fails outright if any item gives its answer's code or steps in the prompt, if a solution does not answer its item, if a command, flag or API was neither run nor checked against current docs, if an item asks only for a fact, or if a readiness set contains anything from the repository or was written into it. A set also fails if it skipped the coverage check without saying so, if any item carries a hint or a check sentence, if any item installs the tool, if the README has prose between the title and the list, or if an item makes the learner read or write material from outside the target that a one-line stand-in could replace. A review fails if it rewrites items that were already fine, or renumbers or changes the meaning of an item that has an Exercise N commit. Score each output against a run without the skill: a set that does not beat that baseline on these points is not finished.",
+  "notes": "Score the exercises a learner would get, not how much method the reply describes. A set fails outright if any item gives its answer's code or steps in the prompt, if a solution does not answer its item, if a command, flag or API was neither run nor checked against current docs, if an item asks only for a fact, or if a readiness set contains anything from the repository or was written into it. A set also fails if it skipped the coverage check without saying so, if any item carries a hint or a check sentence, if any item installs the tool, if the README has prose between the title and the list, or if an item makes the learner read or write material from outside the target that a one-line stand-in could replace. Its answers fail if an item whose answer changes a file has no `Exercise N` commit on the activity's branch, or if a `Solution` block holds code, configuration or a sentence of why rather than commands and a result of a few words. A review fails if it rewrites items that were already fine, or renumbers or changes the meaning of an item that has an Exercise N commit. Score each output against a run without the skill: a set that does not beat that baseline on these points is not finished.",
   "evals": [
     {
       "id": 1,
       "prompt": "I want to learn DuckDB properly. Write the activities for it.",
-      "expected_output": "A duckdb-activities README in the activities format, built on one dataset, ordered so each idea is introduced, reused and mixed, with every command checked against the current DuckDB docs.",
+      "expected_output": "A duckdb-activities README in the activities format, built on one dataset, ordered so each idea is introduced, reused and mixed, with every command checked against the current DuckDB docs, and every query saved in a file committed as its item's `Exercise N` rather than shown in a block.",
       "assertions": [
         "The README is the title `# DuckDB Activities` followed directly by the numbered list, with no description or version line",
         "No item installs DuckDB, and item 1 ends with a visible result",
         "Every item is one or two short sentences, with no `Check:` sentence and almost no inline code",
-        "No item contains the SQL or commands that answer it; those appear only inside `<details>` blocks",
+        "No item contains the SQL or commands that answer it: the SQL is in files committed as `Exercise N`, and the commands are in `<details>` blocks",
+        "No `<details>` block holds SQL, other code or a sentence of why; each holds only commands and a result of a few words, and an item whose commit is its whole answer has none",
         "The set includes at least one predict item, one break or fix item, one inspect item, and one compare or choose item",
         "At least one later item uses an earlier feature without naming it",
         "There is at least one review item, and the set ends with a capstone, then a recall item or a proposal for Anki review notes",
@@ -35,14 +36,14 @@
     {
       "id": 3,
       "prompt": "Add five more exercises to my dlt-activities.",
-      "expected_output": "Items 16 to 20 appended, reusing the set's Pokémon and GitHub pipelines, with the existing items untouched and the README change offered as a fixup commit.",
+      "expected_output": "Items 16 to 20 appended, reusing the set's Pokémon and GitHub pipelines, with the existing items untouched, the README change committed as a fixup, and the new answers committed as `Exercise 16` to `Exercise 20`.",
       "assertions": [
         "It reads the existing README and git log before writing",
         "The new items are numbered 16 to 20, and items 1 to 15 are unchanged",
         "The new items build on the set's existing pipelines and names",
         "At least one new item uses an earlier feature, such as a transformer or pagination, without naming it",
         "Every new item is one or two short sentences, with no check",
-        "If it commits, the subject is `fixup! Set up the playground`, and it does not rebase or push without asking"
+        "The README change is committed as `fixup! Set up the playground` and each new answer that changes a file as its `Exercise N`, and it does not rebase or push without asking"
       ]
     },
     {
@@ -54,7 +55,8 @@
         "It writes 13 items, numbered 1 to 13 to match the commits",
         "Each item states the outcome its diff achieves, not a description of the diff",
         "Each item is one or two short sentences, with no check",
-        "It changes no commit, and flags any commit whose purpose it cannot tell"
+        "It changes no commit, and flags any commit whose purpose it cannot tell",
+        "Any `Solution` block it writes holds only the commands and results the diffs cannot show, never code copied from a diff"
       ]
     },
     {
@@ -150,9 +152,9 @@
     {
       "id": 14,
       "prompt": "Write the activities for Polars and commit them.",
-      "expected_output": "With writing-commits and humanizer loaded alongside: the README is committed as `Set up the playground`, and its prose has no generated tics.",
+      "expected_output": "With writing-commits and humanizer loaded alongside: the README is committed as a fixup of `Set up the playground` and the answers as `Exercise N`, and the README's prose has no generated tics.",
       "assertions": [
-        "The commit subject is `Set up the playground`, not a subject rewritten to writing-commits' style",
+        "The README's commit subject is `fixup! Set up the playground`, or `Set up the playground` in a new repository, and each answer's is `Exercise N`; none is rewritten to writing-commits' style",
         "No item uses an em dash as glue, a synonym triad, or the words \"just\", \"simply\" or \"easy\"",
         "The rules of the set itself still hold: short outcomes and hidden solutions, with no checks or hints"
       ]
@@ -225,13 +227,49 @@
     {
       "id": 21,
       "prompt": "Create a Rust activity in my activities repository.",
-      "expected_output": "A rust/README.md with the title and the numbered list, and a row for it in the root README.md table linking the rust branch, both committed on master as fixup! Set up the playground, with no answers committed unasked.",
+      "expected_output": "A rust/README.md with the title and the numbered list, and a row for it in the root README.md table linking the rust branch, both committed on master as fixup! Set up the playground, and a rust branch on top of it with an Exercise N commit for every answer that changes a file.",
       "assertions": [
         "The activity's questions are in rust/README.md, titled `# Rust Activities` and followed directly by the list",
         "The root README.md table gains a row that links rust/README.md and the rust branch",
-        "The change is committed on master as `fixup! Set up the playground`, and it asks before the autosquash rebase, rebasing the activity branches, or force-pushing",
-        "Any commit it makes on the rust branch is an `Exercise N` holding only files inside rust/",
+        "The change is committed on master as `fixup! Set up the playground` without asking, and it asks once, before folding the fixup in, rebasing the activity branches and force-pushing",
+        "Every item whose answer changes a file has an `Exercise N` commit on the rust branch, built in item order and holding only files inside rust/",
+        "No `Solution` block holds Rust code; the learner reads the code in the commits' diffs",
         "Items name files by their file name, such as `Cargo.toml`, never a paraphrase such as \"the manifest\""
+      ]
+    },
+    {
+      "id": 22,
+      "prompt": "Start a new activities repository for learning Weft. It will live on our GitLab instance at gitlab.example.com under the group training.",
+      "expected_output": "The playground layout with a root README table whose branch link uses GitLab's tree URL.",
+      "assertions": [
+        "The branch link has the form `https://gitlab.example.com/training/activities/-/tree/weft`, not a github.com URL",
+        "Each Solution block has a blank line after `</summary>`",
+        "Nothing is pushed or created on the forge without being asked"
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "Create 10 exercises to master the concepts on this page: https://docs.gitlab.com/ci/jobs/job_control/",
+      "expected_output": "A gitlab-ci activity whose answers are `Exercise N` commits on the gitlab-ci branch, each pipeline change read as a diff, with Solution blocks that hold only commands and results, and GitLab's rules and defaults sent to the flashcard list.",
+      "assertions": [
+        "Every item whose answer changes `.gitlab-ci.yml` or another file has an `Exercise N` commit on the gitlab-ci branch holding that change",
+        "The answers were built on the branch in item order, not in a scratch directory that was then deleted",
+        "No Solution block contains YAML or other code",
+        "No Solution block explains why: facts such as the `allow_failure` default of a manual job that `rules` adds are in the flashcard list, not in the README",
+        "A predict item's block gives the result in a few words, such as \"Blocked.\"",
+        "Every item is one sentence, two at most, of about 15 words and never more than 25, the capstone's list of constraints aside"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "Review my gitlab-ci activity.",
+      "expected_output": "Reports that the Solution blocks carry the pipeline's YAML and paragraphs of explanation while the gitlab-ci branch has no Exercise N commit; moves the YAML into Exercise N commits and the explanations to the flashcard list, and keeps every item statement that passes.",
+      "assertions": [
+        "It reads the README and the gitlab-ci branch's log, and reports that no item has an `Exercise N` commit although most change `.gitlab-ci.yml`",
+        "It moves each block's YAML into its item's `Exercise N` commit rather than keeping it in the block",
+        "It lists the blocks' explanations as flashcards instead of keeping them in the README",
+        "It flags items longer than 25 words, such as item 10, and splits or shortens them, which is safe because none has a commit yet",
+        "It keeps item statements that pass word for word"
       ]
     }
   ]

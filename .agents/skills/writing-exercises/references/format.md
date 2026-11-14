@@ -3,7 +3,7 @@
 ## Contents
 
 - The README of an activity
-- An item and its blocks
+- An item and its block
 - Inputs
 - Numbering and parts
 - Parts and Resources
@@ -27,14 +27,15 @@
 
    </details>
 
-2. <Next item.>
+2. <Verb> <outcome>.
 ````
 
 - The title uses the tool's own casing: `# dbt Activities`, `# systemd Activities`, `# Amazon Web Services Activities`.
 - **The list comes straight after the title.** No description, no version line, no notes: the version and date the set was checked against go in the reply.
 - No `## TODOs` or notes sections. Planning notes stay out of the README.
+- An item whose `Exercise N` commit is its whole answer, like item 2, has no block.
 
-## An item and its blocks
+## An item and its block
 
 ````markdown
 3. <Verb> <outcome>.
@@ -46,22 +47,18 @@
    <command>
    ```
 
-   ```text
-   <output, only where it is the answer>
-   ```
-
-   <One sentence, only where the commands alone would mislead.>
+   <The result, in a few words, for a predict, inspect, compare or choose item.>
 
    </details>
 ````
 
 - **Indent everything under an item to the column where its text starts**: 3 spaces under `1.` to `9.`, 4 under `10.` to `99.`. With less, the block falls out of the item: it renders flush left, between two halves of the list.
 - `<summary>` sits 2 spaces deeper than its `<details>`.
-- **Leave a blank line after `</summary>`**, or GitHub shows the Markdown inside as plain text, fences and all. Leave one before `</details>` too, as the sets already do.
+- **Leave a blank line after `</summary>`**, or the Markdown inside shows as plain text, fences and all; GitHub and GitLab both need it. Leave one before `</details>` too, as the sets already do.
 - Leave a blank line between items, and between an item's text and its first block.
 - The only block is labelled exactly `Solution`. Items carry no hint.
-- Every fence names a language. Match the fence the README already uses for shell, `bash` or `sh`, and use `bash` in a new README. Use `text` for output, and the tool's language for code and queries: `sql`, `python`, `hcl`, `json`.
-- Show output only where it answers the item, such as a predict item's result, and only the lines that do.
+- **The block holds no code.** Its fences are shell, matching the README's `bash` or `sh` (`bash` in a new README), and `text` for an output line that is the result. Code, configuration and queries are in the item's `Exercise N` commit.
+- **The result is a few words**, such as "Blocked." or "The first project.", never a sentence of why. Show output only where a line of it is the result, and only that line.
 
 ## Inputs
 
@@ -77,12 +74,12 @@
       - a product is a food item when its type, which can be null, is jaffle
   ```
 
-- **Setup that is not what the set teaches** goes in the setup commit, or in the solution, never in an item of its own.
+- **Setup that is not what the set teaches** goes in the setup commit, or in an answer, never in an item of its own.
 
 ## Numbering and parts
 
 - **One list per README, numbered 1 to N**, so that each `Exercise N` names exactly one commit on the branch.
-- A long set can be split with `##` headings that name its parts, such as the course or chapter each part follows. The numbering continues across them: the list after a heading starts at the next number, which GitHub honours.
+- A long set can be split with `##` headings that name its parts, such as the course or chapter each part follows. The numbering continues across them: the list after a heading starts at the next number, which GitHub and GitLab both honour.
 - Older READMEs restart at 1 under each `## <Source>` section and keep each section's answers on a branch of its own. When extending one of those, keep its scheme.
 - Never write `1. TODO.` as a placeholder. A part with no exercises yet is left out.
 
@@ -116,8 +113,10 @@ activities/
   | [Weft](weft/README.md) | [weft](https://github.com/<owner>/activities/tree/weft) |
   ```
 
+  The branch link is the forge's tree URL. GitHub: `https://github.com/<owner>/activities/tree/<branch>`; GitLab: `https://<host>/<namespace>/activities/-/tree/<branch>`.
+
 - An activity's folder is named after the tool, lowercase and hyphenated, and its branch takes the same name.
-- Everything an exercise produces lives in its activity's folder, and the commands in the solutions run from there.
+- Everything an exercise produces lives in its activity's folder, and the commands in the blocks run from there.
 - `.gitignore` groups its patterns into blocks, each under a `# <What> (<Tool>)` comment, with a blank line between blocks:
 
   ```gitignore
@@ -138,14 +137,15 @@ activities/
 | --- | --- | --- |
 | `Set up the playground` | `master`, its only commit | The tooling, the root `README.md`, `.gitignore`, `.gitmodules`, and every activity's `README.md` and starter files |
 | `fixup! Set up the playground` | `master` | A new activity, or a change to any `README.md` or starter file, until it is folded in |
-| `Exercise N` | The activity's branch | The answer to item N, inside the activity's folder, and nothing else. Never a `README.md` |
+| `Exercise N` | The activity's branch | The answer to item N: every file it creates or changes, inside the activity's folder, and nothing else. Never a `README.md` |
 | `fixup! Exercise N` | The activity's branch | A correction to the answer to item N |
 
 - **The subject is the whole message.** No body, no prefix, no trailer.
-- **An exercise that changes no file has no commit.** Its answer lives entirely in its `Solution` block.
+- **The commit is the answer.** All of an answer's code is in its `Exercise N`, and none of it in the `Solution` block. An exercise that changes no file has no commit; its answer lives entirely in its block.
+- **Build the answers in order, on the branch.** For a new activity, commit its `README.md` and starter files on `master` as `fixup! Set up the playground`, and create its branch there. Then, item by item, run the item's commands in the activity's folder and commit what they leave before starting the next, so each answer starts where the last one ended, as the learner's will. Side-products such as a virtual environment or a build directory go in `.gitignore`, never in a commit. A README change found while building is one more fixup on `master`, with the unpublished branch rebased onto it.
 - **Write the item before its answer.** A statement written afterwards describes the diff instead of the goal.
 - **The numbers are keys.** An item inserted before committed ones means rewording every later `Exercise N` commit, so append instead. Items without commits can be reordered freely.
-- **Folding fixups in rewrites history.** `git rebase -i --autosquash --root` on `master` moves every `fixup!` into `Set up the playground` and gives it a new hash, so every activity branch is then rebased onto the new `master` with `git rebase --onto master <old-setup> <branch>`, and both need a force-push. All of it is the user's call; `rewriting-history` covers the mechanics.
+- **Folding fixups in rewrites history.** `git rebase -i --autosquash --root` on `master` moves every `fixup!` into `Set up the playground` and gives it a new hash, so every activity branch is then rebased onto the new `master` with `git rebase --onto master <old-setup> <branch>`, and all of them need a force-push. Ask once for the whole step, naming the branches it moves, and run it all on a yes; `rewriting-history` covers the mechanics.
 
 ## Finding an answer
 

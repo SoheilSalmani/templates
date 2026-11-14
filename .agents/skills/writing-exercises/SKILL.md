@@ -1,11 +1,11 @@
 ---
 name: writing-exercises
-description: "Writes practice exercises to learn a software tool, framework, library or language fast, or to check that the learner masters the features a codebase uses before working on it, in the activities format: a README of short numbered real-world tasks with hidden `<details>` example solutions, and one `Exercise N` commit per answer. Checks the Anki collection and existing exercise sets first, sends theory to flashcards, and writes exercises only for practice that is missing. Use when asked to write, extend, review or fix exercises or activities for learning something, to turn a tutorial, course, book or docs into exercises, to check readiness for a repository's stack, to write an activities README's missing statements from its commits, or to write an exercise's reference solution. Not for writing the flashcards, which anki-flashcards owns, or for tutorials and how-to guides, which writing-documentation owns."
+description: "Writes practice exercises to learn a software tool, framework, library or language fast, or to check that the learner masters the features a codebase uses before working on it, in the activities format: a README of short numbered real-world tasks, each answered by an `Exercise N` commit the learner reads as a diff, with a hidden `<details>` block only for the commands and results a diff cannot show. Checks the Anki collection and existing exercise sets first, sends theory to flashcards, and writes exercises only for practice that is missing. Use when asked to write, extend, review or fix exercises or activities for learning something, to turn a tutorial, course, book or docs into exercises, to check readiness for a repository's stack, to write an activities README's missing statements from its commits, or to write and commit an exercise's answer. Not for writing the flashcards, which anki-flashcards owns, or for tutorials and how-to guides, which writing-documentation owns."
 ---
 
 # Writing exercises
 
-An exercise is one short attempt. The learner reads a one-line goal, produces an answer from memory and the docs, and only then opens the solution, one possible answer, to compare. Every rule below protects that loop: the goal must be quick to read and must not give the answer away, and the solution must show an answer that works. Exercises are for doing; what only needs remembering goes on flashcards.
+An exercise is one short attempt. The learner reads a one-line goal, produces an answer from memory and the docs, and only then compares it with one possible answer: the item's `Exercise N` commit, read as a diff, plus a `Solution` block for what a diff cannot show. Every rule below protects that loop: the goal and the solution must each read in seconds, the goal must not give the answer away, and the answer must work. Exercises are for doing; what only needs remembering, including why an answer works, goes on flashcards.
 
 **When rules conflict, the earlier one wins: correct, then needed, then produced by the learner, then short.** A wrong exercise is the worst kind: a learner who follows it exactly and fails concludes that they are the problem. An unneeded one spends the time the set exists to save.
 
@@ -16,7 +16,7 @@ Two kinds of set:
 - **Learning a tool**, framework, library or language. The target is what the learner wants to do with it.
 - **Readiness for a codebase.** The target is the features a repository's code relies on, and the set checks that the learner masters them before working there.
 
-Also in scope: more exercises for an existing set; reviewing or repairing one; turning a tutorial, course or docs into exercises; writing the statements an activities README is missing, from its `Exercise N` commits; and an exercise's reference solution, when asked.
+Also in scope: more exercises for an existing set; reviewing or repairing one; turning a tutorial, course or docs into exercises; writing the statements an activities README is missing, from its `Exercise N` commits; and the `Exercise N` commits a set's items are missing.
 
 Out of scope, and say so: writing the flashcards, which `anki-flashcards` owns once this skill has said what belongs on them; tutorials, how-to guides and reference docs, which `writing-documentation` owns; quizzing someone live; assessments that rank people; explaining the codebase itself.
 
@@ -24,8 +24,8 @@ Out of scope, and say so: writing the flashcards, which `anki-flashcards` owns o
 
 Sort every candidate concept before writing anything, after checking two stores: the Anki collection, and the learner's existing sets with their `Exercise N` commits.
 
-- **Theory goes on a flashcard, never into an exercise**: a definition, a rule, a default, a name, a syntax form, a trade-off stated in a sentence, and how to install the tool. Skip it when the collection already cards it; otherwise list it for `anki-flashcards`, which drafts the cards and asks before adding them.
-- **Practice gets an exercise**: writing code with a feature, operating the tool, finding a bug, choosing under real constraints. Skip it when an exercise the learner has done already practises it.
+- **Theory goes on a flashcard, never into an exercise or its solution**: a definition, a rule, a default, a name, a syntax form, a trade-off stated in a sentence, how to install the tool, and why an answer works or a prediction comes out as it does. Skip it when the collection already cards it; otherwise list it for `anki-flashcards`, which drafts the cards and asks before adding them.
+- **Practice gets an exercise**: writing code with a feature, operating the tool, finding a bug, choosing under real constraints. Skip it when an item in the learner's sets already practises it.
 - **Anything the target does not need, or the codebase barely uses, gets nothing.**
 
 `references/coverage.md` has the searches for both stores and the full decision table; read it before writing or extending a set. The reply says what each concept became and why, and names any store it could not check.
@@ -66,10 +66,10 @@ Then **write the capstone first**: the shortest realistic task that combines the
 
 ## Writing an exercise
 
-The shape is `N. <Verb> <outcome>.`, one short sentence, two at most.
+The shape is `N. <Verb> <outcome>.`, one short sentence, two at most: about 15 words, never more than 25. Past that, cut what the learner can choose, or split the item. Only the capstone's list of constraints runs longer.
 
 - **A task from real work.** Every item is something a developer does with the tool on a job: build a feature, fix a failing job, move data, speed up a query. Never a toy that runs a feature for no purpose.
-- **Minimal.** Give the outcome and nothing the learner could do without. Leave out paths, file names, names and values the learner can choose; the solution shows one possible answer. An item reads in seconds and is done in minutes.
+- **Minimal.** Give the outcome and nothing the learner could do without. Leave out paths, file names, names and values the learner can choose; the commit shows one possible answer. An item reads in seconds and is done in minutes.
 - **Practise the target and nothing else.** Material from outside the target shrinks to the smallest stand-in that works, or disappears: a set on a template engine records placeholder files, not a service the learner has to read; a set on a CI system runs one-line steps, not a build.
 - **State the outcome, not the steps.** Never put the answer's code in the prompt, and never turn a tutorial's "copy this" into an exercise. Code belongs in a prompt only as material: data to load, a snippet to predict, a bug to fix.
 - **Keep code out of the sentence.** Name things in words where words are clear, such as "the project name" or "a Dockerfile". Inline code only for a name the learner must type exactly and words cannot carry; anything longer is fenced material. A file is the exception: give its name, such as `README.md`, never a paraphrase like "the README".
@@ -77,8 +77,8 @@ The shape is `N. <Verb> <outcome>.`, one short sentence, two at most.
 - **One outcome per item.**
 - **Block a shortcut only where it would skip the point**: "without adding a patch", "using only the CLI".
 - **Size each item for 5 to 10 minutes**, never more than 15. Only the capstone takes longer.
-- **Keep the state straight.** Every name a solution uses exists by then, and later solutions reuse it.
-- **Mix the types**: build, extend, predict then run, break it on purpose, fix a bug, inspect, compare two ways, swap behind the tests, choose which. Aim the predict and break items at the traps. `references/exercise-types.md` gives each type's shape and solution; read it when planning a set.
+- **Keep the state straight.** Every name an answer uses exists by then, and later answers reuse it.
+- **Mix the types**: build, extend, predict then run, break it on purpose, fix a bug, inspect, compare two ways, swap behind the tests, choose which. Aim the predict and break items at the traps. `references/exercise-types.md` gives each type's shape and answer; read it when planning a set.
 - **Use plain words.** No "just", "simply", "easy", "experiment with" or "explore"; no item that is only a noun, such as "Cards."; no "same but…", which hides the task in the previous item.
 
 A recipe step, before:
@@ -87,7 +87,7 @@ A recipe step, before:
 6. Update the AMI ID to `ami-08d70e59c07c61a3a`.
 ```
 
-After, the same change becomes a prediction:
+After, the same change becomes a prediction. The new AMI is in the `Exercise 6` commit, and the block keeps only the result:
 
 ````markdown
 6. Change the instance's AMI. Before you apply, predict whether Terraform updates the instance or replaces it.
@@ -95,11 +95,7 @@ After, the same change becomes a prediction:
    <details>
      <summary>Solution</summary>
 
-   It replaces it: the plan marks the instance `-/+`.
-
-   ```text
-   ~ ami = "ami-830c94e3" -> "ami-08d70e59c07c61a3a" # forces replacement
-   ```
+   It replaces it.
 
    </details>
 ````
@@ -118,46 +114,86 @@ After, the same Weft practice:
 
 `references/worked-examples.md` rewrites more real exercises and names each one's defect. Read it before reviewing a set, or when a rule here feels abstract.
 
-## Solutions
+## Answers
 
-- **The `Solution` block is one possible answer, as short as it can be**: the commands, the few lines of code or configuration the answer turns on, and the answer to a predict or compare item. A sentence of why only where the commands alone would mislead.
-- **Longer code belongs in the `Exercise N` commit**, not in the block. An exercise that changes no file has no commit.
-- **No hints and no check.** An item is its sentence and its `Solution` block, nothing else.
-- **Verify every solution.** Run it in a scratch directory outside the learner's repository when the tool runs locally; otherwise check each command, flag and API against the docs for the pinned version. Say which items ran and which were only checked. A solution that contradicts its item is a broken exercise, not a detail.
+An item's answer is its `Exercise N` commit, which the learner reads as a diff. Its `Solution` block holds only what the diff cannot show.
+
+- **Code goes in the commit, never in the block**: every file the answer creates or changes, configuration and tests included. A query or snippet typed into a console, such as SQL, is saved to a file in the activity's folder and committed too.
+- **The block holds commands and results, nothing else**: the commands to type, or the action in the UI where the tool has no command, and the result of a predict, inspect, compare or choose item, in a few words. Output only where a line of it is the result. An item whose commit is its whole answer has no block; one that changes no file has no commit.
+- **No theory in the block**: no why, no principle, no background, no trade-off, no note on a likely wrong turn. Each is a flashcard, listed for `anki-flashcards`.
+- **The block reads in seconds**: a few command lines and a few words. A sequence that needs variables or loops is a script, committed and run from the block.
+- **No hints and no check.** An item is its sentence, its commit, and its `Solution` block when it needs one.
+- **Build every answer for real, in item order, on the activity's branch.** Run each item's commands in the activity's folder and commit what they leave as `Exercise N` before starting the next, so each answer starts where the last one ended. Where the tool cannot run here, check each command, flag and API against the docs for the pinned version, and commit the files all the same. Answers built in a scratch directory and thrown away leave the set unfinished. Say which items ran and which were only checked. An answer that contradicts its item is a broken exercise, not a detail.
+
+A block carrying the answer's code and the theory behind it, before:
+
+````markdown
+3. Publish only from the default branch, and predict that branch's pipeline status until someone publishes.
+
+   <details>
+     <summary>Solution</summary>
+
+   ```yaml
+   publish:
+     rules:
+       - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+         when: manual
+   ```
+
+   Blocked. A manual job that `rules` adds doesn't allow failure by default, so the pipeline waits for it.
+
+   </details>
+````
+
+After, the job is in the `Exercise 3` commit, the default goes on a flashcard, and the block keeps the result:
+
+````markdown
+3. Publish only from the default branch, and predict that branch's pipeline status until someone publishes.
+
+   <details>
+     <summary>Solution</summary>
+
+   Blocked.
+
+   </details>
+````
 
 ## The repository
 
 `references/format.md` holds the exact Markdown, the indentation a `<details>` block needs inside a list, and the git workflow. Read it before writing or editing a README or a commit. The parts that bind:
 
 - **One repository holds every activity.** Its `master` has a single commit, `Set up the playground`: the tooling, a root `README.md` with a table of every activity linking to its branch, and one folder per activity, named after the tool, holding that activity's `README.md`. An activity's `README.md` is its title, `# <Tool> Activities`, then the numbered list: no description and no version line.
-- **Each activity has a branch named after its folder**, and its commits after `Set up the playground` are its answers and nothing else: one `Exercise N` per item, holding only that exercise's files, inside the activity's folder.
+- **Each activity has a branch named after its folder**, and its commits after `Set up the playground` are its answers and nothing else: one `Exercise N` per item whose answer changes a file, holding only that answer's files, inside the activity's folder.
 - **Commit subjects are fixed**, `Set up the playground` and `Exercise N`; the number is the key that ties a commit to its item, so **these subjects win over the subject rules in `writing-commits`.** A new activity or a change to any `README.md` is a `fixup! Set up the playground` on `master`, folded in by an autosquash rebase, after which every activity branch is rebased onto the new `master`.
 - **Never renumber, or change the meaning of, an item that has a commit.** Renumbering means rewording every later commit. Append instead; items without commits can still move.
-- **Commit only when asked.** Folding fixups in and rebasing the branches rewrite history, so ask first, and leave the force-push to the user unless they ask for it.
+- **A set ends committed, without asking**: the README change as a `fixup! Set up the playground` on `master`, and the answers as `Exercise N` commits on the activity's branch, which for a new activity starts from that fixup. An answer left uncommitted is one the learner never sees.
+- **Ask once before rewriting or publishing history.** Folding the fixups in, rebasing every activity branch onto the new `master` and force-pushing them all are one step, run together on one yes.
 - Older sets are separate `<tool>-activities` repositories, with their `README.md` at the root and their own `Set up the playground`. When extending one, keep its layout.
 - Run the README's prose through `humanizer` before showing it.
 
 ## Extending or reviewing a set
 
-- **Extending**: continue the numbering, reuse the set's project and names, and make the new items revisit earlier ideas. New items follow this skill even where the old ones do not.
-- **Reviewing**: judge each item against the rules, rewrite only those that fail, and keep the rest word for word. Report what changed in each item and why; when nothing fails, change nothing and say so. Where an item and its commit disagree, say so and ask which is right: silently changing either one misdescribes the learner's work or throws it away.
-- **Missing statements**: where commits exist under `TODO` items, read each commit with `git show`, then write, in one sentence, the outcome its diff achieves rather than a description of the diff.
+- **Extending**: continue the numbering, reuse the set's project and names, and make the new items revisit earlier ideas. New items follow this skill even where the old ones do not, and their answers are committed after the branch's last `Exercise N`.
+- **Reviewing**: judge each item against the rules, rewrite only those that fail, and keep the rest word for word. A block that holds code fails: the code moves into the item's `Exercise N` commit, built if the branch lacks it. A sentence of theory in a block fails: it moves to the flashcard list. Report what changed in each item and why; when nothing fails, change nothing and say so. Where an item and its commit disagree, say so and ask which is right: silently changing either one misdescribes the learner's work or throws it away.
+- **Missing statements**: where commits exist under `TODO` items, read each commit with `git show`, then write, in one sentence, the outcome its diff achieves rather than a description of the diff. Its block, if it needs one, gets the commands and results the diff cannot show, never the diff's code.
 
 ## Before you finish
 
 - Both stores were checked, or the reply names the one that could not be, and the reply says what every concept became.
-- No exercise covers theory, installation, or a concept the learner already practised; theory without cards went to `anki-flashcards`.
-- Every item is a task from real work in one or two short sentences, with no check, no hint, and code kept out of its sentence, and fits in 15 minutes, except the capstone.
+- No exercise covers theory, installation, or a concept the learner already practised; theory without cards went to `anki-flashcards`, the why behind each answer included.
+- Every item is a task from real work in one or two short sentences, about 15 words and never more than 25, with no check, no hint, and code kept out of its sentence, and fits in 15 minutes, except the capstone.
 - No item needs knowledge outside the target: material from elsewhere is a stand-in.
 - Exercise 1 is a first visible result with the tool, and nothing installs it.
 - Each item adds at most one concept new to the learner, and uses only what came before it.
 - Features are named once; later items give only the goal; look-alikes meet in an item that names neither.
 - Core ideas come back at least twice, a review item comes about every five exercises, and the set ends with a capstone, then a recall item or review notes.
 - The set mixes types: at least one predict, one break or fix, one inspect, and one compare or choose.
-- Every name a solution uses exists by then, and every solution answers its item.
+- Every name an answer uses exists by then, and every answer does what its item asks.
 - Every command, flag and API was run or checked against the docs for the pinned version, and the reply says which, with the version and date.
-- Solutions are one possible answer, mostly commands; longer code is in `Exercise N` commits.
+- Every item whose answer changes a file has its `Exercise N` commit on the activity's branch, built in item order.
+- No `Solution` block holds code, configuration or a sentence of why: only commands, UI actions and results of a few words.
 - The activity's `README.md` is the title and the list, with no description, in the activity's folder, and the root `README.md` lists the activity with a link to its branch.
+- The README change is committed on `master` and the answers on the activity's branch, and folding, rebasing and pushing were offered as one step.
 - A readiness set holds nothing from the repository, and nothing was written into the repository.
 - The numbering continues the README's, and no item with a commit was renumbered or changed in meaning.
 
@@ -167,7 +203,7 @@ When a few items join an existing set, the per-item checks apply to them, and th
 
 - `references/coverage.md`: searching the Anki collection and the existing sets, and deciding between an exercise, a flashcard and nothing. Read it before writing or extending a set.
 - `references/codebase.md`: the inventory of a repository's stack and features, ranking, and where a readiness set goes. Read it for any readiness set.
-- `references/format.md`: the README skeleton, list indentation, the solution block, inputs, parts and Resources, `.gitignore` and `resources/`, and the git workflow. Read it before writing a README or a commit.
-- `references/exercise-types.md`: each exercise type, when it pays off, its prompt shape and what its solution holds. Read it when planning a set.
+- `references/format.md`: the README skeleton, list indentation, the `Solution` block, inputs, parts and Resources, `.gitignore` and `resources/`, and the git workflow, from building the answers to folding the fixups. Read it before writing a README or a commit.
+- `references/exercise-types.md`: each exercise type, when it pays off, its prompt shape, and what its commit and block hold. Read it when planning a set.
 - `references/worked-examples.md`: weak exercises from real sets rewritten, and strong ones kept, each with its reason. Read it before reviewing a set, or to calibrate wording.
 - `references/principles.md`: the research behind these rules, with sources. Read it when a call is genuinely unclear, such as how much to guide a learner, whether to let them attempt first, or whether something needs practice or only recall.

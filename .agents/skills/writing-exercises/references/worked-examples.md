@@ -7,8 +7,10 @@ Real items from one learner's activity sets, with the defect named and a rewrite
 - Items that are not tasks
 - Items that are theory
 - Items that dictate the steps
+- Items too long to read at a glance
 - Items that depend on another item
 - Items whose solution disagrees
+- Solutions that carry code or theory
 - Sets that repeat themselves
 - Strong items, kept
 
@@ -87,6 +89,22 @@ Two outcomes, the first given away as steps, the second a paste with nothing to 
 ```
 
 **The method in place of the goal.** `terraform-activities/README.md:54` is rewritten in `SKILL.md`: "Update the AMI ID" becomes a prediction of whether the instance is replaced.
+
+## Items too long to read at a glance
+
+**Three outcomes in one item.** `activities/gitlab-ci/README.md`, item 10:
+
+```markdown
+10. Check that the built package installs and runs on each Python version after all the tests, then use needs to start each check as soon as its own version's tests pass. Say which setup still checks 3.11 when the 3.15 tests fail.
+```
+
+Forty-two words and three outcomes: a check stage, a rewrite of it, and a comparison. Split it, and let a prediction carry the comparison:
+
+```markdown
+10. Check that the built package installs and runs on each Python version, once the tests pass.
+
+11. Start each version's check as soon as its own tests pass, and predict which checks run when the 3.15 tests fail.
+```
 
 ## Items that depend on another item
 
@@ -177,6 +195,32 @@ Say what replaces it:
 ````
 
 **A solution that does not run.** `rollup-activities/README.md:17` gives `rollup src/main.js -o bundle.js cjs`, which is missing `-f` before the format. Every command in a solution is run or checked against the docs before it ships.
+
+## Solutions that carry code or theory
+
+**Theory after the commands.** `activities/gitlab-ci/README.md`, item 6:
+
+````markdown
+6. Using only glab, list every pipeline that is waiting on a release, whether for a person or for a timer.
+
+   <details>
+     <summary>Solution</summary>
+
+   ```bash
+   glab ci list --status manual
+   glab ci list --status scheduled
+   ```
+
+   The API has no blocked or delayed status: a pipeline waiting for a blocking manual job is `manual`, and one waiting for a delayed job is `scheduled`. Pipelines whose only manual job is optional have passed, so neither list shows them.
+
+   </details>
+````
+
+The paragraph is three facts about pipeline statuses: three flashcards. The block keeps the two commands and nothing else.
+
+**The answer's code in the block.** `activities/gitlab-ci/README.md`, item 1, holds the project's whole `.gitlab-ci.yml` between its `uv` commands and its push, with a note on why `requires-python` goes down to 3.11. The file belongs in the `Exercise 1` commit, with the rest of the project; the note is about the stand-in project, so it goes nowhere; the block keeps the commands. Ten of the set's eleven blocks carry YAML, and its branch has no `Exercise N` commit: the answers were built in a scratch directory and deleted, so the learner has no diff to compare with.
+
+**Reasons after the commands.** `activities/airflow-ecs/README.md`, item 5, follows its two commands with: "The execution role may pull from this repository and write to this log group, nothing more. The task asks for ARM64 because the image is built on an ARM Mac, and Fargate runs X86_64 otherwise." The role's permissions and the architecture are already in the `Exercise 5` diff, and why Fargate needs the architecture is a flashcard. The block keeps the commands.
 
 ## Sets that repeat themselves
 
