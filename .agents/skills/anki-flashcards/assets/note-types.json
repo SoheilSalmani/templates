@@ -1,0 +1,68 @@
+{
+  "css": "card.css",
+  "noteTypes": [
+    {
+      "modelName": "Q&A by topic",
+      "inOrderFields": ["Front", "Topic", "Back"],
+      "isCloze": false,
+      "cardTemplates": [
+        {
+          "Name": "Card 1",
+          "Front": "<p id=\"topic\">{{Topic}}</p>\n<p>{{Front}}</p>",
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Back}}"
+        }
+      ]
+    },
+    {
+      "modelName": "Cloze by topic",
+      "inOrderFields": ["Text", "Topic"],
+      "isCloze": true,
+      "cardTemplates": [
+        {
+          "Name": "Cloze",
+          "Front": "<p id=\"topic\">{{Topic}}</p>\n<p>{{cloze:Text}}</p>",
+          "Back": "<p id=\"topic\">{{Topic}}</p>\n<p>{{cloze:Text}}</p>"
+        }
+      ]
+    },
+    {
+      "modelName": "Keyboard Shortcut",
+      "inOrderFields": ["Front", "Topic", "Shortcut", "Shortcut (macOS)", "Shortcut (Windows)", "Shortcut (Linux)"],
+      "isCloze": false,
+      "cardTemplates": [
+        {
+          "Name": "Card 1",
+          "Front": "{{#Shortcut}}\n<p id=\"topic\">{{Topic}}</p>\n<p>{{Front}}</p>\n{{/Shortcut}}",
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut}}"
+        },
+        {
+          "Name": "Card 2",
+          "Front": "{{#Shortcut (macOS)}}\n<p id=\"topic\">{{Topic}} <span id=\"os\">macOS</span></p>\n<p>{{Front}}</p>\n{{/Shortcut (macOS)}}",
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (macOS)}}"
+        },
+        {
+          "Name": "Card 3",
+          "Front": "{{#Shortcut (Windows)}}\n<p id=\"topic\">{{Topic}} <span id=\"os\">Windows</span></p>\n<p>{{Front}}</p>\n{{/Shortcut (Windows)}}",
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (Windows)}}"
+        },
+        {
+          "Name": "Card 4",
+          "Front": "{{#Shortcut (Linux)}}\n<p id=\"topic\">{{Topic}} <span id=\"os\">Linux</span></p>\n<p>{{Front}}</p>\n{{/Shortcut (Linux)}}",
+          "Back": "{{FrontSide}}\n\n<hr id=answer>\n\n{{Shortcut (Linux)}}"
+        }
+      ]
+    },
+    {
+      "modelName": "Coding Exercises",
+      "inOrderFields": ["Repository", "Range"],
+      "isCloze": false,
+      "cardTemplates": [
+        {
+          "Name": "Card 1",
+          "Front": "Finish exercises {{Range}} in the <code>{{Repository}}</code> repository.",
+          "Back": "{{FrontSide}}"
+        }
+      ]
+    }
+  ]
+}

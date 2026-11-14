@@ -1,44 +1,51 @@
-# Note types in this collection
+# The skill's note types
 
-Counts taken from the live collection on 2026-11-12. "Current" excludes the `_Legacy` and `_Legacy2`
-deck trees, where the old deck hierarchy is archived. Re-check with `anki_cards.py inspect` rather
-than trusting these numbers indefinitely.
+Every card this skill writes uses one of four note types. They are defined in
+`assets/note-types.json`, each in the shape Anki's `createModel` takes, and share the styling in
+`assets/card.css`.
 
-## Pick from these
+| Note type | Fields | Use for |
+| --- | --- | --- |
+| `Q&A by topic` | `Front`, `Topic`, `Back` | Any question and answer: tools, concepts, domains, rules, science |
+| `Cloze by topic` | `Text`, `Topic` | Sentence-shaped facts, acronym pairs, closed lists, a code line blanked in context |
+| `Keyboard Shortcut` | `Front`, `Topic`, `Shortcut`, `Shortcut (macOS)`, `Shortcut (Windows)`, `Shortcut (Linux)` | Key bindings. `Shortcut` when the keys are the same everywhere, the per-OS fields when they differ |
+| `Coding Exercises` | `Repository`, `Range` | A pointer to exercises worked in an editor, never a card about code |
 
-| Note type | Fields | Current / total | Use for |
-| --- | --- | --- | --- |
-| `Q&A by topic` | `Front`, `Topic`, `Back` | 56 / 3180 | Any question and answer: tools, concepts, domains, finance, licences, science |
-| `Cloze by topic` | `Text`, `Topic` | 9 / 1760 | Sentence-shaped facts, acronym pairs, closed lists, code with the line that matters blanked |
-| `Keyboard Shortcut` | `Front`, `Tool`, `Shortcut`, `Shortcut (macOS)`, `Shortcut (Windows)`, `Shortcut (Linux)` | 0 / 85 | Key bindings, with per-OS variants when they differ |
-| `Image Occlusion (for a topic)` | `Occlusion`, `Topic`, `Image`, `Header`, `Back Extra`, `Comments` | 0 / 19 | Diagrams, maps, anatomy, UI screenshots |
+Default to `Q&A by topic` unless the fact genuinely reads better as a cloze.
 
-The first two carry 98 percent of these notes. Default to `Q&A by topic` unless the fact genuinely
-reads better as a cloze.
+`Coding Exercises` is for a source that calls for writing a whole function or program, which is
+practice rather than a card. Its one card reads "Finish exercises {{Range}} in the
+<code>{{Repository}}</code> repository." Anki schedules the session, and the work happens in an
+editor. Offer it instead of a long code Back, and only the user can name the repository: never
+invent one.
 
-Tools, licences and body parts had note types of their own until 2026-11-12, with the context field
-named `Tool`, `License` or `Body part`. They differed from the topic types only in that name and in
-the colour of the line, and the split did not hold: seven of the ten largest topics were software.
-Every one of those notes now sits in a topic type with its value in `Topic`, and the old types are
-empty. Only `Keyboard Shortcut` and `Tutorial (platform-specific)` still call the field `Tool`.
+## Setting them up
 
-## Do not use for new cards
+`anki_cards.py check` reports each of the four as `ok`, `missing`, or `differs`:
 
-| Note type | Why |
-| --- | --- |
-| `Q&A (for a tool)`, `Cloze (for a tool)`, `Image Occlusion (for a tool)`, `Q&A (for a license)`, `Cloze (for a license)`, `Q&A (for a body part)`, `Cloze (for a body part)` | Empty since their notes moved to the topic types on 2026-11-12. Use the topic type, with the tool, licence or body part as the `Topic`. |
-| `Basic` | Legacy, 3783 notes, all in the archived trees. It has no context field, and only one Front in six names its subject, so the others leaned on the deck they were filed in. |
-| `Cloze` | Legacy, now empty. Its 10 notes moved to `Cloze by topic` on 2026-11-12, with an empty `Topic`. |
-| `Basic (and reversed card)` | Legacy, 81 notes, all in the archived trees. For a two-direction fact use one cloze note with `c1` and `c2` instead. |
-| `Basic (optional reversed card)`, `Basic (type in the answer)`, `Basic (and reversed card) (without question in answer)`, `Alphabet` | Zero notes. Not part of this collection's practice. |
-| `Language Reactor - Phrase` | Written by the Language Reactor browser extension. Do not hand-author. |
-| `Recipe`, `Coding Exercises`, `Practice Activity`, `Tutorial (platform-specific)`, `Keyboard Layout`, `Vocabulary (Chinese)`, `Alphabet (Vietnamese)` | Purpose-built for one narrow workflow each. Use only when the user asks for that specific kind of note. |
+- **Missing.** Tell the user what the note type holds and that you would create it. Once they
+  approve, call `mcp__anki__createModel` with the arguments `anki_cards.py note-type "<name>"`
+  prints. Adding a note type does not force a one-way sync.
+- **Differs.** The type exists but lacks a field, is the wrong kind, or does not show `{{Topic}}`
+  on its question. Report what differs and leave the fix to the user, because it changes notes
+  they already review. Renaming a field keeps every note, its templates follow, and it needs no
+  one-way sync. Adding, removing or reordering fields, and deleting a note type, force one.
 
-One of these is worth knowing when a source calls for writing a whole function or program, which is
-practice rather than a card. `Coding Exercises` has two fields, `Repository` and `Range`, and its
-one card reads "Finish exercices {{Range}} in the <code>{{Repository}}</code> repository." Anki
-schedules the session, and the work happens in an editor. Offer it instead of a long code Back, and
-only the user can name the repository: never invent one.
+Styling is the user's to change. `check` never compares colours or layout.
+
+Image occlusion is not in the file. Anki's occlusion editor works only on note types derived from
+its built-in Image Occlusion type, which `createModel` cannot make. For a diagram, have the user
+add a copy of that type in Tools › Manage Note Types, give it a `Topic` field, and show
+`<p id="topic">{{Topic}}</p>` above the image on its front.
+
+## Other note types in a collection
+
+A collection usually holds more: Anki's stock `Basic` and `Cloze`, types added by an extension,
+types built for one narrow workflow. Use none of them for a new card unless the user asks for that
+type by name, and never hand-author notes for a type an extension writes. `Basic` has no context
+field, so its Fronts lean on the deck to say what they are about and turn ambiguous once decks are
+mixed or reorganised. For a fact that needs both directions, use one cloze note with `c1` and `c2`
+rather than a reversed type. The linter warns on any type outside the four.
 
 ## How the context field renders
 
@@ -53,7 +60,7 @@ Back:  {{FrontSide}}
 ```
 
 `Cloze by topic` renders the same line above `{{cloze:Text}}` on both sides of the card, and
-`Keyboard Shortcut` renders its `Tool` field the same way.
+`Keyboard Shortcut` adds the operating system beside it on the per-OS cards.
 
 So the reviewer already sees the topic on its own styled line. A Front of
 `"Acme R&D: which committee approves Gate 4?"` renders as:
@@ -76,43 +83,40 @@ python3 scripts/anki_cards.py topics --like "R&D"
 ```
 
 The filter matches text, not meaning, so search under every name the subject goes by:
-`--like JS` finds `Next.js` but not `JavaScript`, the value 32 notes use.
+`--like JS` finds `Next.js` but not `JavaScript`.
 
-Existing values are short noun phrases naming a tool or a subject, not sentences and not
-hierarchies: `Causal Inference`, `Ableton Live`, `Mutuelle`, `PEA`, `Snowflake`,
-`Server-sent events`, `Music Theory`, `Permis B`. Match that register.
+Values are short noun phrases naming a tool or a subject, not sentences and not hierarchies, such as
+`Causal Inference`, `Ableton Live`, `PEA`, `Snowflake`, `Server-sent events`, `Music Theory`.
 
 The value is what the reviewer would already know at the moment they need the fact: the tool they
 are working in, or the subject they are thinking about. Pick it at that level, never at the level of
-the thing a card asks for. Read on 2026-11-12:
+the thing a card asks for:
 
 - Never an answer. A value equal to a Back or a cloze deletion prints the answer above the question.
-  That was true of 45 notes, 29 of them in a deck of Web API definitions where each API had become
-  its own topic, as in `{{c1::Fetch API}}` under the topic `Fetch API`. The deck's own subject,
-  `Web APIs`, was the right value. The linter rejects such a note (worked example 12).
-- Broad and shared. Values used by one to three notes leaked an answer on 15 percent of their notes,
-  values used by more than twenty on 0.2 percent. A value many cards share tells subjects apart; one
-  that only a few cards share works as a hint.
+  The usual case is a definition filed under a topic named after the thing it defines, as in
+  `{{c1::Fetch API}}` under the topic `Fetch API`, where `Web APIs` belongs. The linter rejects such
+  a note (worked example 12).
+- Broad and shared. A value many cards share tells subjects apart; one that only a few cards carry
+  works as a hint.
 - Never the tool when the card asks which tool to use. "Which tool both lints and formats Python,
   replacing Flake8 and Black?" goes under `Python`, not `Ruff`.
-- Never the only difference between two cards. Four notes asked "Give the Literal interface." under
-  `hast`, `mdast`, `nlcst` and `xast`. The name that tells them apart goes in the question.
+- Never the only difference between two cards. "Give the Literal interface." under `hast` and again
+  under `mdast` is one question twice. The name that tells them apart goes in the question.
 
-Decks no longer say what a card is about: `Inbox` holds every tool, and the decks are broad. The
-`Topic` is the only place a card's subject shows during review.
+With broad decks and an `Inbox`, the deck does not say what a card is about. The `Topic` is the only
+place a card's subject shows during review.
 
 ## Two traps that break a batch
 
 1. `Cloze by topic` has no `Back Extra` field, only `Text` and `Topic`. The MCP `modelFieldNames`
    tool helpfully returns an `example` object mentioning `Back Extra` for anything cloze-shaped,
-   which is wrong here. Passing that key rejects the whole batch. The plain legacy `Cloze` type, now
-   empty, is the one that has it.
+   which is wrong here. Passing that key rejects the whole batch.
 2. `mcp__anki__addNotes` takes one `deckName` and one `modelName` per call, capped at 100 notes.
    A mixed set of Q&A and cloze cards therefore needs one call per model. Duplicates are skipped
    individually, but a validation error such as an empty required field or a bad tag rejects the
    entire batch, so lint before sending.
 
-## Cloze conventions used in this collection
+## Cloze conventions
 
 Taken from real notes, verbatim:
 
@@ -126,7 +130,7 @@ Three patterns worth copying:
 
 - Reuse the same index (`c1` twice) for blanks that must be recalled together on one card.
 - Use `c1` and `c2` on the two halves of a pairing to get both directions from a single note. This is
-  the legitimate redundancy of SuperMemo rule 17, and it replaces the legacy reversed note type.
+  the legitimate redundancy of SuperMemo rule 17, and it replaces a reversed note type.
 - Blank the whole meaningful chunk, not one word out of a phrase. `{{c1::shared by all test modules}}`
   rather than `shared by all {{c1::test modules}}`.
 

@@ -1,7 +1,7 @@
 ---
 name: anki-flashcards
-description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repository or source code, API docs, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, or to organize the cards waiting in the Inbox deck. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and this collection's own note-type and formatting conventions.
-allowed-tools: Read, Grep, Glob, WebFetch, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/anki_cards.py:*), mcp__anki__listDecks, mcp__anki__modelNames, mcp__anki__modelFieldNames, mcp__anki__findNotes, mcp__anki__notesInfo, mcp__anki__getTags
+description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repository or source code, API docs, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, to organize the cards waiting in the Inbox deck, or to set up the note types the skill uses. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and the skill's own note types and formatting conventions.
+allowed-tools: Read, Grep, Glob, WebFetch, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/anki_cards.py:*), mcp__anki__listDecks, mcp__anki__modelNames, mcp__anki__modelFieldNames, mcp__anki__findNotes, mcp__anki__notesInfo, mcp__anki__getTags, mcp__anki__createModel
 ---
 
 # Authoring Anki flashcards
@@ -28,16 +28,19 @@ When the source is thin or self-contradictory, say so and card only what it actu
    rather than carding it. Memorising something you do not understand produces unusable knowledge
    (SuperMemo rules 1 and 2).
 2. Run `python3 scripts/anki_cards.py check` from this skill's directory. If Anki is down,
-   offer to launch it with `open -a Anki`, then wait for AnkiConnect on port 8765.
+   offer to launch it with `open -a Anki`, then wait for AnkiConnect on port 8765. The check also
+   reports whether the skill's four note types are there. A missing one is created only after the
+   user approves, and one that differs is the user's to fix: see "Setting them up" in
+   `references/note-types.md`.
 3. Write a fact inventory: one line per candidate fact, in plain text, before any card formatting.
    Then cut. Most sources deserve 5 to 15 cards, not one per sentence. Cutting is the main quality
    lever you have, so say out loud what you dropped and why. From code or API docs, mark each fact
    with what the user will do with it: type it, read it, or decide with it (see Code below).
-4. Pick the deck, the note type, and the `Topic` value (`Tool` on a `Keyboard Shortcut`). Run
-   `anki_cards.py inspect "<deck>"` to see what the deck already uses and to get real field names.
-   Never guess field names. See `references/note-types.md`. When the user asks for the Inbox or says
-   the cards are not urgent, or when no current deck fits, the deck is `Inbox` (see "The Inbox"
-   below). Never add to a deck whose name starts with `_Legacy`.
+4. Pick the deck, the note type, and the `Topic` value. Run `anki_cards.py inspect "<deck>"` to see
+   what the deck already uses and to get real field names. Never guess field names. See
+   `references/note-types.md`. When the user asks for the Inbox or says the cards are not urgent, or
+   when no current deck fits, the deck is `Inbox` (see "The Inbox" below). Never add to an archived
+   deck, a top-level deck whose name starts with `_`.
 5. Draft to a JSON file in the scratchpad directory, one object per note. Shape:
    `{"deckName": ..., "modelName": ..., "notes": [{"fields": {...}, "tags": [...]}]}`
 6. Self-audit against the checklist below, then run
@@ -173,8 +176,8 @@ what puts its cards into review.
 A card sent to the Inbox gets everything but its deck: note type, `Topic`, tags. The `Topic` is
 what the card shows, and the deck never appears in review. A card from client work also gets a
 `client-<name>` tag such as `client-acme`, because the client is the one thing a deck said that the
-card does not. New cards go to `Inbox` itself, never to an `Inbox::<client>` subdeck. The subdecks
-that exist empty out as their notes are filed.
+card does not. New cards go to `Inbox` itself, never to a subdeck such as `Inbox::<client>`, and
+any subdeck empties out as its notes are filed.
 
 When asked to organize or file the Inbox:
 
@@ -184,7 +187,7 @@ When asked to organize or file the Inbox:
 2. Propose one row per note: target deck, tags to add, and any fix the audit or the linter found.
    Decks are broad categories the user studies separately, so most notes go to an existing deck.
    When nothing fits, propose one new broad deck under a placeholder name and ask the user to name
-   it. Never rebuild the nested tree under `_Legacy`. Report a missing source tag rather than
+   it. Never rebuild the nested tree of an archived deck. Report a missing source tag rather than
    guessing one. The source is usually out of reach by now, so audit the form, and flag a doubtful
    fact instead of rewriting it. Fixes follow "Reviewing existing cards" above.
 3. Lead with what is decaying. Studied cards keep falling due in the Inbox, and a card that has
@@ -199,9 +202,9 @@ When asked to organize or file the Inbox:
 
 Load these as needed rather than up front:
 
-- `references/note-types.md`. Every note type in this collection with its exact fields, how its
-  template renders, usage counts, and which to pick. Also the two API traps that break batches.
-  Read this before choosing a note type.
+- `references/note-types.md`. The skill's four note types, defined in `assets/note-types.json` and
+  `assets/card.css`: their fields, how they render, which to pick, how to set up one that is missing,
+  and the two API traps that break batches. Read this before choosing a note type.
 - `references/house-style.md`. Formatting, HTML, tags, language, and the prose rules for card text.
   Read this before drafting.
 - `references/principles.md`. The research canon with attribution. Read this when a judgement call

@@ -2,14 +2,16 @@
 """Read-only helper for the anki-flashcards skill.
 
 Subcommands:
-  check                     Is AnkiConnect reachable, and which profile is open.
+  check                     Is AnkiConnect reachable, which profile is open, and are the skill's
+                            note types there and usable.
+  note-type <name>          One of the skill's note types as createModel arguments, to create it.
   inspect <deck>            What note types a deck uses, with real field names.
-  topics [--like PATTERN]   Existing context values, so you reuse instead of coining.
+  topics [--like PATTERN]   Existing Topic values, so you reuse instead of coining.
   lint <draft.json>         Check drafted notes against the mechanical house rules.
   inbox                     What waits in the Inbox deck, its state, and where it could be filed.
 
-Never writes to the collection. Adding notes stays with the Anki MCP tools so that the
-approval gate in SKILL.md cannot be bypassed by a script.
+Never writes to the collection. Adding notes and creating a missing note type stay with the Anki
+MCP tools, so that the approval gate in SKILL.md cannot be bypassed by a script.
 
 Exit codes for lint: 0 clean, 1 errors found, 2 bad usage or unreadable draft.
 With --strict, warnings also exit 1.
@@ -21,35 +23,27 @@ import argparse
 import datetime
 import json
 import re
+import shlex
 import sys
 import unicodedata
 import urllib.error
 import urllib.request
 from collections import Counter, defaultdict
+from functools import lru_cache
+from pathlib import Path
 
 ANKI_URL = "http://localhost:8765"
 
-LEGACY_MODELS = {
-    "Basic": "no context field, and five of its Fronts in six never name their subject",
-    "Cloze": "superseded by 'Cloze by topic'",
-    "Q&A (for a tool)": "merged into 'Q&A by topic' on 2026-11-12, with the tool as the Topic",
-    "Cloze (for a tool)": "merged into 'Cloze by topic' on 2026-11-12, with the tool as the Topic",
-    "Image Occlusion (for a tool)": "merged into 'Image Occlusion (for a topic)' on 2026-11-12",
-    "Q&A (for a license)": "merged into 'Q&A by topic' on 2026-11-12, with the licence as the Topic",
-    "Cloze (for a license)": "merged into 'Cloze by topic' on 2026-11-12, with the licence as the Topic",
-    "Q&A (for a body part)": "merged into 'Q&A by topic' on 2026-11-12, with the body part as the Topic",
-    "Cloze (for a body part)": "merged into 'Cloze by topic' on 2026-11-12, with the body part as the Topic",
-    "Basic (and reversed card)": "use one cloze note with c1 and c2 instead",
-    "Basic (optional reversed card)": "unused in this collection",
-    "Basic (type in the answer)": "unused in this collection",
-    "Basic (and reversed card) (without question in answer)": "unused in this collection",
-}
+# The skill's own note types: note-types.json holds each in the shape Anki's createModel takes.
+ASSETS = Path(__file__).resolve().parent.parent / "assets"
 
-# Field that carries the rendered context line: Topic, or Tool on Keyboard Shortcut and
-# Tutorial (platform-specific).
-CONTEXT_FIELDS = ("Topic", "Tool")
+# The field each of those note types shows on its own line above the question.
+CONTEXT_FIELD = "Topic"
 
-CLOZE_MODELS_WITHOUT_BACK_EXTRA = {"Cloze by topic"}
+# A top-level deck whose name starts with "_" is an archive: nothing is added or filed there.
+# Anki reads "_" in a search as any one character, so the search escapes it.
+ARCHIVE_PREFIX = "_"
+ARCHIVE_SEARCH = r'"deck:\_*"'
 
 EMOJI_RE = re.compile(
     "["
@@ -211,6 +205,33 @@ def inside_code(text: str, index: int) -> bool:
 # ---------------------------------------------------------------- check / inspect
 
 
+@lru_cache(maxsize=None)
+def note_types() -> dict[str, dict]:
+    """The skill's note types by name, each as the arguments Anki's createModel takes."""
+    with open(ASSETS / "note-types.json", encoding="utf-8") as fh:
+        spec = json.load(fh)
+    css = (ASSETS / spec["css"]).read_text(encoding="utf-8")
+    return {note_type["modelName"]: dict(note_type, css=css) for note_type in spec["noteTypes"]}
+
+
+def drift(spec: dict, model: dict) -> list[str]:
+    """What keeps a note type in the collection from working as the skill's own. Styling is the
+    user's to change, so only the fields, the kind of note type and the context line count."""
+    have = [field["name"] for field in model["flds"]]
+    problems = []
+    for index, field in enumerate(spec["inOrderFields"]):
+        if field in have:
+            continue
+        other = have[index] if index < len(have) and have[index] not in spec["inOrderFields"] else None
+        problems.append("has %r where the skill expects %r" % (other, field) if other else "has no %r field" % field)
+    if (model["type"] == 1) != spec["isCloze"]:
+        problems.append("is a cloze type" if model["type"] == 1 else "is not a cloze type")
+    if CONTEXT_FIELD in spec["inOrderFields"] and CONTEXT_FIELD in have:
+        if not all("{{%s}}" % CONTEXT_FIELD in template["qfmt"] for template in model["tmpls"]):
+            problems.append("does not show {{%s}} on every question" % CONTEXT_FIELD)
+    return problems
+
+
 def cmd_check(_args) -> int:
     if not connected():
         print("AnkiConnect is not reachable at " + ANKI_URL)
@@ -221,6 +242,26 @@ def cmd_check(_args) -> int:
     print("Profile:     %s" % call("getActiveProfile"))
     print("Decks:       %d" % len(call("deckNames")))
     print("Notes:       %d" % len(call("findNotes", query="deck:*")))
+
+    names = set(call("modelNames"))
+    present = [name for name in note_types() if name in names]
+    models = {model["name"]: model for model in call("findModelsByName", modelNames=present)} if present else {}
+    print("\nThe skill's note types:")
+    for name, spec in note_types().items():
+        if name not in models:
+            print("  missing  %s  (to create it: anki_cards.py note-type %s)" % (name, shlex.quote(name)))
+            continue
+        problems = drift(spec, models[name])
+        print("  %-7s  %s%s" % ("differs" if problems else "ok", name, ": " + "; ".join(problems) if problems else ""))
+    return 0
+
+
+def cmd_note_type(args) -> int:
+    spec = note_types().get(args.name)
+    if not spec:
+        print("The skill has no note type %r. It has: %s." % (args.name, ", ".join(note_types())))
+        return 2
+    print(json.dumps(spec, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -250,28 +291,26 @@ def cmd_inspect(args) -> int:
         return 0
 
     by_model: Counter = Counter()
-    context_values: defaultdict = defaultdict(Counter)
+    context_values: Counter = Counter()
     for start in range(0, len(ids), 100):
         for note in call("notesInfo", notes=ids[start : start + 100]):
             by_model[note["modelName"]] += 1
-            for field in CONTEXT_FIELDS:
-                if field in note["fields"]:
-                    value = strip_html(note["fields"][field]["value"])
-                    if value:
-                        context_values[field][value] += 1
+            value = strip_html(note["fields"].get(CONTEXT_FIELD, {}).get("value", ""))
+            if value:
+                context_values[value] += 1
 
     print("\nNote types in use:")
     for model, count in by_model.most_common():
-        flag = "  <-- LEGACY, do not use for new cards" if model in LEGACY_MODELS else ""
+        flag = "" if model in note_types() else "  <-- not one of the skill's note types"
         print("  %4d  %s%s" % (count, model, flag))
         try:
             print("        fields: %s" % ", ".join(call("modelFieldNames", modelName=model)))
         except RuntimeError:
             pass
 
-    for field, values in context_values.items():
-        print("\nExisting %s values in this deck (reuse one of these):" % field)
-        for value, count in values.most_common(15):
+    if context_values:
+        print("\nExisting %s values in this deck (reuse one of these):" % CONTEXT_FIELD)
+        for value, count in context_values.most_common(15):
             print("  %4d  %s" % (count, value))
     return 0
 
@@ -281,26 +320,22 @@ def cmd_topics(args) -> int:
         print("AnkiConnect is not reachable. Run 'check' first.")
         return 1
     pattern = (args.like or "").lower()
-    found: defaultdict = defaultdict(Counter)
+    found: Counter = Counter()
     for model in call("modelNames"):
-        fields = call("modelFieldNames", modelName=model)
-        context = next((f for f in CONTEXT_FIELDS if f in fields), None)
-        if not context:
+        if CONTEXT_FIELD not in call("modelFieldNames", modelName=model):
             continue
-        ids = call("findNotes", query='note:"%s" -deck:_Legacy -deck:_Legacy::*' % model)
+        ids = call("findNotes", query='note:"%s"' % model)
         for start in range(0, len(ids), 100):
             for note in call("notesInfo", notes=ids[start : start + 100]):
-                value = strip_html(note["fields"].get(context, {}).get("value", ""))
+                value = strip_html(note["fields"][CONTEXT_FIELD]["value"])
                 if value and (not pattern or pattern in value.lower()):
-                    found[context][value] += 1
+                    found[value] += 1
     if not found:
-        print("No matching %s values." % " or ".join(CONTEXT_FIELDS))
+        print("No matching %s values." % CONTEXT_FIELD)
         return 0
-    for field, values in sorted(found.items()):
-        print("%s values%s:" % (field, " matching %r" % args.like if args.like else ""))
-        for value, count in values.most_common(40):
-            print("  %4d  %s" % (count, value))
-        print()
+    print("%s values%s:" % (CONTEXT_FIELD, " matching %r" % args.like if args.like else ""))
+    for value, count in found.most_common(40):
+        print("  %4d  %s" % (count, value))
     return 0
 
 
@@ -341,7 +376,7 @@ def load_batches(path: str) -> list[dict]:
 
 def lint_text(where: str, label: str, raw: str, report: Report) -> None:
     if re.search(r"<(b|strong)\b", raw, re.I):
-        report.error(where, "%s uses bold. Bold is not used in this collection." % label)
+        report.error(where, "%s uses bold. Bold is not part of the house style." % label)
     if BOLD_LI_RE.search(raw):
         report.error(where, "%s uses a bold-header bullet list." % label)
     if HEADING_RE.search(raw):
@@ -378,7 +413,7 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
         unknown = [k for k in fields if k not in model_fields]
         for key in unknown:
             hint = ""
-            if key == "Back Extra" and model in CLOZE_MODELS_WITHOUT_BACK_EXTRA:
+            if key == "Back Extra" and note_types().get(model, {}).get("isCloze"):
                 hint = " This note type has no Back Extra field, and sending it rejects the whole batch."
             report.error(where, "field %r does not exist on %r.%s" % (key, model, hint))
         missing = [f for f in model_fields if f not in fields]
@@ -395,7 +430,7 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
             report.error(where, "field %r is empty." % key)
         lint_text(where, "field %r" % key, raw, report)
 
-    context_field = next((f for f in CONTEXT_FIELDS if f in fields), None)
+    context_field = CONTEXT_FIELD if CONTEXT_FIELD in fields else None
     context = strip_html(fields.get(context_field, "")) if context_field else ""
 
     front_key = "Front" if "Front" in fields else ("Text" if "Text" in fields else None)
@@ -608,8 +643,12 @@ def cmd_lint(args) -> int:
             report.error(label, "no modelName.")
         if not deck:
             report.error(label, "no deckName.")
-        if model in LEGACY_MODELS:
-            report.error(label, "model %r is legacy: %s." % (model, LEGACY_MODELS[model]))
+        if model and model not in note_types():
+            report.warn(
+                label,
+                "model %r is not one of the skill's note types (%s). Use it only when the user "
+                "asked for it by name." % (model, ", ".join(note_types())),
+            )
         if len(notes) > 100:
             report.error(label, "%d notes. addNotes takes at most 100 per call." % len(notes))
 
@@ -618,7 +657,11 @@ def cmd_lint(args) -> int:
             try:
                 model_fields = call("modelFieldNames", modelName=model)
             except RuntimeError:
-                report.error(label, "model %r does not exist in the collection." % model)
+                report.error(
+                    label,
+                    "model %r does not exist in the collection. Run 'check' to see which of the "
+                    "skill's note types are missing." % model,
+                )
 
         for i, note in enumerate(notes, 1):
             total += 1
@@ -627,7 +670,7 @@ def cmd_lint(args) -> int:
 
             fields = note.get("fields") or {}
             front_raw = fields.get("Front") or fields.get("Text") or ""
-            context_value = next((fields[f] for f in CONTEXT_FIELDS if f in fields), "")
+            context_value = fields.get(CONTEXT_FIELD, "")
             context = normalise(context_value) if isinstance(context_value, str) else ""
             key = duplicate_key(front_raw)
             if key:
@@ -712,8 +755,9 @@ def cards_info(ids: list) -> list[dict]:
 
 
 def context_of(fields: dict) -> tuple[str, str] | None:
-    field = next((f for f in CONTEXT_FIELDS if f in fields), None)
-    return (field, strip_html(fields[field]["value"])) if field else None
+    if CONTEXT_FIELD not in fields:
+        return None
+    return (CONTEXT_FIELD, strip_html(fields[CONTEXT_FIELD]["value"]))
 
 
 def cmd_inbox(_args) -> int:
@@ -735,7 +779,7 @@ def cmd_inbox(_args) -> int:
     # Where cards sharing a context value already live, outside the Inbox and the archived trees.
     homes: defaultdict = defaultdict(Counter)
     held: Counter = Counter()
-    for card in cards_info(call("findCards", query='-%s -"deck:_Legacy*"' % in_inbox)):
+    for card in cards_info(call("findCards", query="-%s -%s" % (in_inbox, ARCHIVE_SEARCH))):
         held[card["deckName"]] += 1
         key = context_of(card["fields"])
         if key and key[1]:
@@ -745,7 +789,7 @@ def cmd_inbox(_args) -> int:
         deck
         for deck in deck_names
         if deck != INBOX_DECK
-        and not deck.startswith(("_Legacy", INBOX_DECK + "::"))
+        and not deck.startswith((ARCHIVE_PREFIX, INBOX_DECK + "::"))
         and (deck != "Default" or held[deck])
     ]
 
@@ -810,13 +854,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
 
-    sub.add_parser("check", help="is AnkiConnect up").set_defaults(func=cmd_check)
+    sub.add_parser("check", help="is AnkiConnect up, and are the skill's note types there").set_defaults(func=cmd_check)
+
+    p_note_type = sub.add_parser("note-type", help="createModel arguments for one of the skill's note types")
+    p_note_type.add_argument("name")
+    p_note_type.set_defaults(func=cmd_note_type)
 
     p_inspect = sub.add_parser("inspect", help="note types and context values used by a deck")
     p_inspect.add_argument("deck")
     p_inspect.set_defaults(func=cmd_inspect)
 
-    p_topics = sub.add_parser("topics", help="existing context values")
+    p_topics = sub.add_parser("topics", help="existing Topic values")
     p_topics.add_argument("--like", help="substring filter")
     p_topics.set_defaults(func=cmd_topics)
 
