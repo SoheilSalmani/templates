@@ -4,7 +4,7 @@ Most sets need only a handful of these, and each is a shape for a task from real
 
 There is no explain type. An answer that fits in a sentence is theory, and theory goes on a flashcard.
 
-Every shape below is one or two short sentences, and its solution is one possible answer.
+Every shape below is one or two short sentences. Its answer is one possible `Exercise N` commit, and its `Solution` block holds only what the diff cannot show: the commands, and a result in a few words. Why the answer is what it is never goes in the block; it is a flashcard.
 
 ## Contents
 
@@ -31,7 +31,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Containerise the app.
 
-**Solution**: the build and run commands. The Dockerfile itself is in the commit.
+**Answer**: the Dockerfile, in the commit. The block: the build and run commands.
 
 ## Extend
 
@@ -41,7 +41,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Return a 404 when the item does not exist.
 
-**Solution**: the command that shows it, and the response.
+**Answer**: the change, in the commit. The block: the command that shows the new behaviour.
 
 ## Predict, then run
 
@@ -51,7 +51,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Before amending the last commit, predict how many commits the log will show and whether the last hash changes.
 
-**Solution**: the actual result first ("still three; the last hash changes"), then the reason ("amend replaces the commit rather than editing it").
+**Answer**: the result, in the block: "Still three; the last hash changes." The reason, that amend replaces the commit, is a flashcard.
 
 ## Break it on purpose
 
@@ -61,7 +61,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Use a vector after moving it, read the compiler's error, then fix it.
 
-**Solution**: the error's key lines and the usual fix. Keep the quoted error to the lines that matter.
+**Answer**: the fix, in the commit. The block: the error's key line, so the learner knows they broke it the expected way.
 
 ## Fix the bug
 
@@ -77,7 +77,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 >     return tags
 > ```
 
-**Solution**: the cause in one sentence. The fix itself is in the commit.
+**Answer**: the fix, in the commit, with no block. The cause is a flashcard.
 
 ## Inspect
 
@@ -87,17 +87,17 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Using only git, find which commit last changed a line of `README.md`.
 
-**Solution**: the command, such as `git blame -L 12,12 README.md`, with the output that answers it.
+**Answer**: no commit. The block: the command, such as `git blame -L 12,12 README.md`, and the fact it finds.
 
 ## Compare two ways
 
 **When**: the tool offers two approaches with different trade-offs, and choosing between them is the judgement the learner lacks. This reaches the expert's gap, which build items do not.
 
-**Shape**: `<Do X> with <A>, then with <B>, and say when you would pick each.` Name the principle in the solution, after the learner has compared.
+**Shape**: `<Do X> with <A>, then with <B>, and find which one <behaves some observable way>.` The principle behind the difference is a flashcard, never part of the item.
 
 > Paginate the orders with an offset, then with a cursor, and say which one repeats an order created between two pages.
 
-**Solution**: offset repeats one, because the new order shifts every row down by one; the cursor does not. Then the principle: a cursor names a position in the data, while an offset counts rows that can move.
+**Answer**: both ways, in the commit, and the result in the block: "The offset repeats it." The principle, that an offset counts rows that can move, is a flashcard.
 
 ## Swap behind the tests
 
@@ -107,7 +107,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Replace the in-memory store with SQLite without touching the tests.
 
-**Solution**: the commands, and what the change touched.
+**Answer**: the new implementation, in the commit, whose diff shows what the change touched. The block: the test command.
 
 ## Choose which
 
@@ -117,7 +117,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Show each customer's latest order, one row per customer.
 
-**Solution**: the construct that fits, and why the look-alike does not.
+**Answer**: the commit, built with the construct that fits, and no block. Why the look-alike does not fit is a flashcard.
 
 ## Change the requirement
 
@@ -127,7 +127,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Orders can now be partly refunded. Make the revenue report net of refunds.
 
-**Solution**: what had to change.
+**Answer**: the commit; its diff is what had to change.
 
 ## Same result, another interface
 
@@ -137,7 +137,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Create the same bucket again with the CLI.
 
-**Solution**: the commands, and any setting the UI chose silently that the CLI made explicit.
+**Answer**: the commands, in the block. A setting the UI chose silently is a flashcard.
 
 ## Tear down
 
@@ -147,7 +147,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 > Destroy everything this set created.
 
-**Solution**: the commands, and where leftovers usually hide.
+**Answer**: the commands, in the block, leftovers included.
 
 ## Recall
 
@@ -155,7 +155,7 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 **Shape**: `Without the docs, rebuild <X>, then compare with its commit.`
 
-**Solution**: none beyond the pointer to the commit.
+**Answer**: the commits it rebuilds; no block.
 
 ## Capstone
 
@@ -163,4 +163,4 @@ Every shape below is one or two short sentences, and its solution is one possibl
 
 **Shape**: a goal and its constraints, in as few sentences as combining the core allows. It names no features.
 
-**Solution**: the commands that build it, and one decision that matters. The code is in the commit.
+**Answer**: the code, in the commit. The block: the commands that build and run it.
