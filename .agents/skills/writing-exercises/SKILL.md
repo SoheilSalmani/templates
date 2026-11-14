@@ -5,9 +5,15 @@ description: "Writes practice exercises to learn a software tool, framework, lib
 
 # Writing exercises
 
-An exercise is one short attempt. The learner reads a one-line goal, produces an answer from memory and the docs, and only then compares it with one possible answer: the item's `Exercise N` commit, read as a diff, plus a `Solution` block for what a diff cannot show. Every rule below protects that loop: the goal and the solution must each read in seconds, the goal must not give the answer away, and the answer must work. Exercises are for doing; what only needs remembering, including why an answer works, goes on flashcards.
+An exercise is one short attempt. The learner reads a one-line goal, produces an answer from memory and the docs, and only then compares it with one possible answer: the item's `Exercise N` commit, read as a diff, plus a `Solution` block for what a diff cannot show. Every rule in this skill comes down to three things:
 
-**When rules conflict, the earlier one wins: correct, then needed, then produced by the learner, then short.** A wrong exercise is the worst kind: a learner who follows it exactly and fails concludes that they are the problem. An unneeded one spends the time the set exists to save.
+- The goal and the solution each read in seconds.
+- The goal does not give the answer away.
+- The answer works.
+
+Exercises are for doing; what only needs remembering, including why an answer works, goes on flashcards.
+
+**Short never costs correctness:** cut every word you can, but not a fact the task needs or a command the answer depends on.
 
 ## Scope
 
