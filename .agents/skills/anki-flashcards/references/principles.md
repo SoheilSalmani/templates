@@ -82,8 +82,8 @@ the order forces a consistent traversal, but still hard. Wozniak's fix is overla
 deletions, so each card asks for one step in context rather than the whole chain. Anki's stock cloze
 is the weaker form: each card blanks one step and shows all the others, later ones included. Hiding
 the later steps would need a cloned Cloze note type styled through Anki's `.cloze-inactive` class,
-and this collection has none, so do not promise that behaviour. Procedures get their own section
-below.
+and the skill's note types include none, so do not promise that behaviour. Procedures get their own
+section below.
 
 A closed list has a fixed, small, known membership: the five R&D pillars, the four criteria for
 selecting a country. Write one cloze card per member on a single note, so each member is retrieved
@@ -139,11 +139,11 @@ puts the ceiling at "3 logical bullets". On format, they split by count:
   (2014), bulleted lists improved recall of the items in three of five studies. Separate items also
   make it easy to check an answer one idea at a time, which cuts overconfident self-grading
   (Dunlosky and colleagues, 2011).
-- The owner of this collection finds that the visible count helps recall.
+- A long-time user of these cards finds that the visible count helps recall.
 
-The size problem is the count, not the markup. On 2026-10-25, 107 of the 291 current Q&A Backs
-written as HTML lists held four or more items. The linter counts list items, so a long list is
-flagged like a long sentence.
+The size problem is the count, not the markup. In one collection read on 2026-10-25, 107 of the 291
+Q&A Backs written as HTML lists held four or more items. The linter counts list items, so a long
+list is flagged like a long sentence.
 
 ## Code and source code
 
@@ -211,7 +211,7 @@ Venolia, 2007). Nielsen cards an API while a project uses it and deletes the car
 came to regret his cards on third-party library APIs, and Wozniak cards a call only when reviewing
 it costs less than looking it up.
 
-This collection, read 2026-11-12, computer-science decks. Within the same context value, one-line
+One collection's computer-science decks, read 2026-11-12. Within the same context value, one-line
 code answers had a lower Again rate than prose answers in 16 of 20 shared values (median 17 against
 27 percent) and took a median 7 seconds against 11. At intervals of three weeks or more, one-line
 code answers passed 77 percent of reviews (n = 176) and prose answers over 60 characters 23 percent
@@ -248,17 +248,16 @@ Every word in a card is read on every review, so redundant words have a recurrin
 benefit. The SuperMemo example compresses "What does GRE stand for in biochemistry?" to
 `bioch: GRE`, moving the domain out of the question and into a context label.
 
-This collection's note types implement that label as the `Topic` field (`Tool` on `Keyboard
-Shortcut`). Using it is not optional politeness, it is the mechanism that lets Fronts stay short
-without becoming ambiguous: on 2026-11-12, 70 percent of the Q&A Fronts did not contain their own
-context value. Every practitioner and tool surveyed shows such a cue before the question. Wozniak's
-label "puts your brain immediately in the right context", Bjornstad wants the topic "stated at the
-beginning or near the beginning of the question", and Orbit, Obsidian Spaced Repetition, RemNote,
-Logseq and Mnemosyne all show one by default. Nielsen, merging his decks into one, had to rewrite
-"How to delete a word?" as "In Emacs, how to delete a word?". None of them treats a tool differently
-from any other subject. This collection did until 2026-11-12, with a `Tool` field and note types of
-its own, and the split never held: seven of its ten largest topics were software, and 18 values
-appeared in both fields.
+The skill's note types implement that label as the `Topic` field. Using it is not optional
+politeness, it is the mechanism that lets Fronts stay short without becoming ambiguous: in one
+collection read on 2026-11-12, 70 percent of the Q&A Fronts did not contain their own context value.
+Every practitioner and tool surveyed shows such a cue before the question. Wozniak's label "puts
+your brain immediately in the right context", Bjornstad wants the topic "stated at the beginning or
+near the beginning of the question", and Orbit, Obsidian Spaced Repetition, RemNote, Logseq and
+Mnemosyne all show one by default. Nielsen, merging his decks into one, had to rewrite "How to delete
+a word?" as "In Emacs, how to delete a word?". None of them treats a tool differently from any other
+subject. That collection did, with a `Tool` field and note types of its own, and the split never
+held: seven of its ten largest topics were software, and 18 values appeared in both fields.
 
 ### What the line may say
 
@@ -277,9 +276,9 @@ the question, not the line, must tell siblings apart. And a label that announces
 the learner never practises choosing it (Rohrer, Dedrick and Stershic, 2015), so a card asking which
 tool to use must not name the tool above the question.
 
-This collection, read 2026-11-12: 45 notes had a Back or a cloze deletion equal to their own context
-value, 44 of them clozes and 29 in one deck of Web API definitions. Values used by one to three
-notes leaked on 14.7 percent of their notes, values used by more than twenty on 0.2 percent.
+The same collection, read 2026-11-12: 45 notes had a Back or a cloze deletion equal to their own
+context value, 44 of them clozes and 29 in one deck of Web API definitions. Values used by one to
+three notes leaked on 14.7 percent of their notes, values used by more than twenty on 0.2 percent.
 
 ## Legitimate redundancy (SuperMemo 17)
 
@@ -325,5 +324,5 @@ Record where a fact came from, so you can verify it, judge its reliability, and 
 changes. Stamp anything volatile with a date or version: statistics with the year collected, software
 behaviour with the version, org structures and prices with the date read.
 
-In this collection, the source goes in a tag and the date goes in the visible card text, because tags
-are not shown during review. See `house-style.md`.
+With these note types, the source goes in a tag and the date goes in the visible card text, because
+tags are not shown during review. See `house-style.md`.

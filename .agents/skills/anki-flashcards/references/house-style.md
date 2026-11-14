@@ -1,10 +1,10 @@
 # House style for card text
 
-Derived from sampled notes in the live collection, plus the writing rules from the `humanizer` skill.
+Derived from real cards, plus the writing rules from the `humanizer` skill.
 Cards are prose that gets read hundreds of times, so the writing rules matter more here than in
 ordinary text, not less.
 
-## Real cards from the collection
+## Real cards
 
 These are verbatim. They are the target.
 
@@ -81,7 +81,7 @@ Back:  Add the package to <code>packages.yml</code>, then run <code>dbt deps</co
 Three steps are an `<ol>`. The numbers show the order and the count, so the reviewer knows how many
 to recall and can check each one. Keep the items short and parallel, each opening with its verb.
 
-Before, a real card from the collection:
+Before, a real card:
 
 ```
 Topic: Snowflake
@@ -123,7 +123,7 @@ Pick the form by what the user will do with the code:
 | Recognise its key line | The snippet as a cloze Text, with the line that matters blanked | None, it is a cloze |
 | Decide with it | Why it is built this way, what must hold, what breaks | One reason, in one sentence |
 
-Real cards from the collection, the target:
+Real cards, the target:
 
 ```
 Topic: JavaScript
@@ -136,8 +136,8 @@ Back:  <code>mise run deploy dev --chart-only</code>.
 ```
 
 Drop the period after the second when you next edit it: after a command, a period reads as part of
-the command. One-line code answers are the best-kept cards in this collection's computer-science
-decks, and long code Backs among the costliest (see `principles.md`).
+the command. In the review data in `principles.md`, one-line code answers were the best-kept cards
+and long code Backs among the costliest.
 
 Before, "write an example", a real card:
 
@@ -167,7 +167,7 @@ Back:  <code>useMemo(() =&gt; filterTodos(todos, tab), [todos, tab])</code>
 The dependency list is part of the answer, and only one is right: every reactive value the
 calculation reads.
 
-Twins are the other common waste. The collection holds six pairs of Snowflake Scripting blocks, one
+Twins are the other common waste. One collection held six pairs of Snowflake Scripting blocks, one
 "that can be run in Snowsight" and one for the Snowflake CLI or the Python connector. Within a pair
 the code is the same apart from the wrapper the CLI needs, so twelve cards of 5 to 15 lines test one
 fact. Card the difference and its reason:
@@ -277,9 +277,8 @@ Straight from the humanizer patterns, restricted to the ones that show up in car
 
 ## Tags
 
-138 of the 158 tags in this collection are lowercase kebab-case. Match that. Examples in use:
-`causal-inference`, `regime-social`, `browser-support`, `access-control`, `cdp-limitations`,
-`abbreviation`, `config`, `exemple`.
+Examples of good tags: `causal-inference`, `regime-social`, `browser-support`, `access-control`,
+`cdp-limitations`, `abbreviation`, `config`, `exemple`.
 
 Rules:
 
@@ -299,13 +298,12 @@ Rules:
 - Volatility goes in the card text, not the tag. Write "as of March 2026" in the Back or the cloze
   sentence, because tags are invisible during review.
 
-Acronym tags that already exist in uppercase (`NYSE`, `PFU`, `EI`, `IS`, `TODO`) are the exception
-that proves the rule. Do not add more.
+A collection may already hold uppercase acronym tags such as `NYSE` or `TODO`. Leave them, and do not
+add more.
 
 ## Language
 
-Match the source and the deck. This collection has French cards under `Mutuelle`, `Freelance`,
-`Bourse`, and `Fiscalité`, and English cards everywhere else. Do not translate a French source into
-English cards, and do not mix languages inside one card except for a term of art.
+Match the source: a French source gets French cards. Do not translate a French source into English
+cards, and do not mix languages inside one card except for a term of art.
 
 French cards follow French typography, including the space before `?` and `:`.

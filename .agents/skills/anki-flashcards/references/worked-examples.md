@@ -1,9 +1,8 @@
 # Worked examples
 
-Every "before" below started as a real card from this collection. Most came from a client's
-Confluence page on its R&D structure and were deleted for being bad. The client is called Acme here,
-and its committees and figures are renamed. Read these to calibrate how short a good Back is and how
-much gets cut.
+Every "before" below started as a real card. Most came from a client's Confluence page on its R&D
+structure and were deleted for being bad. The client is called Acme here, and its committees and
+figures are renamed. Read these to calibrate how short a good Back is and how much gets cut.
 
 ## 1. Two facts in one card
 
@@ -140,7 +139,7 @@ Tags:  confluence-acme-rd
 
 ## 6. Binary card
 
-A real card from the collection, kept here as a counterexample:
+A real card, kept here as a counterexample:
 
 ```
 Topic: Helm
@@ -159,7 +158,7 @@ Back:  Many-to-one. Several chart versions can package the same app version.
 
 ## 7. Bundled comparison that is genuinely one card
 
-Not everything long is wrong. This card from the collection stays as it is:
+Not everything long is wrong. This real card stays as it is:
 
 ```
 Topic: Vim
@@ -188,7 +187,7 @@ is no way to notice during review.
 
 ## 9. A procedure as the only card
 
-A real card from the collection:
+A real card:
 
 ```
 Q&A by topic
@@ -224,7 +223,7 @@ to keep if you keep only one: it asks for the transition, which is where the pro
 
 ## 10. A whole program as a card
 
-A real card from the collection, back at a 4-day interval after 32 answers and 28 minutes of review:
+A real card, back at a 4-day interval after 32 answers and 28 minutes of review:
 
 ```
 Q&A by topic

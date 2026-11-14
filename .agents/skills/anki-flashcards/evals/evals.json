@@ -1,6 +1,6 @@
 {
   "skill_name": "anki-flashcards",
-  "notes": "Every prompt carries its own source, or the collection state it assumes, so a run never depends on a live page or on today's collection. No input appears in the skill's own examples, so a pass has to come from the rules. The cases follow what this collection is made of: tool docs, code and procedures, music, cooking, French administration and driving rules, client pages, and reviews of existing cards. Score what each card asks for before how it looks. For code, what the user will type must be asked for as code: one line when it can be, up to six lines when they belong together, up to twelve only for a pattern skeleton ending in a Check: line. What the code does not say (why, what must hold) is one-reason prose. Any write to Anki before the user approves the drafted table fails the eval, whatever the cards look like.",
+  "notes": "Every prompt carries its own source, or the collection state it assumes, so a run never depends on a live page or on today's collection. No input appears in the skill's own examples, so a pass has to come from the rules. The cases follow what a personal collection holds: tool docs, code and procedures, music, cooking, French administration and driving rules, client pages, and reviews of existing cards. Score what each card asks for before how it looks. For code, what the user will type must be asked for as code: one line when it can be, up to six lines when they belong together, up to twelve only for a pattern skeleton ending in a Check: line. What the code does not say (why, what must hold) is one-reason prose. Any write to Anki before the user approves the drafted table fails the eval, whatever the cards look like.",
   "evals": [
     {
       "id": 1,
@@ -65,7 +65,7 @@
     {
       "id": 6,
       "prompt": "Add a card for this Chrome shortcut, from Google's Chrome keyboard shortcuts help page: open a new window in Incognito mode is Ctrl + Shift + n on Windows and Linux, and ⌘ + Shift + n on Mac.",
-      "expected_output": "One Keyboard Shortcut note: the action on the Front, Chrome as the Tool, and each platform's keys in its own field.",
+      "expected_output": "One Keyboard Shortcut note: the action on the Front, Chrome as the Topic, and each platform's keys in its own field.",
       "assertions": [
         "The note type is Keyboard Shortcut",
         "Shortcut (macOS) holds ⌘ + Shift + n, and Shortcut (Windows) and Shortcut (Linux) hold Ctrl + Shift + n",
@@ -122,16 +122,16 @@
         "The Terraform and Kafka notes are proposed for Tech, not for a new deck",
         "No deck is proposed per Topic value; any new deck is a single broad one whose name is left to the user",
         "The proposal adds client-northwind to the notes in Inbox::Northwind",
-        "No proposed target deck starts with _Legacy",
+        "No proposed target deck is an archive, a top-level deck whose name starts with _",
         "No anki_cards.py command or Anki tool is run, and no changeDeck, addTags or updateNoteFields call is made"
       ]
     },
     {
       "id": 11,
-      "prompt": "Add this to my Python deck (it's under _Legacy2 now, I archived the old tree): Python 3.12 lets an f-string reuse the quotes of the enclosing string inside its replacement fields (PEP 701).",
+      "prompt": "Add this to my Python deck (it's under _Archive now, I archived the old tree): Python 3.12 lets an f-string reuse the quotes of the enclosing string inside its replacement fields (PEP 701).",
       "expected_output": "The card is drafted for Inbox, or the user is asked which current deck to use. Nothing is drafted for the archived deck, and the card names Python 3.12.",
       "assertions": [
-        "No drafted note targets a deck whose name starts with _Legacy",
+        "No drafted note targets a deck whose name starts with _",
         "The card is drafted for Inbox, or the user is asked which current deck to use",
         "The card names Python 3.12 or PEP 701 in its text",
         "No addNotes call is made before the user approves"
@@ -290,6 +290,17 @@
         "That card's Topic is not AWS Secrets Manager, Secrets Manager or another value that names the answer",
         "No drafted Back or cloze deletion equals its note's Topic",
         "The cards are shown for approval and no addNotes call is made"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "I'm new to Anki. anki_cards.py check printed this; work from it and don't run anything yet:\n\nAnkiConnect: up (API version 6)\nProfile:     User 1\nDecks:       1\nNotes:       0\n\nThe skill's note types:\n  missing  Q&A by topic  (to create it: anki_cards.py note-type 'Q&A by topic')\n  missing  Cloze by topic  (to create it: anki_cards.py note-type 'Cloze by topic')\n  missing  Keyboard Shortcut  (to create it: anki_cards.py note-type 'Keyboard Shortcut')\n  missing  Coding Exercises  (to create it: anki_cards.py note-type 'Coding Exercises')\n\nNow card this, from the Python 3.13 documentation of enumerate(): \"enumerate(iterable, start=0): Return an enumerate object. The __next__() method of the iterator returned by enumerate() returns a tuple containing a count (from start which defaults to 0) and the values obtained from iterating over iterable.\"",
+      "expected_output": "Says the note types the cards need are missing and proposes creating them, naming their fields, alongside the drafted cards. Nothing is created and nothing is added before the user approves, and no card is drafted on Basic or another type outside the skill.",
+      "assertions": [
+        "The response says the note types the cards need are missing and proposes creating them",
+        "No createModel call is made before the user approves",
+        "No drafted note uses Basic or another note type outside the skill's four",
+        "No addNotes call is made"
       ]
     }
   ]

@@ -44,11 +44,10 @@
   },
   {
     "deckName": "Inbox",
-    "modelName": "Q&A (for a tool)",
+    "modelName": "Basic",
     "notes": [
       {
         "fields": {
-          "Tool": "uv",
           "Front": "What does the <code>--frozen</code> option do when using <code>uv run</code>?",
           "Back": "Run without updating the lockfile."
         },
