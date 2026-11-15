@@ -29,9 +29,9 @@ Topic: Causal Inference
 Front: Why can ML models not answer causal questions?
 Back:  ML is about prediction and correlation, not causal structure. It cannot handle inverse causality, like low prices being associated with low hotel sales during off-season.
 
-Topic: Mutuelle
-Front: De quelles manières la part prise en charge par la mutuelle peut-elle être exprimée ?
-Back:  <ul><li>En euros</li><li>En pourcentage de la BR</li><li>En pourcentage du PMSS ou PASS</li></ul>
+Topic: Finances publiques
+Front: Qu'est-ce que les finances sociales ?
+Back:  Ensemble des dépenses liées à la protection sociale et des ressources nécessaires à leur financement.
 ```
 
 Note what is absent: no bold, no emoji, no em dash, no topic prefix in the Front, no multi-paragraph
@@ -130,9 +130,9 @@ Topic: JavaScript
 Front: How do you add or update a value in a <code>Map</code>?
 Back:  <pre><code>map.set(key, value);</code></pre>
 
-Topic: Cube template
-Front: Which command deploys a change to <code>charts/cube</code> or its values to dev while keeping the image the release runs?
-Back:  <code>mise run deploy dev --chart-only</code>.
+Topic: Helm
+Front: Which command prints the Kubernetes manifests a deployed release was rendered into?
+Back:  <code>helm get manifest &lt;release&gt;</code>.
 ```
 
 Drop the period after the second when you next edit it: after a command, a period reads as part of

@@ -351,10 +351,10 @@ the one question no field or note type answers, which client a card belongs to, 
 has a place of its own.
 
 The same collection held 207 distinct tags on 757 of its 8,966 notes, 87 of them used once, with
-pairs such as `fingerprint` and `fingerprinting`. A tag for cards that review fast was considered
-and dropped. Anki times a review from the question to the grade, and only 2 of the collection's
-5,135 cards with three or more reviews had a median of a second or less. Among 2,208 cards with
-eight or more reviews, a guess from the card's shape (shortcut, acronym, one-word answer) picked
-cards that took four seconds or less over their three latest reviews 30 percent of the time,
-against 54 percent for a guess from the card's own earlier times. Speed comes from practice as much
-as from the card (Logan), and Anki's review log already records it.
+pairs such as `fingerprint` and `fingerprinting`. Speed makes no better tag than topic does. Anki
+times a review from the question to the grade, and only 2 of the collection's 5,135 cards with
+three or more reviews had a median of a second or less. Among 2,208 cards with eight or more
+reviews, a guess from the card's shape (shortcut, acronym, one-word answer) picked cards that took
+four seconds or less over their three latest reviews 30 percent of the time, against 54 percent for
+a guess from the card's own earlier times. Speed comes from practice as much as from the card
+(Logan), and Anki's review log already records it.
