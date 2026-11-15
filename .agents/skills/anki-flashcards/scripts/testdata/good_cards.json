@@ -25,7 +25,8 @@
           "Front": "Which tool is used to quickly scaffold a Python package containing a Dagster <code>Definitions</code> object?",
           "Back": "The <code>create-dagster</code> CLI.",
           "Source": "<a href=\"https://docs.dagster.io/\">Dagster documentation</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       },
       {
         "fields": {
@@ -72,7 +73,8 @@
           "Front": "Which tool uses the WebDriver protocol?",
           "Back": "Selenium WebDriver.",
           "Source": "<a href=\"https://www.selenium.dev/documentation/webdriver/\">Selenium documentation: WebDriver</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       }
     ]
   },
@@ -92,7 +94,8 @@
           "Topic": "Physics",
           "Text": "In the metric system, the prefix {{c1::deci-}} means {{c2::1/10}}.",
           "Source": "<a href=\"https://en.wikipedia.org/wiki/Metric_prefix\">Wikipedia: Metric prefix</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       },
       {
         "fields": {
@@ -136,7 +139,8 @@
           "Front": "Which command lists the revisions of a release, with the chart each one deployed?",
           "Back": "<code>helm history &lt;release&gt;</code>",
           "Source": "<a href=\"https://helm.sh/docs/helm/helm_history/\">Helm docs: helm history</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       },
       {
         "fields": {
@@ -173,7 +177,8 @@
           "Topic": "Rust",
           "Text": "Only types that {{c1::implement <code>fmt:<!-- -->:Display</code>}} can be formatted with <code>{{c2::{}<!-- -->}}</code>.",
           "Source": "<a href=\"https://doc.rust-lang.org/rust-by-example/hello/print/print_display.html\">Rust by Example: Display</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       },
       {
         "fields": {

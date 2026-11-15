@@ -37,9 +37,9 @@ Behind the context line, read 2026-11-12:
 - Carpenter and DeLosh (2006), [Impoverished cue support enhances subsequent retention](https://doi.org/10.3758/BF03193405), Memory and Cognition; Diaz and Benjamin (2011), [The effects of proactive interference and release from PI on judgments of learning](https://doi.org/10.3758/s13421-010-0010-y), Memory and Cognition; Rohrer, Dedrick and Stershic (2015), [Interleaved practice improves mathematics learning](https://doi.org/10.1037/edu0000001), Journal of Educational Psychology.
 - Practitioners and tools: Bjornstad, [Rules for designing precise Anki cards](https://controlaltbackspace.org/precise/#questions-should-be-context-free); RemNote, [Hiding ancestors on flashcards](https://help.remnote.com/en/articles/9631727-hiding-ancestors-on-flashcards); the context line shown by default in [Orbit](https://github.com/andymatuschak/orbit/blob/ed5a530750b6e96e86ea725ef3990c9209fc0028/packages/ui/src/components/Card.tsx#L279-L297), [Obsidian Spaced Repetition](https://github.com/st3v3nmw/obsidian-spaced-repetition/blob/3d5079f3bcd54531b084040d1c0178f15f681510/src/lang/locale/en.ts#L132-L133), [Logseq](https://github.com/logseq/logseq/blob/29fd2edd015e12963742b985ce6d2311c074e09b/src/main/frontend/extensions/fsrs.cljs#L291-L296) and [Mnemosyne](https://github.com/mnemosyne-proj/mnemosyne/blob/ff4f61e84bea0d6928c29b7798f0f88b90938a0a/mnemosyne/libmnemosyne/review_controllers/SM2_controller.py#L218-L221).
 
-Behind the sources and tags sections, read 2026-11-12:
+Behind the sources, tags and Inbox sections, read 2026-11-12 to 2026-11-15:
 
-- Anki manual, [Using tags](https://docs.ankiweb.net/editing.html#using-tags); Bjornstad, [Organizing your cards](https://controlaltbackspace.org/organizing-cards/).
+- Anki manual, [Using tags](https://docs.ankiweb.net/editing.html#using-tags), [Using decks appropriately](https://docs.ankiweb.net/editing.html#using-decks-appropriately), [Card states](https://docs.ankiweb.net/getting-started.html#card-states) and [Searching](https://docs.ankiweb.net/searching.html); Bjornstad, [Organizing your cards](https://controlaltbackspace.org/organizing-cards/).
 - Whittaker, Matthews, Cerruti, Badenes and Tang (2011), [Am I wasting my time organizing email? A study of email refinding](https://doi.org/10.1145/1978942.1979457), CHI; Golder and Huberman (2006), [Usage patterns of collaborative tagging systems](https://doi.org/10.1177/0165551506062337), Journal of Information Science; Hearst (2006), [Clustering versus faceted categories for information exploration](https://people.ischool.berkeley.edu/~hearst/papers/cacm06.pdf), Communications of the ACM.
 - Logan (1988), [Toward an instance theory of automatization](https://philpapers.org/rec/LOGTAI), Psychological Review.
 
@@ -363,14 +363,30 @@ two cautions. People rarely find things again by tag: in Whittaker and colleague
 email, tags were 1 percent of the ways people reached a message again, search 18 percent. And
 vocabularies coined as you go drift into synonyms and mismatched levels of detail (Golder and
 Huberman), while one short list per independent question holds up (Hearst). So a tag here answers
-the one question no field or note type answers, which client a card belongs to, and everything else
-has a place of its own.
+one of two questions no field or note type answers, each decided by a rule: which client a card
+belongs to, which decides who may read it, and whether the card is quick to review.
 
 The same collection held 207 distinct tags on 757 of its 8,966 notes, 87 of them used once, with
-pairs such as `fingerprint` and `fingerprinting`. Speed makes no better tag than topic does. Anki
-times a review from the question to the grade, and only 2 of the collection's 5,135 cards with
-three or more reviews had a median of a second or less. Among 2,208 cards with eight or more
-reviews, a guess from the card's shape (shortcut, acronym, one-word answer) picked cards that took
-four seconds or less over their three latest reviews 30 percent of the time, against 54 percent for
-a guess from the card's own earlier times. Speed comes from practice as much as from the card
-(Logan), and Anki's review log already records it.
+pairs such as `fingerprint` and `fingerprinting`.
+
+Quick to review is a property of the card's shape, worked out by a rule rather than measured. Anki
+times a review from the question to the grade, so one card's times are noisy: in that collection,
+read 2026-11-15, 8.9 percent of the recorded reviews sat at the 60-second cap, a card left open, and
+reviews done on the move run slow. Over many cards the noise averages out, and there the rule in
+`house-style.md` separates the cards: those it marks took a median 5.0 seconds a review, three
+quarters of them 7.0 or less, against 11.9 seconds for the rest, three quarters of them 7.9 or more
+(1,008 and 4,127 cards with three or more reviews). Nothing is reviewed in under a second by that
+clock: 2 of the 5,135 cards had a median that low. Speed also comes from practice (Logan), so a card
+gets quicker as it is learnt; the rule marks the cards that stay cheap even when they are failed,
+because a short answer is quick to check. How easy a card is to memorise is another property, which
+FSRS works out for each card from its grades alone: `prop:d<0.3` finds the easy ones, with no tag.
+
+## Leaving the Inbox
+
+A note leaves its project deck once every card has an interval of 21 days or more, the line Anki
+itself draws between young and mature cards. The interval comes from the grades through the
+scheduler, not from answer times, so a distracted review does not move it. A card at three weeks
+has been recalled across a gap long enough to show the memory holds. From there it joins a broad
+deck, mixed in with other subjects, which is what the manual recommends: "Lots of little decks may
+mean you end up seeing cards in a recognizable order", and that "leads to weaker memories". On
+2026-11-15, no studied Inbox card in that collection had an interval past a week.

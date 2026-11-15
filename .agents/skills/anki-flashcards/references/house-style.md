@@ -329,19 +329,35 @@ cloze sentence: the `Source` says where a fact came from, not how long it holds.
 
 ## Tags
 
-Tags are for what no field and no note type says. The skill writes one kind: `client::<name>` on a
-card from client work, such as `client::acme` or `client::globex`. It keeps the client findable once
-the card leaves the Inbox, where a subdeck used to say it, and `tag:client` finds every client's
-cards at once. The client's own document is still the `Source`.
+Tags are for what no field and no note type says. The skill writes two, and taste decides neither.
+
+`client::<name>`, such as `client::acme` or `client::globex`, goes on every card from client work.
+Client cards go only to a model the client has cleared, and the repair queue's `--no-client` finds
+them by this tag. The deck says the client only while the card sits in `Inbox::<project>`; the tag
+keeps saying it once the card moves on. A personal project gets its deck and no tag. The client's
+own document is still the `Source`.
+
+`speed::fast` goes on every card that is quick to review by its shape, and on no other. A review
+is reading the question, recalling, reading the answer and grading it, so a card is quick when there
+is little to read and little to produce:
+
+- each card's answer is at most 3 words and 30 characters: a Back, the text of one cloze index, or
+  the keys of a `Keyboard Shortcut` card, which always count as short;
+- the question is at most 100 characters, and a cloze sentence at most 120 with its blanks filled;
+- neither side holds a list, a code block, a table or an image.
+
+A reversed note asks each side for the other, so both sides must be short. The linter applies the
+rule to every draft, so a card asked to be tagged fast that the rule does not mark stays untagged,
+and the response says why. A filtered deck searching `tag:speed::fast is:due` makes a queue of quick
+reviews. Answer times would not do instead: a single card's are noisy (`principles.md`, "Tags").
 
 Nothing else is a tag:
 
 - The subject is the `Topic`.
 - Where the fact came from is the `Source`.
 - The kind of card is its note type: `note:"Keyboard Shortcut"` finds every shortcut.
-- How fast a card is to review is in Anki's review log, and a guess made while writing the card is
-  wrong more often than right (`principles.md`, "Tags").
-- A card to fix gets a flag during review.
+- A card to fix gets marked during review, the `*` key, which the repair queue's `failing` check
+  picks up.
 
 Anki writes `leech`, `marked`, `duplicate` and `db-check` itself. Never add one, and remove `leech`
 only as part of a fix the user approved. Any other tag already in a collection is the user's: leave

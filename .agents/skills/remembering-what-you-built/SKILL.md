@@ -72,7 +72,7 @@ When Anki is unreachable, say the collection was not searched. Never report a cl
 
 This skill selects facts. It writes nothing to the collection.
 
-Hand the selection to `anki-flashcards` with the files you read and the repository's address, and let it draft, format, audit, and show its approval table. That table is the single gate before anything is added, and routing around it is the one failure that costs months of review time.
+Hand the selection to `anki-flashcards` with the files you read, the repository's address and the project's name, which names its `Inbox::<project>` deck, and let it draft, format, audit, and show its approval table. That table is the single gate before anything is added, and routing around it is the one failure that costs months of review time.
 
 ## Before you finish
 
