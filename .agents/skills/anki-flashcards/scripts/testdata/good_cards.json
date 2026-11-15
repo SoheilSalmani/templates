@@ -145,6 +145,22 @@
           "Back": "<pre><code>@contextmanager\ndef timed():\n    start = time.perf_counter()\n    try:\n        yield\n    finally:\n        print(time.perf_counter() - start)</code></pre>Check: setup before <code>yield</code>, <code>yield</code> inside <code>try</code>, cleanup in <code>finally</code>.",
           "Source": "<a href=\"https://docs.python.org/3/library/contextlib.html\">Python docs: contextlib</a>"
         }
+      },
+      {
+        "fields": {
+          "Topic": "Python",
+          "Front": "Write a generator-based context manager for a resource of your choice, released even when the block raises.",
+          "Back": "<pre><code>@contextmanager\ndef opened(path):\n    f = open(path)\n    try:\n        yield f\n    finally:\n        f.close()</code></pre>Check: <code>@contextmanager</code>, setup before <code>yield</code>, <code>yield</code> inside <code>try</code>, release in <code>finally</code>.",
+          "Source": "<a href=\"https://docs.python.org/3/library/contextlib.html\">Python docs: contextlib</a>"
+        }
+      },
+      {
+        "fields": {
+          "Topic": "PostgreSQL",
+          "Front": "Table <code>weather_reports(location, time, report)</code>. Write the query that returns the latest report for each location, with <code>DISTINCT ON</code>.",
+          "Back": "<pre><code>SELECT DISTINCT ON (location) location, time, report\nFROM weather_reports\nORDER BY location, time DESC;</code></pre>Check: <code>DISTINCT ON (location)</code>, <code>ORDER BY</code> starting with <code>location</code>, then <code>time DESC</code>.",
+          "Source": "<a href=\"https://www.postgresql.org/docs/current/sql-select.html\">PostgreSQL docs: SELECT</a>"
+        }
       }
     ]
   },

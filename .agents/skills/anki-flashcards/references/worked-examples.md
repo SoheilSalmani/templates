@@ -244,10 +244,10 @@ load_info = pipeline.run(source)
 ...</code></pre>
 ```
 
-Twenty-three lines of a documentation example. Any working pipeline is a right answer, so the grade
-is a guess, and every review costs a minute. Three things in it are worth knowing without looking:
-the function that builds the source, the shape of its configuration, and the call that loads it.
-After, three notes:
+Twenty-three lines of a documentation example, under a Front that sets no task: any working pipeline
+is a right answer, nothing says what counts, so the grade is a guess, and every review costs a
+minute. Three things in it are worth knowing without looking: the function that builds the source,
+the shape of its configuration, and the call that loads it. After, three notes:
 
 ```
 Q&A by topic
@@ -268,8 +268,8 @@ Front: Which call loads a dlt source through a pipeline?
 Back:  <code>pipeline.run(source)</code>
 ```
 
-If the user builds these pipelines every week, their shape is a pattern, and one skeleton card on
-top of those three is worth it:
+If the user builds these pipelines every week, writing their shape is the point, and one task card
+on top of those three is worth it:
 
 ```
 Q&A by topic

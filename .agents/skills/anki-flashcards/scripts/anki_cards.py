@@ -97,15 +97,17 @@ MULTILINE_CODE_RE = re.compile(
 RAW_TAG_IN_CODE_RE = re.compile(
     r"<(?!/?(?:code|pre|br|span|b|strong|i|em|u|s|sub|sup|kbd|font|div|p|ul|ol|li|a|img)\b|!--)/?[A-Za-z]"
 )
+# A Front that leaves the answer open: any correct example is right.
 EXAMPLE_FRONT_RE = re.compile(
     r"\b(?:write|give|show|create)\s+(?:an?\s+|some\s+)?(?:examples?|samples?)\b"
-    r"|\b(?:[ée]cri(?:s|vez|re)|donne[sz]?)\s+(?:un|des)\s+exemples?\b",
+    r"|\b(?:[ée]cri(?:s|vez|re)|donne[sz]?)\s+(?:un|des)\s+exemples?\b"
+    r"|\bof your (?:own )?choice\b|\bde (?:votre|ton) choix\b",
     re.I,
 )
 CLOZE_OPEN_RE = re.compile(r"\{\{c\d+::")
-# Past six lines a review takes about twice as long; past twelve it is a program, not a card.
+# Past six lines a review takes about twice as long; past twelve about a minute, an exercise's cost.
 CODE_LINES_WARN, CODE_LINES_MAX = 6, 12
-# A pattern skeleton ends with the parts it is graded on.
+# A task card ends with the parts it is graded on.
 CHECK_LINE_RE = re.compile(r"\bCheck\s*:")
 # The file an image shows, which Anki's duplicate check keeps when it strips the HTML.
 MEDIA_SRC_RE = re.compile(r"""<img\b[^>]*?\bsrc=["']?([^"'\s>]+)""", re.I)
@@ -552,12 +554,6 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
             )
         if len(front) > FRONT_WARN:
             report.warn(where, "Front is %d characters. Tighten it." % len(front))
-        if EXAMPLE_FRONT_RE.search(front):
-            report.warn(
-                where,
-                "Front asks for an example. Any correct example is a right answer, so the Back "
-                "cannot grade it. Name the task so that one answer is right.",
-            )
 
     if "Back" in fields:
         back = strip_html(fields["Back"])
@@ -571,8 +567,9 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
         if back and front and normalise(back) and normalise(back) in normalise(front):
             report.error(where, "the answer appears inside the Front.")
         items = len(LIST_ITEM_RE.findall(raw_back))
-        # Commas and semicolons inside code are syntax, not a list.
-        prose_back = ENTITY_RE.sub("", CODE_SPAN_RE.sub(" ", raw_back))
+        # Commas and semicolons inside code are syntax, not a list, and a Check: line lists what
+        # the answer is graded on, not more answer.
+        prose_back = CHECK_LINE_RE.split(ENTITY_RE.sub("", CODE_SPAN_RE.sub(" ", raw_back)))[0]
         if items >= 4 or (not items and len(SET_SEPARATOR_RE.findall(prose_back)) >= 3):
             report.warn(
                 where,
@@ -586,19 +583,27 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
                 "joined with \"then\".",
             )
         code_lines = code_line_count(raw_back)
-        if code_lines > CODE_LINES_MAX:
-            report.error(
+        has_check = bool(CHECK_LINE_RE.search(prose))
+        if front_key == "Front" and EXAMPLE_FRONT_RE.search(front) and not has_check:
+            report.warn(
                 where,
-                "Back holds %d lines of code, more than a pattern skeleton. A program is an "
-                "exercise: offer a card that points to it, or blank the line that matters in a "
-                "code cloze." % code_lines,
+                "Front asks for an example, and nothing on the card says what counts as right. "
+                "End the Back with a Check: line naming what every correct answer contains, so "
+                "any correct example passes, or name the task so that one answer is right.",
             )
-        elif code_lines > CODE_LINES_WARN and not CHECK_LINE_RE.search(prose):
+        if code_lines > CODE_LINES_MAX:
+            report.warn(
+                where,
+                "Back holds %d lines of code. Past twelve a review costs about a minute, the price "
+                "of an exercise: cut it to the lines that make the pattern, or offer an exercise "
+                "card that points to it." % code_lines,
+            )
+        elif code_lines > CODE_LINES_WARN and not has_check:
             report.warn(
                 where,
                 "Back holds %d lines of code. Past six lines a review takes about twice as long: "
-                "keep it only as a pattern skeleton followed by a Check: line naming its parts, or "
-                "blank the line that matters in a code cloze." % code_lines,
+                "keep it as a task card ending in a Check: line naming what every correct answer "
+                "contains, or blank the line that matters in a code cloze." % code_lines,
             )
 
     if "Text" in fields:
