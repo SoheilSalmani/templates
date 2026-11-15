@@ -329,13 +329,8 @@ cloze sentence: the `Source` says where a fact came from, not how long it holds.
 
 ## Tags
 
-Tags are for what no field and no note type says. The skill writes two, and taste decides neither.
-
-`client::<name>`, such as `client::acme` or `client::globex`, goes on every card from client work.
-Client cards go only to a model the client has cleared, and the repair queue's `--no-client` finds
-them by this tag. The deck says the client only while the card sits in `Inbox::<project>`; the tag
-keeps saying it once the card moves on. A personal project gets its deck and no tag. The client's
-own document is still the `Source`.
+Tags are for what no field and no note type says. The skill writes one, and a rule decides it, not
+taste.
 
 `speed::fast` goes on every card that is quick to review by its shape, and on no other. A review
 is reading the question, recalling, reading the answer and grading it, so a card is quick when there
@@ -356,6 +351,7 @@ Nothing else is a tag:
 - The subject is the `Topic`.
 - Where the fact came from is the `Source`.
 - The kind of card is its note type: `note:"Keyboard Shortcut"` finds every shortcut.
+- The project a card is learnt for is its `Inbox::<project>` deck, until the card moves on.
 - A card to fix gets marked during review, the `*` key, which the repair queue's `failing` check
   picks up.
 

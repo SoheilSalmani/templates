@@ -362,9 +362,9 @@ tag belongs to the note, so every card of the note shares it. Research on person
 two cautions. People rarely find things again by tag: in Whittaker and colleagues' field study of
 email, tags were 1 percent of the ways people reached a message again, search 18 percent. And
 vocabularies coined as you go drift into synonyms and mismatched levels of detail (Golder and
-Huberman), while one short list per independent question holds up (Hearst). So a tag here answers
-one of two questions no field or note type answers, each decided by a rule: which client a card
-belongs to, which decides who may read it, and whether the card is quick to review.
+Huberman), while one short list per independent question holds up (Hearst). So the one tag here
+answers a question no field or note type answers, whether a card is quick to review, and a rule
+decides it.
 
 The same collection held 207 distinct tags on 757 of its 8,966 notes, 87 of them used once, with
 pairs such as `fingerprint` and `fingerprinting`.
