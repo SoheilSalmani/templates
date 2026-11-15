@@ -9,9 +9,15 @@ Subcommands:
   topics [--like PATTERN]   Existing Topic values, so you reuse instead of coining.
   lint <draft.json>         Check drafted notes against the mechanical house rules.
   inbox                     What waits in the Inbox deck, its state, and where it could be filed.
+  candidates <kind>         Notes the review history says to look at, as JSON: failing, slow,
+                            sourced or random. What a run of the repair queue works through.
+  queue add|list|decide|skip|report
+                            The repair queue: proposals, verdicts and what they changed, kept in a
+                            file outside the collection (references/repair-queue.md).
 
 Never writes to the collection. Adding notes and creating a missing note type stay with the Anki
-MCP tools, so that the approval gate in SKILL.md cannot be bypassed by a script.
+MCP tools, so that the approval gate in SKILL.md cannot be bypassed by a script. The repair queue
+is a file of its own, which `queue` appends to.
 
 Exit codes for lint: 0 clean, 1 errors found, 2 bad usage or unreadable draft.
 With --strict, warnings also exit 1.
@@ -22,8 +28,11 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
+import random
 import re
 import shlex
+import statistics
 import sys
 import unicodedata
 import urllib.error
@@ -924,6 +933,542 @@ def cmd_inbox(_args) -> int:
     return 0
 
 
+# ----------------------------------------------------------------- repair queue
+
+# Mark Note, the * key while reviewing, adds this tag to ask for a repair. It comes off when the
+# proposal is decided, through the MCP tools, since this script never writes to the collection.
+REPAIR_TAG = "marked"
+KINDS = ("failing", "slow", "sourced", "random")
+ACTIONS = ("keep", "rewrite", "split", "prerequisite", "differentiate", "fix-fact", "suspend", "delete")
+# The actions that change a note's own fields, and those that add notes.
+FIELD_ACTIONS = {"rewrite", "differentiate", "fix-fact"}
+NOTE_ACTIONS = {"split", "prerequisite"}
+VERDICTS = ("applied", "rejected")
+PROPOSAL_KEYS = ("kind", "noteId", "action", "diagnosis", "signal", "fields", "newNotes", "resource", "model")
+# Days a check leaves a note alone after closing a proposal of its own for it.
+COOLDOWN_DAYS = {"failing": 30, "slow": 90, "sourced": 180, "random": 90}
+# Days an applied fix gets to show its effect: no check picks the note before then, and the report
+# compares this many days of answers before the proposal and after the fix.
+SETTLE_DAYS = 30
+# A card first answered within NEW_DAYS is new, and one failed NEW_AGAINS times since is struggling.
+NEW_DAYS, NEW_AGAINS = 60, 3
+# A studied card that has lapsed this often keeps failing.
+MATURE_LAPSES = 2
+# Slow and random draw from the cards studied this recently, and a median takes this many answers.
+STUDIED_DAYS, MIN_ANSWERS = 90, 3
+# In the review log: the Again button, and an answer given while the card was in review, the only
+# kind whose time compares from card to card.
+AGAIN, REVIEW_ANSWER = 1, 1
+CLIENT_SEARCH = "tag:client::*"
+DAY_MS = 86_400_000
+
+
+def now_utc() -> datetime.datetime:
+    return datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+
+
+def parse_stamp(text: str) -> datetime.datetime:
+    return datetime.datetime.fromisoformat(text)
+
+
+def queue_file(path: str | None) -> Path:
+    """--queue, or anki-flashcards/queue.jsonl under the XDG state directory. The queue holds card
+    text, so it lives outside every repository."""
+    if path:
+        return Path(path).expanduser()
+    state = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
+    return Path(state) / "anki-flashcards" / "queue.jsonl"
+
+
+def read_queue(path: Path) -> list[dict]:
+    """Every record, oldest first. A line that is not JSON is reported and skipped, so one bad
+    write never hides the rest of the queue."""
+    if not path.exists():
+        return []
+    records = []
+    with open(path, encoding="utf-8") as fh:
+        for number, line in enumerate(fh, 1):
+            if not line.strip():
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError:
+                print("%s line %d is not JSON, skipped." % (path, number), file=sys.stderr)
+    return records
+
+
+def append_queue(path: Path, records: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write("".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records))
+
+
+def proposal_states(records: list[dict]) -> list[dict]:
+    """Each proposal with its status, pending, kept, applied or rejected, and when it closed."""
+    verdicts = {record["id"]: record for record in records if record.get("type") == "decision"}
+    states = []
+    for record in records:
+        if record.get("type") != "proposal":
+            continue
+        state = dict(record, status="pending", closedAt=None)
+        verdict = verdicts.get(record["id"])
+        if record.get("action") == "keep":
+            state.update(status="kept", closedAt=record["at"])
+        elif verdict:
+            state.update(status=verdict["status"], closedAt=verdict["at"], reason=verdict.get("reason", ""))
+        states.append(state)
+    return states
+
+
+def held_back(states: list[dict], kind: str, now: datetime.datetime) -> tuple[set, set]:
+    """Notes a check of this kind leaves alone, as (pending, resting). A pending note waits for its
+    verdict. A resting one had a proposal of this kind closed within the kind's cool-down, or a fix
+    applied within SETTLE_DAYS, which needs reviews before anyone can tell whether it worked."""
+    pending, resting = set(), set()
+    for state in states:
+        if state["status"] == "pending":
+            pending.add(state["noteId"])
+            continue
+        age = (now - parse_stamp(state["closedAt"])).days
+        if (state["kind"] == kind and age < COOLDOWN_DAYS[kind]) or (state["status"] == "applied" and age < SETTLE_DAYS):
+            resting.add(state["noteId"])
+    return pending, resting
+
+
+def find(query: str, no_client: bool, action: str = "findCards") -> list[int]:
+    return call(action, query=query + (" -" + CLIENT_SEARCH if no_client else ""))
+
+
+def review_logs(card_ids: list[int]) -> dict[int, list[dict]]:
+    """Each card's answers, oldest first. Entries with no button pressed, such as a reschedule, are
+    left out."""
+    logs: dict[int, list[dict]] = {}
+    for start in range(0, len(card_ids), 200):
+        for card, entries in call("getReviewsOfCards", cards=card_ids[start : start + 200]).items():
+            logs[int(card)] = sorted((entry for entry in entries if entry.get("ease")), key=lambda entry: entry["id"])
+    return logs
+
+
+def day_of(ms: int) -> str:
+    return datetime.date.fromtimestamp(ms / 1000).isoformat()
+
+
+def failing_notes(cards: list[dict], logs: dict, marked: set, now_ms: int) -> dict[int, tuple]:
+    """Notes with a card that keeps failing, or marked for repair: note id -> (rank, signal)."""
+    found: dict[int, tuple] = {}
+    for card in cards:
+        answers = logs.get(card["cardId"], [])
+        agains = sum(1 for entry in answers[1:] if entry["ease"] == AGAIN)
+        last = max((entry["id"] for entry in answers if entry["ease"] == AGAIN), default=0)
+        new = bool(answers) and now_ms - answers[0]["id"] <= NEW_DAYS * DAY_MS
+        if new and agains >= NEW_AGAINS:
+            rank, signal = (agains, last), "failed %d times since first shown on %s" % (agains, day_of(answers[0]["id"]))
+        elif card["lapses"] >= MATURE_LAPSES and last:
+            rank, signal = (card["lapses"], last), "lapsed %d times, last failed on %s" % (card["lapses"], day_of(last))
+        elif card["note"] in marked:
+            rank, signal = (0, last), ""
+        else:
+            continue
+        if card["note"] in marked:
+            rank, signal = (1,) + rank, "marked for repair" + ("; " + signal if signal else "")
+        else:
+            rank = (0,) + rank
+        if card["note"] not in found or rank > found[card["note"]][0]:
+            found[card["note"]] = (rank, signal)
+    return found
+
+
+def slow_notes(cards: list[dict], logs: dict, seconds: float | None) -> dict[int, tuple]:
+    """Notes with a card in the slowest tenth by median answer time in review, or at --seconds and
+    slower: note id -> (rank, signal)."""
+    timed = []
+    for card in cards:
+        times = [e["time"] for e in logs.get(card["cardId"], []) if e["type"] == REVIEW_ANSWER and e["time"] > 0]
+        if len(times) >= MIN_ANSWERS:
+            timed.append((statistics.median(times) / 1000, len(times), card))
+    if not timed:
+        return {}
+    medians = sorted(median for median, _, _ in timed)
+    threshold = seconds if seconds is not None else medians[int(0.9 * (len(medians) - 1))]
+    found: dict[int, tuple] = {}
+    for median, answers, card in timed:
+        if median < threshold:
+            continue
+        signal = "median answer %.0f s over %d reviews; this run looked at %.0f s and slower" % (median, answers, threshold)
+        if card["note"] not in found or (median,) > found[card["note"]][0]:
+            found[card["note"]] = ((median,), signal)
+    return found
+
+
+def notes_by_id(note_ids: list[int]) -> dict[int, dict]:
+    found = {}
+    for start in range(0, len(note_ids), 100):
+        for note in call("notesInfo", notes=note_ids[start : start + 100]):
+            if note:
+                found[note["noteId"]] = note
+    return found
+
+
+def ordered_fields(note: dict) -> dict[str, str]:
+    return {name: value["value"] for name, value in sorted(note["fields"].items(), key=lambda item: item[1]["order"])}
+
+
+def describe(kind: str, note_ids: list[int], signals: dict[int, str]) -> list[dict]:
+    """Each candidate with its note as it stands, in the order given."""
+    if not note_ids:
+        return []
+    notes = notes_by_id(note_ids)
+    by_note: defaultdict = defaultdict(list)
+    for card in cards_info(call("findCards", query="nid:" + ",".join(map(str, note_ids)))):
+        by_note[card["note"]].append(card)
+    found = []
+    for note_id in note_ids:
+        note = notes.get(note_id)
+        if not note:
+            continue
+        cards = sorted(by_note[note_id], key=lambda card: card.get("ord", 0))
+        fields = ordered_fields(note)
+        found.append({
+            "kind": kind,
+            "noteId": note_id,
+            "signal": signals[note_id],
+            "deck": cards[0]["deckName"] if cards else None,
+            "modelName": note["modelName"],
+            "topic": strip_html(fields.get(CONTEXT_FIELD, "")) or None,
+            "fields": fields,
+            "tags": note["tags"],
+            "cardIds": [card["cardId"] for card in cards],
+            "lapses": max((card["lapses"] for card in cards), default=0),
+            "reviews": max((card["reps"] for card in cards), default=0),
+        })
+    return found
+
+
+def cmd_candidates(args) -> int:
+    if not connected():
+        print("AnkiConnect is not reachable at %s. Record the missed run: anki_cards.py queue skip --kind %s "
+              "--reason \"AnkiConnect unreachable\"" % (ANKI_URL, args.kind), file=sys.stderr)
+        return 1
+    path = queue_file(args.queue)
+    now = now_utc()
+    pending, resting = held_back(proposal_states(read_queue(path)), args.kind, now)
+    if args.kind in ("failing", "slow"):
+        if args.kind == "failing":
+            marked_cards = set(find("tag:%s -is:suspended" % REPAIR_TAG, args.no_client))
+            cards = cards_info(sorted(set(find("rated:%d:1 -is:suspended" % args.days, args.no_client)) | marked_cards))
+            marked = {card["note"] for card in cards if card["cardId"] in marked_cards}
+            ranked = failing_notes(cards, review_logs([card["cardId"] for card in cards]), marked, int(now.timestamp() * 1000))
+        else:
+            marked = set()
+            cards = cards_info(find("rated:%d -is:suspended" % STUDIED_DAYS, args.no_client))
+            ranked = slow_notes(cards, review_logs([card["cardId"] for card in cards]), args.seconds)
+        # A note the user marked waits only for its pending proposal: marking it again asks again.
+        eligible = [note for note in ranked if note not in pending and (note in marked or note not in resting)]
+        eligible.sort(key=lambda note: ranked[note][0], reverse=True)
+        held, available = len(ranked) - len(eligible), len(eligible)
+        signals = {note: ranked[note][1] for note in eligible}
+    else:
+        if args.kind == "sourced":
+            query, signal = '"%s:_*" -is:suspended' % SOURCE_FIELD, "has a %s to check the card against" % SOURCE_FIELD
+        else:
+            query, signal = "rated:%d -is:suspended" % STUDIED_DAYS, "drawn at random from the notes studied in the last %d days" % STUDIED_DAYS
+        notes = find(query, args.no_client, "findNotes")
+        pool = [note for note in notes if note not in pending and note not in resting]
+        eligible = random.sample(pool, min(args.max, len(pool)))
+        held, available = len(notes) - len(pool), len(pool)
+        signals = {note: signal for note in eligible}
+    candidates = describe(args.kind, eligible[: args.max], signals)
+    print(json.dumps({"kind": args.kind, "at": now.isoformat(), "queue": str(path), "candidates": candidates},
+                     ensure_ascii=False, indent=1))
+    print("%s: %s of %d eligible, %d held back by the queue." % (
+        args.kind, count(len(candidates), "candidate"), available, held), file=sys.stderr)
+    return 0
+
+
+@lru_cache(maxsize=None)
+def field_names(model: str) -> tuple[str, ...]:
+    return tuple(call("modelFieldNames", modelName=model))
+
+
+def lint_findings(model: str, names: list[str], fields: dict, tags: list) -> tuple[set, set]:
+    report = Report()
+    lint_note("", {"fields": fields, "tags": tags}, model, names, report)
+    return set(report.errors), set(report.warnings)
+
+
+def check_field_change(where: str, note: dict, fields, errors: list, warnings: list) -> None:
+    """A field change may not bring a lint error the note did not have. Old gaps, such as a Source
+    nobody can name any more, are the user's to see, not a reason to refuse the fix."""
+    if not isinstance(fields, dict) or not fields:
+        errors.append("%s: give the new field values in fields." % where)
+        return
+    before = ordered_fields(note)
+    unknown = [name for name in fields if name not in before]
+    if unknown:
+        errors.append("%s: %s not a field of %r." % (where, ", ".join(map(repr, unknown)), note["modelName"]))
+        return
+    after = dict(before)
+    after.update(fields)
+    if after == before:
+        errors.append("%s: the fields are unchanged." % where)
+        return
+    old_errors, old_warnings = lint_findings(note["modelName"], list(before), before, note["tags"])
+    new_errors, new_warnings = lint_findings(note["modelName"], list(before), after, note["tags"])
+    errors += ["%s: %s" % (where, message) for message in sorted(new_errors - old_errors)]
+    warnings += ["%s: %s" % (where, message) for message in sorted(new_warnings - old_warnings)]
+
+
+def check_new_notes(where: str, note: dict, action: str, proposal: dict, errors: list, warnings: list) -> None:
+    """New notes are linted as drafts. A split may carry its note's old gaps, such as a missing
+    Source; a prerequisite is a new fact and needs everything a new card needs."""
+    new_notes = proposal.get("newNotes")
+    resource = proposal.get("resource")
+    if action == "prerequisite" and not new_notes and isinstance(resource, str) and resource.strip():
+        return
+    if not isinstance(new_notes, list) or not new_notes:
+        errors.append("%s: a %s needs newNotes%s." % (where, action, ", or a resource to read" if action == "prerequisite" else ""))
+        return
+    inherited: set = set()
+    if action == "split":
+        current = ordered_fields(note)
+        inherited, _ = lint_findings(note["modelName"], list(current), current, [])
+    for number, new in enumerate(new_notes, 1):
+        label = "%s, new note %d" % (where, number)
+        if not isinstance(new, dict) or not new.get("deckName") or not new.get("modelName"):
+            errors.append("%s: needs deckName, modelName and fields." % label)
+            continue
+        if new["deckName"].startswith(ARCHIVE_PREFIX):
+            errors.append("%s: %s is archived. New notes go to %s or a current deck." % (label, new["deckName"], INBOX_DECK))
+        try:
+            names = field_names(new["modelName"])
+        except RuntimeError:
+            errors.append("%s: the note type %r does not exist." % (label, new["modelName"]))
+            continue
+        new_errors, new_warnings = lint_findings(new["modelName"], list(names), new.get("fields") or {}, new.get("tags") or [])
+        errors += ["%s: %s" % (label, message) for message in sorted(new_errors - inherited)]
+        warnings += ["%s: %s" % (label, message) for message in sorted(new_warnings)]
+
+
+def cmd_queue_add(args) -> int:
+    try:
+        text = sys.stdin.read() if args.file == "-" else Path(args.file).read_text(encoding="utf-8")
+        data = json.loads(text)
+    except (OSError, json.JSONDecodeError) as exc:
+        print("Cannot read %s: %s" % (args.file, exc))
+        return 2
+    batch = data if isinstance(data, list) else [data]
+    if not connected():
+        print("AnkiConnect is not reachable. A proposal is checked against its note as it stands, so add it "
+              "while Anki is open.")
+        return 1
+    path = queue_file(args.queue)
+    pending = {state["noteId"]: state["id"] for state in proposal_states(read_queue(path)) if state["status"] == "pending"}
+    notes = notes_by_id([p["noteId"] for p in batch if isinstance(p, dict) and isinstance(p.get("noteId"), int)])
+    now = now_utc()
+    errors: list[str] = []
+    warnings: list[str] = []
+    records: list[dict] = []
+    seen: set = set()
+    for number, proposal in enumerate(batch, 1):
+        where = "proposal %d" % number
+        if not isinstance(proposal, dict):
+            errors.append("%s is not a JSON object." % where)
+            continue
+        note = notes.get(proposal.get("noteId"))
+        if not note:
+            errors.append("%s: noteId %r is not a note in the collection." % (where, proposal.get("noteId")))
+            continue
+        note_id, kind, action = note["noteId"], proposal.get("kind"), proposal.get("action")
+        where = "proposal %d (note %d)" % (number, note_id)
+        if kind not in KINDS:
+            errors.append("%s: kind must be one of %s." % (where, ", ".join(KINDS)))
+        if action not in ACTIONS:
+            errors.append("%s: action must be one of %s." % (where, ", ".join(ACTIONS)))
+        if not isinstance(proposal.get("diagnosis"), str) or not proposal["diagnosis"].strip():
+            errors.append("%s: no diagnosis. Say what is wrong, or why the card is fine as it is." % where)
+        if note_id in pending:
+            errors.append("%s: already pending as %s." % (where, pending[note_id]))
+        if note_id in seen:
+            errors.append("%s: a second proposal for this note in one batch." % where)
+        seen.add(note_id)
+        if action in FIELD_ACTIONS:
+            check_field_change(where, note, proposal.get("fields"), errors, warnings)
+        elif action in NOTE_ACTIONS:
+            check_new_notes(where, note, action, proposal, errors, warnings)
+        record = {"type": "proposal", "id": "%s-%d-%s" % (kind, note_id, now.strftime("%Y%m%d%H%M%S")), "at": now.isoformat()}
+        record.update((key, proposal[key]) for key in PROPOSAL_KEYS if key in proposal)
+        record["topic"] = strip_html(ordered_fields(note).get(CONTEXT_FIELD, "")) or None
+        record["cardIds"] = note.get("cards") or []
+        records.append(record)
+    for line in warnings:
+        print("WARN   " + line)
+    if errors:
+        for line in errors:
+            print("ERROR  " + line)
+        print("Nothing queued. Fix the errors and add the whole batch again.")
+        return 1
+    append_queue(path, records)
+    kept = sum(1 for record in records if record.get("action") == "keep")
+    print("Queued %s in %s: %d to approve, %d kept as they are." % (
+        count(len(records), "proposal"), path, len(records) - kept, kept))
+    return 0
+
+
+def announce_reports(path: Path, records: list[dict]) -> None:
+    """Point at the reports saved since the last verdict, which the user has not seen yet."""
+    folder = path.parent / "reports"
+    if not folder.is_dir():
+        return
+    last = max((parse_stamp(record["at"]) for record in records if record.get("type") == "decision"), default=None)
+    for report in sorted(folder.glob("*.md")):
+        saved = datetime.datetime.fromtimestamp(report.stat().st_mtime, datetime.timezone.utc)
+        if last is None or saved > last:
+            print("Report saved %s since the last verdict, show it first: %s" % (saved.date(), report))
+
+
+def cmd_queue_list(args) -> int:
+    path = queue_file(args.queue)
+    records = read_queue(path)
+    statuses = {"pending": {"pending"}, "decided": set(VERDICTS), "kept": {"kept"}}.get(args.status, {"pending", "kept", *VERDICTS})
+    topic = (args.topic or "").casefold()
+    shown = [
+        state for state in proposal_states(records)
+        if state["status"] in statuses
+        and (not args.kind or state["kind"] == args.kind)
+        and topic in (state.get("topic") or "").casefold()
+    ]
+    if args.json:
+        print(json.dumps(shown, ensure_ascii=False, indent=1))
+        return 0
+    if args.status == "pending":
+        announce_reports(path, records)
+    if not shown:
+        print("No %s proposals in %s." % (args.status, path))
+        return 0
+    for state in shown:
+        print("%s  %s  note %d%s" % (state["id"], state["action"], state["noteId"], "  " + state["topic"] if state.get("topic") else ""))
+        print("    " + state.get("diagnosis", ""))
+        if state["status"] in VERDICTS:
+            print("    %s%s" % (state["status"], ": " + state["reason"] if state.get("reason") else ""))
+    print("\n%s. The proposed fields and notes are in --json." % count(len(shown), "proposal"))
+    return 0
+
+
+def cmd_queue_decide(args) -> int:
+    path = queue_file(args.queue)
+    states = {state["id"]: state for state in proposal_states(read_queue(path))}
+    errors = []
+    for proposal_id in args.ids:
+        state = states.get(proposal_id)
+        if not state:
+            errors.append("%s is not in %s." % (proposal_id, path))
+        elif state["status"] != "pending":
+            errors.append("%s is already %s." % (proposal_id, state["status"]))
+    reason = (args.reason or "").strip()
+    if args.status == "rejected" and not reason:
+        errors.append("A rejection needs --reason, in the user's words. Later runs read it to learn what they want.")
+    if errors:
+        for line in errors:
+            print("ERROR  " + line)
+        return 1
+    at = now_utc().isoformat()
+    append_queue(path, [{"type": "decision", "id": proposal_id, "at": at, "status": args.status, "reason": reason}
+                        for proposal_id in args.ids])
+    print("Recorded %s as %s." % (count(len(args.ids), "proposal"), args.status))
+    note_ids = sorted({states[proposal_id]["noteId"] for proposal_id in args.ids})
+    if not connected():
+        print("Anki is closed, so the %r tag was not checked. Once it is open, remove it from %s with "
+              "mcp__anki__removeTags." % (REPAIR_TAG, ", ".join(map(str, note_ids))))
+        return 0
+    marked = [note["noteId"] for note in notes_by_id(note_ids).values() if REPAIR_TAG in note["tags"]]
+    if marked:
+        print("Remove the %r tag from %s with mcp__anki__removeTags." % (REPAIR_TAG, ", ".join(map(str, marked))))
+    return 0
+
+
+def cmd_queue_skip(args) -> int:
+    path = queue_file(args.queue)
+    append_queue(path, [{"type": "skip", "at": now_utc().isoformat(), "kind": args.kind, "reason": args.reason}])
+    print("Recorded a %s run that did not happen, in %s." % (args.kind, path))
+    return 0
+
+
+def share(part: int, whole: int) -> str:
+    return "%d of %d (%d%%)" % (part, whole, round(100 * part / whole)) if whole else "-"
+
+
+def fix_effects(states: list[dict], now: datetime.datetime) -> list[str]:
+    """Again presses per answer in the SETTLE_DAYS before each proposal and after its fix, for the
+    fixes that changed a note's fields and have had that long to show."""
+    window = datetime.timedelta(days=SETTLE_DAYS)
+    settled = [
+        state for state in states
+        if state["status"] == "applied" and state.get("action") in FIELD_ACTIONS and state.get("cardIds")
+        and now - parse_stamp(state["closedAt"]) >= window
+    ]
+    if not settled:
+        return ["No field fix has had %d days to show its effect yet." % SETTLE_DAYS]
+    if not connected():
+        return ["Anki is closed, so what the applied fixes changed was not measured."]
+    logs = review_logs(sorted({card for state in settled for card in state["cardIds"]}))
+    lines = ["| Check | Fixes | Again before | Again after |", "| --- | --- | --- | --- |"]
+    for kind in KINDS:
+        mine = [state for state in settled if state["kind"] == kind]
+        if not mine:
+            continue
+        tally = {"before": [0, 0], "after": [0, 0]}
+        for state in mine:
+            proposed, fixed = parse_stamp(state["at"]), parse_stamp(state["closedAt"])
+            spans = {"before": (proposed - window, proposed), "after": (fixed, fixed + window)}
+            for card in state["cardIds"]:
+                for entry in logs.get(card, []):
+                    moment = datetime.datetime.fromtimestamp(entry["id"] / 1000, datetime.timezone.utc)
+                    for side, (start, end) in spans.items():
+                        if start <= moment < end:
+                            tally[side][0] += entry["ease"] == AGAIN
+                            tally[side][1] += 1
+        lines.append("| %s | %d | %s | %s |" % (kind, len(mine), share(*tally["before"]), share(*tally["after"])))
+    return lines
+
+
+def cmd_queue_report(args) -> int:
+    path = queue_file(args.queue)
+    records = read_queue(path)
+    states = proposal_states(records)
+    skips = [record for record in records if record.get("type") == "skip"]
+    now = now_utc()
+    since = now - datetime.timedelta(days=args.days)
+    lines = [
+        "# Repair queue, %s" % now.date(),
+        "",
+        "The last %d days of %s." % (args.days, path),
+        "",
+        "| Check | Checked | Needed a change | Accepted | Pending | Runs without Anki | Last run |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for kind in KINDS:
+        recent = [state for state in states if state["kind"] == kind and parse_stamp(state["at"]) >= since]
+        changes = [state for state in recent if state["action"] != "keep"]
+        decided = [state for state in changes if state["status"] in VERDICTS]
+        applied = sum(1 for state in decided if state["status"] == "applied")
+        waiting = sum(1 for state in changes if state["status"] == "pending")
+        missed = sum(1 for record in skips if record.get("kind") == kind and parse_stamp(record["at"]) >= since)
+        last = max([state["at"] for state in states if state["kind"] == kind]
+                   + [record["at"] for record in skips if record.get("kind") == kind], default="")
+        lines.append("| %s | %d | %s | %s | %d | %d | %s |" % (
+            kind, len(recent), share(len(changes), len(recent)), share(applied, len(decided)), waiting, missed,
+            last[:10] or "never"))
+    lines += ["", "## What the fixes changed", ""] + fix_effects(states, now)
+    text = "\n".join(lines)
+    print(text)
+    if args.save:
+        out = path.parent / "reports" / ("%s.md" % now.date().isoformat())
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(text + "\n", encoding="utf-8")
+        print("\nSaved to %s." % out)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -948,6 +1493,47 @@ def main() -> int:
     p_lint.set_defaults(func=cmd_lint)
 
     sub.add_parser("inbox", help="what waits in the Inbox, and where it could go").set_defaults(func=cmd_inbox)
+
+    p_candidates = sub.add_parser("candidates", help="notes the review history says to look at, as JSON")
+    p_candidates.add_argument("kind", choices=KINDS)
+    p_candidates.add_argument("--max", type=int, default=20, help="at most this many notes (default 20)")
+    p_candidates.add_argument("--days", type=int, default=7, help="failing: failures of the last N days (default 7)")
+    p_candidates.add_argument("--seconds", type=float, help="slow: this median answer time and slower, not the slowest tenth")
+    p_candidates.add_argument("--no-client", action="store_true", help="leave out notes tagged client::<name>")
+    p_candidates.add_argument("--queue", help="queue file (default %s)" % queue_file(None))
+    p_candidates.set_defaults(func=cmd_candidates)
+
+    p_queue = sub.add_parser("queue", help="the repair queue: proposals, verdicts, missed runs and the report")
+    queue_sub = p_queue.add_subparsers(dest="queue_command", required=True)
+    where = argparse.ArgumentParser(add_help=False)
+    where.add_argument("--queue", help="queue file (default %s)" % queue_file(None))
+
+    q_add = queue_sub.add_parser("add", parents=[where], help="queue proposals from a JSON file, or - for stdin")
+    q_add.add_argument("file")
+    q_add.set_defaults(func=cmd_queue_add)
+
+    q_list = queue_sub.add_parser("list", parents=[where], help="proposals by status")
+    q_list.add_argument("--status", choices=("pending", "decided", "kept", "all"), default="pending")
+    q_list.add_argument("--kind", choices=KINDS)
+    q_list.add_argument("--topic", help="Topic substring, to read the verdicts given on a subject")
+    q_list.add_argument("--json", action="store_true", help="whole records, with the proposed fields and notes")
+    q_list.set_defaults(func=cmd_queue_list)
+
+    q_decide = queue_sub.add_parser("decide", parents=[where], help="record the user's verdict on proposals")
+    q_decide.add_argument("ids", nargs="+")
+    q_decide.add_argument("--status", choices=VERDICTS, required=True)
+    q_decide.add_argument("--reason", help="why, in the user's words; a rejection needs one")
+    q_decide.set_defaults(func=cmd_queue_decide)
+
+    q_skip = queue_sub.add_parser("skip", parents=[where], help="record a run that could not reach Anki")
+    q_skip.add_argument("--kind", choices=KINDS, required=True)
+    q_skip.add_argument("--reason", required=True)
+    q_skip.set_defaults(func=cmd_queue_skip)
+
+    q_report = queue_sub.add_parser("report", parents=[where], help="what each check found, and what the fixes changed")
+    q_report.add_argument("--days", type=int, default=30, help="the period of the table (default 30)")
+    q_report.add_argument("--save", action="store_true", help="also write it to reports/ beside the queue file")
+    q_report.set_defaults(func=cmd_queue_report)
 
     args = parser.parse_args()
     try:

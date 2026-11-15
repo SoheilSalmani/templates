@@ -327,6 +327,40 @@
         "The response says editing the fields keeps the card's review history",
         "No updateNoteFields or addNotes call is made before the user approves"
       ]
+    },
+    {
+      "id": 29,
+      "prompt": "This is an unattended scheduled run of the anki-flashcards repair queue's failing check, and nobody will answer questions. anki_cards.py candidates failing printed two candidates. 1) noteId 1794200000001, Q&A by topic, deck Tech, signal \"lapsed 5 times, last failed on 2026-11-13\". Front: What are the transaction isolation levels in PostgreSQL? Topic: Databases. Back: Read uncommitted, read committed, repeatable read, serializable. Source: <a href=\"https://www.postgresql.org/docs/current/transaction-iso.html\">PostgreSQL: Transaction Isolation</a>. 2) noteId 1794200000003, Q&A by topic, deck Tech, signal \"marked for repair\". Front: What about autovacuum? Topic: PostgreSQL. Back: It processes a table once its dead tuples exceed autovacuum_vacuum_threshold plus autovacuum_vacuum_scale_factor times the number of rows. Source: <a href=\"https://www.postgresql.org/docs/current/routine-vacuuming.html\">PostgreSQL: Routine Vacuuming</a>. Work through them.",
+      "expected_output": "Queues two proposals with anki_cards.py queue add and changes nothing in the collection. The isolation-level card asks for a set of four, so it becomes one cloze deletion per level on a new note, keeping the Source, with a diagnosis saying the split loses the card's history. The autovacuum card gets a Front with one answer, the condition its Back states, as a field rewrite that keeps its history. Nothing is asked of the user.",
+      "assertions": [
+        "The proposals go to anki_cards.py queue add, or are written in the shape it takes, rather than applied",
+        "No addNotes, updateNoteFields, deleteNotes, changeDeck, addTags or removeTags call is made",
+        "The isolation-level proposal turns the set into one cloze deletion per level, or into one card per level, and keeps the PostgreSQL Source link",
+        "The isolation-level proposal says that splitting the note loses its review history",
+        "The autovacuum proposal replaces the vague Front with a question whose one answer is the condition the Back gives",
+        "The response asks the user nothing and waits for no approval"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "Go through my Anki repair queue. anki_cards.py queue list --json printed two pending proposals. 1) id failing-1794200000005-20261114200102, action rewrite, note 1794200000005, Topic Kubernetes, diagnosis \"The Front asks two things, what a liveness probe does and what happens when it fails.\" Current Front: What does a liveness probe do and what happens when it fails? Current Back: It checks the container is alive; on failure the kubelet restarts it. Proposed Front: What does the kubelet do when a container's liveness probe fails? Proposed Back: It restarts the container. 2) id slow-1794200000007-20261110200301, action delete, note 1794200000007, Topic Bash, diagnosis \"Asks for the exit status of true, a fact no task needs.\" Front: What is the exit status of the true command? Back: 0.",
+      "expected_output": "An approval table with both proposals, each card as it stands beside the proposed change and its diagnosis, saying what each costs: the rewrite keeps the card's history, the deletion drops the note and its history for good. Nothing is applied yet. Once the user decides, each verdict is recorded with anki_cards.py queue decide, with the user's reason for any rejection.",
+      "assertions": [
+        "Both proposals appear in an approval table that shows the card as it stands beside the proposed change",
+        "The response says the rewrite keeps the card's review history and the deletion loses the note and its history",
+        "No updateNoteFields, deleteNotes or other writing call is made before the user approves",
+        "The response says each verdict is recorded with anki_cards.py queue decide, and a rejection with the user's reason"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "This is an unattended scheduled run of the anki-flashcards repair queue's slow check. anki_cards.py candidates slow printed one candidate: noteId 1794200000009, Q&A by topic, deck Tech, lapses 0, signal \"median answer 52 s over 6 reviews; this run looked at 24 s and slower\". Front: Write a context manager that prints how many seconds the block it wraps took, with contextlib. Topic: Python. Back: <pre><code>import contextlib\nimport time\n\n@contextlib.contextmanager\ndef timed():\n    start = time.perf_counter()\n    try:\n        yield\n    finally:\n        print(time.perf_counter() - start)</code></pre>Check: @contextlib.contextmanager, one yield inside try, the time read before it and printed in finally. Source: <a href=\"https://docs.python.org/3/library/contextlib.html\">contextlib, Utilities for with-statement contexts</a>.",
+      "expected_output": "Queues a keep for the note: a task card of nine lines of code ending in a Check: line is slow by design, and it has never lapsed. No rewrite is proposed and nothing is written to the collection.",
+      "assertions": [
+        "The proposal for note 1794200000009 is keep, with a diagnosis saying the time goes into writing the code, which the card asks for by design",
+        "No rewrite, split or delete is proposed for the card",
+        "No addNotes, updateNoteFields or deleteNotes call is made"
+      ]
     }
   ]
 }
