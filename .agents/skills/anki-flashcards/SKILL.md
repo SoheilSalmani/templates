@@ -1,6 +1,6 @@
 ---
 name: anki-flashcards
-description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repository or source code, API docs, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, to organize the cards waiting in the Inbox deck, or to set up the note types the skill uses. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and the skill's own note types and formatting conventions.
+description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repository or source code, API docs, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, to find the cards worth fixing from their review history or run that check on a schedule, to go through the repair queue, to organize the cards waiting in the Inbox deck, or to set up the note types the skill uses. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and the skill's own note types and formatting conventions.
 allowed-tools: Read, Grep, Glob, WebFetch, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/anki_cards.py:*), mcp__anki__listDecks, mcp__anki__modelNames, mcp__anki__modelFieldNames, mcp__anki__findNotes, mcp__anki__notesInfo, mcp__anki__getTags, mcp__anki__createModel
 ---
 
@@ -180,6 +180,23 @@ its Front the task and its Back a `Check:` line, which are field edits that keep
 long code Back becomes a task card cut to the lines that make the pattern, a production card for
 the call that matters, or an exercise for a whole program (worked examples 10 and 11).
 
+## Improving cards from their reviews
+
+Reviews show which cards fail, which are slow, and which have gone out of date; reading cards cold
+does not. `anki_cards.py candidates <kind>` picks them from the review history: `failing`, `slow`,
+`sourced` or `random`. You diagnose each, draft one proposal, and `anki_cards.py queue add` keeps it
+in a repair queue the user approves from later. Marking a note while reviewing, the `*` key, asks
+for its repair.
+
+- A run of a check never writes to the collection and asks nothing: it queues proposals, and records
+  a missed run when Anki is closed.
+- When the user asks to go through the queue, show the approval table, apply what they approve as
+  above, and record every verdict with `anki_cards.py queue decide`.
+
+Read `references/repair-queue.md` before running a check or going through the queue: what each
+check picks, the diagnoses and their actions, the queue file, and how to run the checks on a
+schedule.
+
 ## The Inbox
 
 `Inbox` is a top-level deck where cards wait to be filed. The user does not study it, so filing is
@@ -228,3 +245,5 @@ Load these as needed rather than up front:
   waste.
 - `references/worked-examples.md`. Before-and-after rewrites of real bad cards. Read this if the
   rules above feel abstract, or to calibrate how short a good Back is.
+- `references/repair-queue.md`. Finding the cards worth fixing from their reviews, the repair queue,
+  and running its checks on a schedule. Read this before running a check or going through the queue.
