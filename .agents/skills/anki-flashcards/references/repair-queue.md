@@ -21,17 +21,21 @@ lapses and reviews, and the `signal` that picked it.
 | `slow` | Cards in the slowest tenth by median answer time in review, over 3 or more answers in the last 90 days, or at `--seconds` and slower | A card passed slowly is usually wordy, vague, or a list in disguise, the flaws models judge worst |
 | `sourced` | Notes with a `Source`, at random | A wrong or outdated fact passes every review. The source gives the check something to compare with |
 | `random` | Notes studied in the last 90 days, at random | A control. When it finds little the other checks missed, stop running it |
+| `inbox` | Notes in the Inbox and its project decks with a lint error. Beside them, under `proposals`: each learnt Inbox note's move, and every note in the collection whose `speed::fast` tag disagrees with its rule | New cards get a second look while they are still being learnt, and two rules move notes on and keep the tag true without anyone deciding |
 
 Marking is how the user asks for a repair while reviewing: Mark Note, the `*` key, puts Anki's
 `marked` tag on the note, and the next `failing` run picks it up whether or not the card failed.
 
 The queue holds a note back while a proposal for it is pending, for a cool-down after a check of the
-same kind closed one (30 days for `failing`, 90 for `slow` and `random`, 180 for `sourced`), and for
-30 days after any fix was applied, so that the fix has reviews to show for itself. A marked note
-waits only while a proposal is pending: marking it again is a new request.
+same kind closed one (30 days for `failing`, 90 for `slow`, `random` and `inbox`, 180 for
+`sourced`), and for 30 days after any fix was applied, so that the fix has reviews to show for
+itself. A marked note waits only while a proposal is pending: marking it again is a new request.
+The inbox check rests its moves, its tag changes and its diagnoses apart, so a kept diagnosis never
+holds back a move, and a move or a tag change, which fixes nothing, holds a note back from no check.
 
-`--max` caps the candidates, worst first for `failing` and `slow`. `--no-client` leaves out notes
-tagged `client::<name>`, for a run on a model the client has not cleared.
+`--max` caps the candidates, worst first for `failing` and `slow`; the inbox check's proposals are
+never capped. `--no-client` leaves out notes tagged `client::<name>`, for a run on a model the
+client has not cleared.
 
 ## Diagnosis and action
 
@@ -78,7 +82,25 @@ can name any more, does not block a fix; it shows in the approval table instead.
 ```
 
 `fields` holds only the fields that change. Each of `newNotes` has the shape of a draft,
-`{"deckName", "modelName", "fields", "tags"}`, and never names an archived deck.
+`{"deckName", "modelName", "fields", "tags"}`, and never names an archived deck. A field fix needs no
+`tags`: when its new fields change what the `speed::fast` rule says, `queue add` records the tag
+change beside it, to apply with the fields.
+
+## The inbox check
+
+Its `proposals` come from rules and carry their own diagnosis: queue the array exactly as printed.
+Each is one of two actions:
+
+| Action | Decided by | The proposal carries |
+| --- | --- | --- |
+| `move` | Every card of the note has an interval of 21 days or more. It goes to the current deck holding the most cards with its `Topic` | `toDeck`, or null when no current deck holds the Topic and the user names one |
+| `retag` | The `speed::fast` rule in `house-style.md` disagrees with the note's tag | `tags`, `{"add": ["speed::fast"]}` or `{"remove": ["speed::fast"]}` |
+
+`queue add` refuses a move for a note that is not learnt, a move to an archive or into the Inbox, a
+tag change the rule does not call for, and either action from any other check. The check's
+`candidates` are notes in the Inbox with a lint error, which get a diagnosis and an action like any
+check's. A note gets one proposal a run, a diagnosis first, then a tag change, then a move: the
+others wait for the next run.
 
 ## Running unattended
 
@@ -91,6 +113,7 @@ A scheduled run has nobody to approve, so it calls no Anki tool that writes: no 
    stop: the report counts missed runs, so silence never reads as a clean week.
 2. Work through the candidates in order. After every few, write their proposals to a file and run
    `queue add`, so that a run cut short keeps what it finished. Fix a refused batch and add it again.
+   The inbox check's `proposals` go to `queue add` first, as printed.
 3. Queue a `keep` for every candidate that needs nothing. It counts in the report and holds the note
    back from the next runs.
 4. End with one line: the candidates, and how many of each action.
@@ -106,6 +129,12 @@ When the user asks to go through their repair queue:
 3. Apply what the user approves as "Reviewing existing cards" in SKILL.md says, then record each
    verdict: `anki_cards.py queue decide <id>... --status applied`, or `--status rejected --reason
    "<their reason>"`. A rejection needs the reason, in the user's words, because later runs read it.
+   A rule's proposals go in the table grouped, the moves by destination and the tag changes as one
+   row. A `move` goes through `mcp__anki__changeDeck`, with every card of the note read fresh from
+   `notesInfo`, to its `toDeck`. When `toDeck` is null, ask for a deck, a broad category the user
+   studies on its own, or reject the move with their words when they keep the note with its
+   project. A proposal's `tags`, on a `retag` or beside a field fix, goes through
+   `mcp__anki__addTags` or `mcp__anki__removeTags`.
 4. Remove the `marked` tag from the notes `queue decide` names, with `mcp__anki__removeTags`.
 
 ## The report
@@ -127,7 +156,7 @@ says otherwise; `--queue` points elsewhere. It holds card text, so it stays out 
 One JSON record per line, appended and never rewritten:
 
 - `proposal`: `id`, `at`, `kind`, `noteId`, `cardIds`, `topic`, `action`, `diagnosis`, `signal`,
-  `fields`, `newNotes`, `resource`, `model`
+  `fields`, `newNotes`, `resource`, `toDeck`, `tags`, `model`
 - `decision`: `id`, `at`, `status` (`applied` or `rejected`), `reason`
 - `skip`: `at`, `kind`, `reason`
 
@@ -142,9 +171,11 @@ paseo schedule create --name anki-failing --cron "0 20 * * *" --timezone <zone> 
   "Run the failing check of the anki-flashcards repair queue unattended, as its references/repair-queue.md says: python3 .agents/skills/anki-flashcards/scripts/anki_cards.py candidates failing --max 20"
 ```
 
-- Run `failing` daily, the other checks weekly or monthly, and `queue report --save` monthly.
+- Run `failing` daily, `inbox` weekly, the other checks weekly or monthly, and `queue report --save`
+  monthly.
 - Archive on finish can stay on: everything a run produces is in the queue.
 - Anki must be open when a run fires. On macOS, App Nap must be off for Anki, or AnkiConnect stops
   answering in the background: `defaults write net.ankiweb.dtop NSAppSleepDisabled -bool true`, then
   restart Anki.
-- Client cards go only to a model the client has cleared, so give the other runs `--no-client`.
+- Client cards go only to a model the client has cleared, so give the other runs `--no-client`. The
+  inbox check moves client cards too, so it runs on a cleared model, without the flag.

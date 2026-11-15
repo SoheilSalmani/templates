@@ -46,14 +46,16 @@
           "Topic": "Rust",
           "Text": "Only types that {{c1::implement <code>fmt::Display</code>}} can be formatted with <code>{{c2::{}}}</code>.",
           "Source": "<a href=\"https://doc.rust-lang.org/rust-by-example/hello/print/print_display.html\">Rust by Example: Display</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       },
       {
         "fields": {
           "Topic": "Geography",
           "Text": "The capital of France is {{c1::Paris::a city}}.",
           "Source": "<a href=\"https://en.wikipedia.org/wiki/Paris\">Wikipedia: Paris</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       }
     ]
   }

@@ -36,6 +36,15 @@
           "Source": "<a href=\"file:///Users/me/Downloads/python-cheatsheet.pdf\">Python cheat sheet</a>"
         },
         "tags": ["leech", "Client::Acme"]
+      },
+      {
+        "fields": {
+          "Topic": "Git",
+          "Front": "What does <code>git switch -c &lt;branch&gt;</code> do?",
+          "Back": "Creates the branch, then switches to it, in one step.",
+          "Source": "<a href=\"https://git-scm.com/docs/git-switch\">git-switch documentation</a>"
+        },
+        "tags": ["speed::fast"]
       }
     ]
   }

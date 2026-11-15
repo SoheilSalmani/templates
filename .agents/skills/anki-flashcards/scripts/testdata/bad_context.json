@@ -22,7 +22,8 @@
           "Front": "Which package exports <code>basicSetup</code>?",
           "Back": "<code>codemirror</code>",
           "Source": "<a href=\"https://codemirror.net/docs/ref/\">CodeMirror reference manual</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       },
       {
         "fields": {
@@ -30,7 +31,8 @@
           "Front": "Which field holds the text of a <code>Literal</code> node?",
           "Back": "<code>value</code>",
           "Source": "<a href=\"https://github.com/syntax-tree/mdast\">mdast specification</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       },
       {
         "fields": {
@@ -38,7 +40,8 @@
           "Front": "Which field holds the text of a <code>Literal</code> node?",
           "Back": "<code>value</code>",
           "Source": "<a href=\"https://github.com/syntax-tree/hast\">hast specification</a>"
-        }
+        },
+        "tags": ["speed::fast"]
       }
     ]
   },

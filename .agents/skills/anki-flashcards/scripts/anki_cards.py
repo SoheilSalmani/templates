@@ -8,9 +8,10 @@ Subcommands:
   inspect <deck>            What note types a deck uses, with real field names.
   topics [--like PATTERN]   Existing Topic values, so you reuse instead of coining.
   lint <draft.json>         Check drafted notes against the mechanical house rules.
-  inbox                     What waits in the Inbox deck, its state, and where it could be filed.
+  inbox                     What waits in the Inbox deck and its project subdecks, which notes are
+                            learnt, and where each could move.
   candidates <kind>         Notes the review history says to look at, as JSON: failing, slow,
-                            sourced or random. What a run of the repair queue works through.
+                            sourced, random or inbox. What a run of the repair queue works through.
   queue add|list|decide|skip|report
                             The repair queue: proposals, verdicts and what they changed, kept in a
                             file outside the collection (references/repair-queue.md).
@@ -67,8 +68,17 @@ EMOJI_RE = re.compile(
     "]"
 )
 CLOZE_RE = re.compile(r"\{\{c(\d+)::")
-# The one tag the skill writes. A subject, a source and a kind of card each have a place of their own.
+# The tags the skill writes. A subject, a source and a kind of card each have a place of their own.
 CLIENT_TAG_RE = re.compile(r"^client::[a-z0-9]+(-[a-z0-9]+)*$")
+# On every card quick to review by its shape, and on no other: little to read, little to produce.
+# The rule decides it, never a request (references/house-style.md, "Tags").
+FAST_TAG = "speed::fast"
+FAST_ANSWER_WORDS, FAST_ANSWER_CHARS = 3, 30
+FAST_QUESTION_CHARS, FAST_CLOZE_CHARS = 100, 120
+FAST_BLOCK_RE = re.compile(r"<(li|pre|table|img)\b", re.I)
+FAST_NEAR_MISS_RE = re.compile(r"^(speed[-_:]*)?(fast|quick)$", re.I)
+# Its answers are key combinations, short by nature, so only its question is measured.
+SHORTCUT_MODEL = "Keyboard Shortcut"
 # Tags Anki writes itself: for a leech, Mark Note, Tag Duplicates, and Check Database.
 ANKI_TAGS = {"leech", "marked", "duplicate", "db-check"}
 SOURCE_LINK_RE = re.compile(r"""<a\b[^>]*?\bhref\s*=\s*["']([^"']*)["'][^>]*>(.*?)</a>""", re.I | re.S)
@@ -452,6 +462,80 @@ def client_tag(tag: str) -> str | None:
     return "client::" + slug(match.group(1)) if match else None
 
 
+def visible(raw: str) -> str:
+    """A field as the reviewer reads it. An HTML comment, which breaks up cloze syntax in code,
+    disappears instead of leaving a space."""
+    return strip_html(re.sub(r"<!--.*?-->", "", raw, flags=re.S))
+
+
+def long_answer(raw: str) -> str | None:
+    """Why one card's answer is too long to be quick, or None when it is short."""
+    if FAST_BLOCK_RE.search(raw):
+        return "an answer holds a list, a code block, a table or an image"
+    text = visible(raw)
+    if not text:
+        return "an answer is empty"
+    words = len(text.split())
+    if words > FAST_ANSWER_WORDS:
+        return "an answer runs to %d words" % words
+    if len(text) > FAST_ANSWER_CHARS:
+        return "an answer runs to %d characters" % len(text)
+    return None
+
+
+def slow_reason(model: str, fields: dict) -> str | None:
+    """Why a note is not quick to review by its shape, or None when every card of it is: a short
+    question and, on each card, an answer of a few words, with no list, code block, table or image
+    on either side. The same fields always get the same answer."""
+    def field(name: str) -> str:
+        value = fields.get(name)
+        return value if isinstance(value, str) else ""
+
+    text = field("Text")
+    if CLOZE_OPEN_RE.search(text):
+        if FAST_BLOCK_RE.search(text):
+            return "the cloze holds a list, a code block, a table or an image"
+        sentence = visible(re.sub(r"\{\{c\d+::(.*?)\}\}", lambda match: match.group(1).split("::")[0], text, flags=re.S))
+        if len(sentence) > FAST_CLOZE_CHARS:
+            return "the cloze sentence runs to %d characters" % len(sentence)
+        # One card per cloze index, and its answer is every deletion with that index.
+        answers: defaultdict = defaultdict(list)
+        for start, end, _ in cloze_deletions(text):
+            opener = re.search(r"\{\{c(\d+)::$", text[:start])
+            answers[opener.group(1) if opener else ""].append(text[start:end].split("::")[0])
+        for parts in answers.values():
+            reason = long_answer(" ".join(parts))
+            if reason:
+                return reason
+        return None
+    if "Front" not in fields:
+        return "it has no question field"
+    front = field("Front")
+    if FAST_BLOCK_RE.search(front):
+        return "the question holds a list, a code block, a table or an image"
+    if len(visible(front)) > FAST_QUESTION_CHARS:
+        return "the question runs to %d characters" % len(visible(front))
+    if model == SHORTCUT_MODEL:
+        return None
+    if "Back" not in fields:
+        return "it has no answer field"
+    reason = long_answer(field("Back"))
+    # A reversed note asks each side for the other, so its Front is an answer too.
+    if not reason and "reverse" in model.lower():
+        reason = long_answer(front)
+    return reason
+
+
+def speed_tags(model: str, fields: dict, tags: list) -> tuple[list, dict | None]:
+    """The tags once speed::fast follows the rule, and the change that takes, if any."""
+    quick = slow_reason(model, fields) is None
+    if quick and FAST_TAG not in tags:
+        return list(tags) + [FAST_TAG], {"add": [FAST_TAG]}
+    if not quick and FAST_TAG in tags:
+        return [tag for tag in tags if tag != FAST_TAG], {"remove": [FAST_TAG]}
+    return list(tags), None
+
+
 def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None, report: Report) -> None:
     fields = note.get("fields") or {}
     if not isinstance(fields, dict) or not fields:
@@ -681,13 +765,16 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
     if not isinstance(tags, list):
         report.error(where, "tags must be a list.")
         tags = []
+    tags = [str(tag) for tag in tags]
     stray = []
-    for tag in (str(tag) for tag in tags):
-        if CLIENT_TAG_RE.match(tag):
+    for tag in tags:
+        if CLIENT_TAG_RE.match(tag) or tag == FAST_TAG:
             continue
         meant = client_tag(tag)
         if meant:
             report.error(where, "tag %r: write a client tag as %r." % (tag, meant))
+        elif FAST_NEAR_MISS_RE.match(tag):
+            report.error(where, "tag %r: the speed tag is %r, and only the rule in house-style.md sets it." % (tag, FAST_TAG))
         elif tag.lower() in ANKI_TAGS:
             report.error(where, "tag %r is one Anki adds itself. Never add it." % tag)
         else:
@@ -696,10 +783,16 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
         # The tags go beside the note, so every note with stray tags shares one finding.
         report.error(
             "%s (%s)" % (where, ", ".join(stray)),
-            "carries tags the skill does not write. Its only tag is client::<name>. The subject goes "
-            "in %s, where the fact came from in %s, and the kind of card is its note type."
-            % (CONTEXT_FIELD, SOURCE_FIELD),
+            "carries tags the skill does not write. It writes client::<name> on client work and %s "
+            "where the rule marks a card quick. The subject goes in %s, where the fact came from in "
+            "%s, and the kind of card is its note type." % (FAST_TAG, CONTEXT_FIELD, SOURCE_FIELD),
         )
+    reason = slow_reason(model, {name: value for name, value in fields.items() if isinstance(value, str)})
+    if reason is None and FAST_TAG not in tags:
+        report.error(where, "the rule in house-style.md marks this card quick to review: add %r." % FAST_TAG)
+    elif reason and FAST_TAG in tags:
+        report.error(where, "carries %r, but the rule in house-style.md does not mark it quick (%s): remove it."
+                     % (FAST_TAG, reason))
 
 
 def cmd_lint(args) -> int:
@@ -813,6 +906,12 @@ def similar(a: str, b: str) -> bool:
 # ------------------------------------------------------------------------ inbox
 
 INBOX_DECK = "Inbox"
+IN_INBOX = '"deck:%s"' % INBOX_DECK
+# A note is learnt once every card of it reaches Anki's mature interval. It then leaves the Inbox
+# for the current deck that holds the most cards with its Topic.
+LEARNT_DAYS = 21
+# Where a learnt note can go: not the Inbox, not an archive, not a filtered deck.
+HOMES_SEARCH = "-%s -%s -deck:filtered" % (IN_INBOX, ARCHIVE_SEARCH)
 
 
 def slug(text: str) -> str:
@@ -837,42 +936,83 @@ def cards_info(ids: list) -> list[dict]:
     return found
 
 
-def context_of(fields: dict) -> tuple[str, str] | None:
-    if CONTEXT_FIELD not in fields:
-        return None
-    return (CONTEXT_FIELD, strip_html(fields[CONTEXT_FIELD]["value"]))
+def topic_of(fields: dict) -> str:
+    """The Topic as the reviewer reads it, from the fields notesInfo or cardsInfo returns."""
+    value = fields.get(CONTEXT_FIELD)
+    if isinstance(value, dict):
+        value = value.get("value")
+    return strip_html(value or "")
+
+
+def learnt(cards: list[dict]) -> bool:
+    """Every card that is not suspended has an interval of LEARNT_DAYS or more. Intervals come from
+    the grades, not from answer times, so a review left open or answered on the move leaves them
+    alone."""
+    live = [card for card in cards if card.get("queue") != -1]
+    return bool(live) and all(card.get("interval", 0) >= LEARNT_DAYS for card in live)
+
+
+def topic_homes() -> tuple[dict, Counter]:
+    """The cards a learnt note could join: case-folded Topic -> the decks holding cards with it,
+    and every such deck's card count."""
+    homes: defaultdict = defaultdict(Counter)
+    held: Counter = Counter()
+    for card in cards_info(call("findCards", query=HOMES_SEARCH)):
+        held[card["deckName"]] += 1
+        topic = topic_of(card["fields"])
+        if topic:
+            homes[topic.casefold()][card["deckName"]] += 1
+    return homes, held
+
+
+def home_of(topic: str, homes: dict) -> tuple[str | None, str]:
+    """The deck a learnt note with this Topic moves to, or None, and why, in words about the Topic."""
+    if not topic:
+        return None, "the note has no %s to find a deck by" % CONTEXT_FIELD
+    decks = homes.get(topic.casefold())
+    if not decks:
+        return None, "no current deck has it"
+    ranked = decks.most_common(2)
+    if len(ranked) == 2 and ranked[0][1] == ranked[1][1]:
+        return None, "its cards are split evenly between %s and %s" % (ranked[0][0], ranked[1][0])
+    return ranked[0][0], "most cards with it are in %s (%d)" % ranked[0]
+
+
+def client_label(members: list[dict]) -> str:
+    """Which client tag a project deck's notes carry: a client project's cards all carry one."""
+    clients = sorted({tag for note in members for tag in note["tags"] if CLIENT_TAG_RE.match(tag)})
+    tagged = sum(1 for note in members if any(CLIENT_TAG_RE.match(tag) for tag in note["tags"]))
+    if not tagged:
+        return "no client tag"
+    if tagged == len(members) and len(clients) == 1:
+        return "all tagged " + clients[0]
+    return "%d tagged %s, %d without a client tag" % (tagged, " or ".join(clients), len(members) - tagged)
 
 
 def cmd_inbox(_args) -> int:
     if not connected():
         print("AnkiConnect is not reachable. Run 'check' first.")
         return 1
-    in_inbox = '"deck:%s"' % INBOX_DECK
-    cards = cards_info(call("findCards", query=in_inbox))
+    cards = cards_info(call("findCards", query=IN_INBOX))
     if not cards:
         print("%s is empty. Nothing to file." % INBOX_DECK)
         return 0
-    due = set(call("findCards", query=in_inbox + " is:due"))
-    overdue = call("findCards", query=in_inbox + " prop:due<-7")
+    due = set(call("findCards", query=IN_INBOX + " is:due"))
+    overdue = call("findCards", query=IN_INBOX + " prop:due<-7")
     notes = call("notesInfo", notes=sorted({card["note"] for card in cards}))
     by_note: defaultdict = defaultdict(list)
     for card in cards:
         by_note[card["note"]].append(card)
 
-    # Where cards sharing a context value already live, outside the Inbox and the archived trees.
-    homes: defaultdict = defaultdict(Counter)
-    held: Counter = Counter()
-    for card in cards_info(call("findCards", query="-%s -%s" % (in_inbox, ARCHIVE_SEARCH))):
-        held[card["deckName"]] += 1
-        key = context_of(card["fields"])
-        if key and key[1]:
-            homes[key][card["deckName"]] += 1
+    homes, held = topic_homes()
+    filtered = {card["deckName"] for card in cards_info(call("findCards", query="deck:filtered"))}
     deck_names = sorted(call("deckNames"))
     current = [
         deck
         for deck in deck_names
         if deck != INBOX_DECK
         and not deck.startswith((ARCHIVE_PREFIX, INBOX_DECK + "::"))
+        and deck not in filtered
         and (deck != "Default" or held[deck])
     ]
 
@@ -880,10 +1020,14 @@ def cmd_inbox(_args) -> int:
     added = {note["noteId"]: datetime.date.fromtimestamp(note["noteId"] / 1000) for note in notes}
     studied = [card for card in cards if card["type"] != 0]
     oldest = min(added.values())
+    done = [note for note in notes if learnt(by_note[note["noteId"]])]
+    movable = sum(1 for note in done if home_of(topic_of(note["fields"]), homes)[0])
     print("%s: %s, %s. %d new, %d studied, %d due now, %d of them more than a week overdue." % (
         INBOX_DECK, count(len(notes), "note"), count(len(cards), "card"),
         len(cards) - len(studied), len(studied), len(due), len(overdue)))
     print("Oldest note added %s, %s ago." % (oldest, count((today - oldest).days, "day")))
+    print("Learnt, every card at %d days or more: %s, %d with a deck to move to." % (
+        LEARNT_DAYS, count(len(done), "note"), movable))
     print("Current decks: %s." % (", ".join("%s (%s)" % (d, count(held[d], "card")) for d in current) or "none"))
 
     subdecks: defaultdict = defaultdict(list)
@@ -892,27 +1036,25 @@ def cmd_inbox(_args) -> int:
         if deck != INBOX_DECK:
             subdecks[deck].append(note)
     for deck, members in sorted(subdecks.items()):
-        tag = "client::" + slug(deck.split("::", 1)[1])
-        missing = sum(1 for note in members if tag not in note["tags"])
-        print("Subdeck %s: %s, %d without %s." % (deck, count(len(members), "note"), missing, tag))
+        print("Subdeck %s: %s, %s." % (deck, count(len(members), "note"), client_label(members)))
     for deck in deck_names:
         if deck.startswith(INBOX_DECK + "::") and not any(s == deck or s.startswith(deck + "::") for s in subdecks):
             print("Subdeck %s: empty, for the user to delete." % deck)
 
     groups: defaultdict = defaultdict(list)
     for note in notes:
-        groups[context_of(note["fields"])].append(note)
+        groups[topic_of(note["fields"]) if CONTEXT_FIELD in note["fields"] else None].append(note)
     report = Report()
-    for key, members in sorted(groups.items(), key=lambda item: (-len(item[1]), str(item[0]))):
-        if key is None:
-            print("\nNo context field (%s):" % count(len(members), "note"))
+    for topic, members in sorted(groups.items(), key=lambda item: (-len(item[1]), str(item[0]))):
+        if topic is None:
+            print("\nNo %s field (%s):" % (CONTEXT_FIELD, count(len(members), "note")))
         else:
-            home = homes.get(key)
-            where = ("most cards with it are in %s (%d)" % home.most_common(1)[0]) if home else "no current deck has it"
-            print('\n%s "%s" (%s): %s.' % (key[0], key[1], count(len(members), "note"), where))
+            print('\n%s "%s" (%s): %s.' % (CONTEXT_FIELD, topic, count(len(members), "note"), home_of(topic, homes)[1]))
         for note in sorted(members, key=lambda n: n["noteId"]):
             mine = by_note[note["noteId"]]
-            if all(card["type"] == 0 for card in mine):
+            if learnt(mine):
+                state = "learnt"
+            elif all(card["type"] == 0 for card in mine):
                 state = "new"
             else:
                 state = "studied, due" if any(card["cardId"] in due for card in mine) else "studied"
@@ -938,15 +1080,18 @@ def cmd_inbox(_args) -> int:
 # Mark Note, the * key while reviewing, adds this tag to ask for a repair. It comes off when the
 # proposal is decided, through the MCP tools, since this script never writes to the collection.
 REPAIR_TAG = "marked"
-KINDS = ("failing", "slow", "sourced", "random")
-ACTIONS = ("keep", "rewrite", "split", "prerequisite", "differentiate", "fix-fact", "suspend", "delete")
+KINDS = ("failing", "slow", "sourced", "random", "inbox")
+ACTIONS = ("keep", "rewrite", "split", "prerequisite", "differentiate", "fix-fact", "suspend", "delete", "move", "retag")
 # The actions that change a note's own fields, and those that add notes.
 FIELD_ACTIONS = {"rewrite", "differentiate", "fix-fact"}
 NOTE_ACTIONS = {"split", "prerequisite"}
+# The actions a rule decides rather than a diagnosis: moving a learnt note out of the Inbox, and
+# making speed::fast follow its rule. Only the inbox check proposes them, ready to queue.
+RULE_ACTIONS = {"move", "retag"}
 VERDICTS = ("applied", "rejected")
-PROPOSAL_KEYS = ("kind", "noteId", "action", "diagnosis", "signal", "fields", "newNotes", "resource", "model")
+PROPOSAL_KEYS = ("kind", "noteId", "action", "diagnosis", "signal", "fields", "newNotes", "resource", "toDeck", "tags", "model")
 # Days a check leaves a note alone after closing a proposal of its own for it.
-COOLDOWN_DAYS = {"failing": 30, "slow": 90, "sourced": 180, "random": 90}
+COOLDOWN_DAYS = {"failing": 30, "slow": 90, "sourced": 180, "random": 90, "inbox": 90}
 # Days an applied fix gets to show its effect: no check picks the note before then, and the report
 # compares this many days of answers before the proposal and after the fix.
 SETTLE_DAYS = 30
@@ -1020,17 +1165,27 @@ def proposal_states(records: list[dict]) -> list[dict]:
     return states
 
 
-def held_back(states: list[dict], kind: str, now: datetime.datetime) -> tuple[set, set]:
+def action_group(action: str | None) -> str:
+    """A rule action rests on its own; every diagnosed action counts as a fix."""
+    return action if action in RULE_ACTIONS else "fix"
+
+
+def held_back(states: list[dict], kind: str, now: datetime.datetime, group: str | None = None) -> tuple[set, set]:
     """Notes a check of this kind leaves alone, as (pending, resting). A pending note waits for its
     verdict. A resting one had a proposal of this kind closed within the kind's cool-down, or a fix
-    applied within SETTLE_DAYS, which needs reviews before anyone can tell whether it worked."""
+    applied within SETTLE_DAYS, which needs reviews before anyone can tell whether it worked. With a
+    group, only proposals in that group of actions count, so a kept diagnosis never holds back a
+    move, and a move or a retag, which fixes nothing, never holds back a check."""
     pending, resting = set(), set()
     for state in states:
         if state["status"] == "pending":
             pending.add(state["noteId"])
             continue
         age = (now - parse_stamp(state["closedAt"])).days
-        if (state["kind"] == kind and age < COOLDOWN_DAYS[kind]) or (state["status"] == "applied" and age < SETTLE_DAYS):
+        mine = state["kind"] == kind and (group is None or action_group(state.get("action")) == group)
+        settling = (group in (None, "fix") and state["status"] == "applied"
+                    and state.get("action") not in RULE_ACTIONS and age < SETTLE_DAYS)
+        if (mine and age < COOLDOWN_DAYS[kind]) or settling:
             resting.add(state["noteId"])
     return pending, resting
 
@@ -1144,6 +1299,80 @@ def describe(kind: str, note_ids: list[int], signals: dict[int, str]) -> list[di
     return found
 
 
+def inbox_check(args, path: Path, now: datetime.datetime, states: list[dict]) -> int:
+    """The inbox check. Inbox notes with a lint error go to the agent to diagnose, like any check's
+    candidates. Two kinds of proposal come from rules and are printed ready for `queue add` as they
+    are: speed::fast made to follow its rule on any note, and each learnt Inbox note moved to the deck
+    its Topic lives in. A note gets one proposal a run: a diagnosis first, then a retag, then a move."""
+    pending, rest_fix = held_back(states, "inbox", now, "fix")
+    rest_retag = held_back(states, "inbox", now, "retag")[1]
+    rest_move = held_back(states, "inbox", now, "move")[1]
+    by_note: defaultdict = defaultdict(list)
+    for card in cards_info(find(IN_INBOX, args.no_client)):
+        by_note[card["note"]].append(card)
+    notes = notes_by_id(find("deck:*", args.no_client, "findNotes"))
+    taken = set(pending)
+
+    # Anki's own tags, and the speed tag, which the rule below sets, need no diagnosis.
+    signals = {}
+    for note_id in sorted(by_note):
+        note = notes.get(note_id)
+        if not note or note_id in taken or note_id in rest_fix:
+            continue
+        fields = ordered_fields(note)
+        tags = speed_tags(note["modelName"], fields, note["tags"])[0]
+        errors = sorted(message for message in lint_findings(note["modelName"], list(fields), fields, tags)[0]
+                        if "Anki adds itself" not in message)
+        if errors:
+            signals[note_id] = "lint: " + " ".join(errors)
+    eligible = list(signals)[: args.max]
+    taken.update(eligible)
+
+    proposals = []
+    for note_id, note in sorted(notes.items()):
+        if note_id in taken or note_id in rest_retag:
+            continue
+        fields = ordered_fields(note)
+        change = speed_tags(note["modelName"], fields, note["tags"])[1]
+        if not change:
+            continue
+        reason = slow_reason(note["modelName"], fields)
+        proposals.append({
+            "kind": "inbox", "noteId": note_id, "action": "retag", "tags": change,
+            "signal": "the speed rule %s" % ("marks it quick" if reason is None else "does not mark it quick: " + reason),
+            "diagnosis": "The rule in house-style.md marks it quick to review, so it gets %s." % FAST_TAG if reason is None
+            else "The rule no longer marks it quick (%s), so %s comes off." % (reason, FAST_TAG),
+        })
+        taken.add(note_id)
+
+    homes = topic_homes()[0]
+    for note_id in sorted(by_note):
+        note = notes.get(note_id)
+        if not note or note_id in taken or note_id in rest_move or not learnt(by_note[note_id]):
+            continue
+        topic = topic_of(note["fields"])
+        deck, why = home_of(topic, homes)
+        about = '%s "%s": %s' % (CONTEXT_FIELD, topic, why) if topic else why
+        shortest = min(card["interval"] for card in by_note[note_id] if card.get("queue") != -1)
+        proposals.append({
+            "kind": "inbox", "noteId": note_id, "action": "move", "toDeck": deck,
+            "signal": "learnt: every card's interval is %d days or more, the shortest %d" % (LEARNT_DAYS, shortest),
+            "diagnosis": "Learnt, and %s, so it moves there." % about if deck
+            else "Learnt, but %s. Name a deck for it, or keep it with its project." % about,
+        })
+        taken.add(note_id)
+
+    candidates = describe("inbox", eligible, signals)
+    print(json.dumps({"kind": "inbox", "at": now.isoformat(), "queue": str(path), "proposals": proposals,
+                      "candidates": candidates}, ensure_ascii=False, indent=1))
+    moves = [proposal for proposal in proposals if proposal["action"] == "move"]
+    print("inbox: %s, %d to a deck the rule found; %s; %s to diagnose of %d with lint errors." % (
+        count(len(moves), "move"), sum(1 for move in moves if move["toDeck"]),
+        count(len(proposals) - len(moves), "retag"), count(len(candidates), "candidate"), len(signals)),
+        file=sys.stderr)
+    return 0
+
+
 def cmd_candidates(args) -> int:
     if not connected():
         print("AnkiConnect is not reachable at %s. Record the missed run: anki_cards.py queue skip --kind %s "
@@ -1151,7 +1380,10 @@ def cmd_candidates(args) -> int:
         return 1
     path = queue_file(args.queue)
     now = now_utc()
-    pending, resting = held_back(proposal_states(read_queue(path)), args.kind, now)
+    states = proposal_states(read_queue(path))
+    if args.kind == "inbox":
+        return inbox_check(args, path, now, states)
+    pending, resting = held_back(states, args.kind, now)
     if args.kind in ("failing", "slow"):
         if args.kind == "failing":
             marked_cards = set(find("tag:%s -is:suspended" % REPAIR_TAG, args.no_client))
@@ -1196,26 +1428,51 @@ def lint_findings(model: str, names: list[str], fields: dict, tags: list) -> tup
     return set(report.errors), set(report.warnings)
 
 
-def check_field_change(where: str, note: dict, fields, errors: list, warnings: list) -> None:
+def check_field_change(where: str, note: dict, fields, errors: list, warnings: list) -> dict | None:
     """A field change may not bring a lint error the note did not have. Old gaps, such as a Source
-    nobody can name any more, are the user's to see, not a reason to refuse the fix."""
+    nobody can name any more, are the user's to see, not a reason to refuse the fix. Returns the
+    speed::fast change the new fields call for, which is applied with them."""
     if not isinstance(fields, dict) or not fields:
         errors.append("%s: give the new field values in fields." % where)
-        return
+        return None
     before = ordered_fields(note)
     unknown = [name for name in fields if name not in before]
     if unknown:
         errors.append("%s: %s not a field of %r." % (where, ", ".join(map(repr, unknown)), note["modelName"]))
-        return
+        return None
     after = dict(before)
     after.update(fields)
     if after == before:
         errors.append("%s: the fields are unchanged." % where)
-        return
+        return None
+    after_tags, change = speed_tags(note["modelName"], after, note["tags"])
     old_errors, old_warnings = lint_findings(note["modelName"], list(before), before, note["tags"])
-    new_errors, new_warnings = lint_findings(note["modelName"], list(before), after, note["tags"])
+    new_errors, new_warnings = lint_findings(note["modelName"], list(before), after, after_tags)
     errors += ["%s: %s" % (where, message) for message in sorted(new_errors - old_errors)]
     warnings += ["%s: %s" % (where, message) for message in sorted(new_warnings - old_warnings)]
+    return change
+
+
+def check_move(where: str, note: dict, to_deck, errors: list) -> None:
+    """A move takes a learnt note out of the Inbox: to a current deck, or to none yet, when the user
+    names one at approval."""
+    if to_deck is not None and (not isinstance(to_deck, str) or not to_deck.strip()):
+        errors.append("%s: toDeck is a deck name, or null for the user to name one." % where)
+        return
+    if to_deck and (to_deck.startswith(ARCHIVE_PREFIX) or to_deck == INBOX_DECK or to_deck.startswith(INBOX_DECK + "::")):
+        errors.append("%s: %s is an archive or the Inbox, where a learnt note never goes." % (where, to_deck))
+    if not learnt(cards_info(note.get("cards") or [])):
+        errors.append("%s: not learnt yet, a card's interval is under %d days." % (where, LEARNT_DAYS))
+
+
+def check_retag(where: str, note: dict, tags, errors: list) -> None:
+    """A retag makes speed::fast follow its rule, and changes nothing else."""
+    fields = ordered_fields(note)
+    change = speed_tags(note["modelName"], fields, note["tags"])[1]
+    if not change:
+        errors.append("%s: %s already follows its rule on this note." % (where, FAST_TAG))
+    elif tags != change:
+        errors.append("%s: the rule's tag change is %s, not %s." % (where, json.dumps(change), json.dumps(tags)))
 
 
 def check_new_notes(where: str, note: dict, action: str, proposal: dict, errors: list, warnings: list) -> None:
@@ -1231,7 +1488,7 @@ def check_new_notes(where: str, note: dict, action: str, proposal: dict, errors:
     inherited: set = set()
     if action == "split":
         current = ordered_fields(note)
-        inherited, _ = lint_findings(note["modelName"], list(current), current, [])
+        inherited, _ = lint_findings(note["modelName"], list(current), current, speed_tags(note["modelName"], current, [])[0])
     for number, new in enumerate(new_notes, 1):
         label = "%s, new note %d" % (where, number)
         if not isinstance(new, dict) or not new.get("deckName") or not new.get("modelName"):
@@ -1291,12 +1548,24 @@ def cmd_queue_add(args) -> int:
         if note_id in seen:
             errors.append("%s: a second proposal for this note in one batch." % where)
         seen.add(note_id)
+        tag_change = None
         if action in FIELD_ACTIONS:
-            check_field_change(where, note, proposal.get("fields"), errors, warnings)
+            tag_change = check_field_change(where, note, proposal.get("fields"), errors, warnings)
         elif action in NOTE_ACTIONS:
             check_new_notes(where, note, action, proposal, errors, warnings)
+        elif action == "move":
+            check_move(where, note, proposal.get("toDeck"), errors)
+        elif action == "retag":
+            check_retag(where, note, proposal.get("tags"), errors)
+        if action in RULE_ACTIONS and kind != "inbox":
+            errors.append("%s: a %s comes from the inbox check, which decides it by rule." % (where, action))
         record = {"type": "proposal", "id": "%s-%d-%s" % (kind, note_id, now.strftime("%Y%m%d%H%M%S")), "at": now.isoformat()}
         record.update((key, proposal[key]) for key in PROPOSAL_KEYS if key in proposal)
+        # A field fix carries the speed::fast change its new fields call for, applied with it.
+        if action in FIELD_ACTIONS:
+            record.pop("tags", None)
+            if tag_change:
+                record["tags"] = tag_change
         record["topic"] = strip_html(ordered_fields(note).get(CONTEXT_FIELD, "")) or None
         record["cardIds"] = note.get("cards") or []
         records.append(record)
@@ -1348,6 +1617,10 @@ def cmd_queue_list(args) -> int:
     for state in shown:
         print("%s  %s  note %d%s" % (state["id"], state["action"], state["noteId"], "  " + state["topic"] if state.get("topic") else ""))
         print("    " + state.get("diagnosis", ""))
+        if state.get("action") == "move":
+            print("    to %s" % (state.get("toDeck") or "a deck the user names"))
+        if state.get("tags"):
+            print("    tags: %s" % "; ".join("%s %s" % (verb, ", ".join(values)) for verb, values in state["tags"].items()))
         if state["status"] in VERDICTS:
             print("    %s%s" % (state["status"], ": " + state["reason"] if state.get("reason") else ""))
     print("\n%s. The proposed fields and notes are in --json." % count(len(shown), "proposal"))
@@ -1494,9 +1767,9 @@ def main() -> int:
 
     sub.add_parser("inbox", help="what waits in the Inbox, and where it could go").set_defaults(func=cmd_inbox)
 
-    p_candidates = sub.add_parser("candidates", help="notes the review history says to look at, as JSON")
+    p_candidates = sub.add_parser("candidates", help="notes worth a look, from their reviews or the Inbox, as JSON")
     p_candidates.add_argument("kind", choices=KINDS)
-    p_candidates.add_argument("--max", type=int, default=20, help="at most this many notes (default 20)")
+    p_candidates.add_argument("--max", type=int, default=20, help="at most this many notes to diagnose (default 20)")
     p_candidates.add_argument("--days", type=int, default=7, help="failing: failures of the last N days (default 7)")
     p_candidates.add_argument("--seconds", type=float, help="slow: this median answer time and slower, not the slowest tenth")
     p_candidates.add_argument("--no-client", action="store_true", help="leave out notes tagged client::<name>")

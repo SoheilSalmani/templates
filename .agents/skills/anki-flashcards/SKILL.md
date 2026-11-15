@@ -1,6 +1,6 @@
 ---
 name: anki-flashcards
-description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repository or source code, API docs, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, to find the cards worth fixing from their review history or run that check on a schedule, to go through the repair queue, to organize the cards waiting in the Inbox deck, or to set up the note types the skill uses. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and the skill's own note types and formatting conventions.
+description: Author Anki flashcards that are atomic, accurate, readable, and easy to recall, then add them to the user's collection over AnkiConnect. Use when asked to make flashcards, Anki cards, or study cards from any source (a web page, a Confluence or Notion page, a PDF, a repository or source code, API docs, a paper, or the current conversation), and also when asked to review, critique, or fix existing cards, to find the cards worth fixing from their review history or run those checks on a schedule, to go through the repair queue, to organize the Inbox and its project decks, or to set up the note types the skill uses. Encodes the SuperMemo twenty rules, Andy Matuschak's prompt attributes, and the skill's own note types and formatting conventions.
 allowed-tools: Read, Grep, Glob, WebFetch, Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/anki_cards.py:*), mcp__anki__listDecks, mcp__anki__modelNames, mcp__anki__modelFieldNames, mcp__anki__findNotes, mcp__anki__notesInfo, mcp__anki__getTags, mcp__anki__createModel
 ---
 
@@ -38,9 +38,10 @@ When the source is thin or self-contradictory, say so and card only what it actu
    with what the user will do with it: type it, read it, or decide with it (see Code below).
 4. Pick the deck, the note type, and the `Topic` value. Run `anki_cards.py inspect "<deck>"` to see
    what the deck already uses and to get real field names. Never guess field names. See
-   `references/note-types.md`. When the user asks for the Inbox or says the cards are not urgent, or
-   when no current deck fits, the deck is `Inbox` (see "The Inbox" below). Never add to an archived
-   deck, a top-level deck whose name starts with `_`.
+   `references/note-types.md`. Cards learnt for a project, a client mission or a personal one, go
+   to `Inbox::<project>`. When the user asks for the Inbox, says the cards are not urgent, or no
+   current deck fits, the deck is `Inbox` (see "The Inbox" below). Never add to an archived deck, a
+   top-level deck whose name starts with `_`.
 5. Draft to a JSON file in the scratchpad directory, one object per note. Shape:
    `{"deckName": ..., "modelName": ..., "notes": [{"fields": {...}, "tags": [...]}]}`
 6. Self-audit against the checklist below, then run
@@ -148,8 +149,10 @@ Formatting, in full in `references/house-style.md`:
 - `Source` on every card: a link to the page the fact came from, with the page title as the link
   text, such as `<a href="https://docs.astral.sh/uv/reference/cli/">uv CLI reference</a>`, or the
   source in plain text when it has no URL.
-- Tags: only `client::<name>`, on a card from client work. The subject is the `Topic`, the source
-  is the `Source`, and the kind of card is its note type, so none of them is a tag.
+- Tags: `client::<name>` on every card from client work, and `speed::fast` on every card the rule
+  in `references/house-style.md` marks quick to review. The linter applies that rule, so a request
+  never decides it. Nothing else is a tag: the subject is the `Topic`, the source is the `Source`,
+  and the kind of card is its note type.
 
 ## Self-audit before showing cards
 
@@ -186,7 +189,8 @@ Reviews show which cards fail, which are slow, and which have gone out of date; 
 does not. `anki_cards.py candidates <kind>` picks them from the review history: `failing`, `slow`,
 `sourced` or `random`. You diagnose each, draft one proposal, and `anki_cards.py queue add` keeps it
 in a repair queue the user approves from later. Marking a note while reviewing, the `*` key, asks
-for its repair.
+for its repair. The `inbox` check also prints proposals a rule decides, ready to queue as they are:
+the moves of learnt notes out of the Inbox, and the `speed::fast` changes its rule calls for.
 
 - A run of a check never writes to the collection and asks nothing: it queues proposals, and records
   a missed run when Anki is closed.
@@ -199,35 +203,41 @@ schedule.
 
 ## The Inbox
 
-`Inbox` is a top-level deck where cards wait to be filed. The user does not study it, so filing is
-what puts its cards into review.
+`Inbox` holds the cards still being learnt. A project, a client mission or a personal one, gets a
+subdeck, `Inbox::<project>`, so that its cards can be studied as a set while the work lasts. Cards
+with no project go to `Inbox` itself.
 
-A card sent to the Inbox gets everything but its deck: note type, `Topic`, `Source`, tags. The
-`Topic` is what the card shows, and the deck never appears in review. A card from client work also
-gets a `client::<name>` tag such as `client::acme`, because the client is the one thing a deck said
-that the card does not. New cards go to `Inbox` itself, never to a subdeck such as
-`Inbox::<client>`, and any subdeck empties out as its notes are filed.
+A card sent to the Inbox gets everything but its final deck: note type, `Topic`, `Source`, tags.
+The `Topic` is what the card shows, and the deck never appears in review. A card from client work
+also gets `client::<name>`, such as `client::acme`: client cards go only to a model the client has
+cleared (`--no-client` in `references/repair-queue.md`), and once a card leaves its project deck
+the tag is the only thing that still says so. A personal project's cards get no tag.
 
-When asked to organize or file the Inbox:
+A note leaves the Inbox once it is learnt: every card of it has an interval of 21 days or more,
+which Anki calls mature. It moves to the current deck holding the most cards with its `Topic`. When
+no current deck does, the user names one, a broad category they study on its own, or keeps the note
+with its project, and the Topic's later notes follow the deck they chose. Never move a note to an
+archived deck, and never rebuild an archived tree.
 
-1. Run `anki_cards.py inbox`. It groups the waiting notes by context value and shows where cards
-   with that value already live, which cards were studied and are overdue, the client tag each
-   subdeck still needs, and lint findings.
-2. Propose one row per note: target deck, tags to add, and any fix the audit or the linter found.
-   Decks are broad categories the user studies separately, so most notes go to an existing deck.
-   When nothing fits, propose one new broad deck under a placeholder name and ask the user to name
-   it. Never rebuild the nested tree of an archived deck. Report a missing `Source` rather than
-   guessing one. The source is usually out of reach by now, so audit the form, and flag a doubtful
-   fact instead of rewriting it. A note that names its source in a tag instead gets that name
-   moved into `Source` as plain text, and the tag removed. Fixes follow "Reviewing existing cards"
-   above.
-3. Lead with what is decaying. Studied cards keep falling due in the Inbox, and a card that has
-   waited more than two weeks is losing the context it was written in.
-4. After approval, apply fixes and new notes first, then add tags with `mcp__anki__addTags` and
-   remove moved source tags with `mcp__anki__removeTags`, then move every card of each note with
-   `mcp__anki__changeDeck`. Read the card ids after the fixes, because a new cloze index makes a
-   new card. A move keeps the card's schedule and review history. Hand the user anything these
-   tools cannot do, such as changing a note type, and name any emptied subdeck for them to delete.
+The repair queue's `inbox` check proposes these moves every week. When the user asks to organize
+the Inbox now:
+
+1. Run `anki_cards.py inbox`. It groups the notes by `Topic` and says where cards with each one
+   live, marks the learnt notes, counts the overdue cards, shows each project deck's client tag,
+   and lists lint findings.
+2. Propose one row per learnt note: the deck the rule gives, or, when it gives none, a broad deck
+   under a placeholder name for the user to name, or keeping the note with its project. Notes not
+   yet learnt stay where they are. Report a missing `Source` rather than guessing one. The source is
+   usually out of reach by now, so audit the form, and flag a doubtful fact instead of rewriting
+   it. A note that names its source in a tag instead gets that name moved into `Source` as plain
+   text, and the tag removed. Fixes follow "Reviewing existing cards" above.
+3. Lead with what is decaying. Studied cards keep falling due, and a card that has waited more than
+   two weeks is losing the context it was written in.
+4. After approval, apply fixes and new notes first, then tags with `mcp__anki__addTags` and
+   `mcp__anki__removeTags`, then move every card of each note with `mcp__anki__changeDeck`. Read the
+   card ids after the fixes, because a new cloze index makes a new card. A move keeps the card's
+   schedule and review history. Hand the user anything these tools cannot do, such as changing a
+   note type, and name any emptied project deck for them to delete.
 
 ## Reference files
 
@@ -237,8 +247,8 @@ Load these as needed rather than up front:
   `assets/card.css`: their fields, how they render, which to pick, how to set up one that is missing
   or older than its `Source` field, and the API traps that break a batch or drop a field. Read this
   before choosing a note type.
-- `references/house-style.md`. Formatting, HTML, the `Source` field, tags, language, and the prose
-  rules for card text. Read this before drafting.
+- `references/house-style.md`. Formatting, HTML, the `Source` field, the two tags and the speed
+  rule, language, and the prose rules for card text. Read this before drafting.
 - `references/principles.md`. The research canon with attribution. Read this when a judgement call
   is genuinely unclear, for example how to handle an open-ended list, which parts of a procedure to
   card, which facts from code deserve a code card, or whether two cards on one fact is redundancy or
@@ -246,4 +256,5 @@ Load these as needed rather than up front:
 - `references/worked-examples.md`. Before-and-after rewrites of real bad cards. Read this if the
   rules above feel abstract, or to calibrate how short a good Back is.
 - `references/repair-queue.md`. Finding the cards worth fixing from their reviews, the repair queue,
-  and running its checks on a schedule. Read this before running a check or going through the queue.
+  the weekly inbox check, and running the checks on a schedule. Read this before running a check or
+  going through the queue.
