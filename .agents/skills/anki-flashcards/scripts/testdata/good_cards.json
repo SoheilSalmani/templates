@@ -132,10 +132,10 @@
       },
       {
         "fields": {
-          "Topic": "Cube template",
-          "Front": "Which command lists the releases <code>mise run deploy</code> made, each with the commit it deployed?",
-          "Back": "<code>helm history &lt;release&gt; --namespace &lt;namespace&gt;</code>",
-          "Source": "<a href=\"https://github.com/SoheilSalmani/templates/tree/master/cube\">templates repository: cube</a>"
+          "Topic": "Helm",
+          "Front": "Which command lists the revisions of a release, with the chart each one deployed?",
+          "Back": "<code>helm history &lt;release&gt;</code>",
+          "Source": "<a href=\"https://helm.sh/docs/helm/helm_history/\">Helm docs: helm history</a>"
         }
       },
       {

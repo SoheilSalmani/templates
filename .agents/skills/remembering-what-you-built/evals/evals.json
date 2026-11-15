@@ -61,7 +61,7 @@
       "expected_output": "The approval table still comes from anki-flashcards.",
       "assertions": [
         "This skill writes nothing to the collection itself",
-        "The selection is handed to anki-flashcards with the source and the project slug",
+        "The selection is handed to anki-flashcards with the files read and the repository's address",
         "The instruction to skip the preview is carried to anki-flashcards rather than acted on here"
       ]
     },
