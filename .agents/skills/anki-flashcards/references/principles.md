@@ -29,7 +29,7 @@ Behind the code section, read 2026-11-12:
 - van Merriënboer (1990), [Program completion vs. program generation](https://research.utwente.nl/en/publications/strategies-for-programming-instruction-in-high-school-program-com); Ericson, Margulieux and Rick (2017), [Solving Parsons problems versus fixing and writing code](http://faculty.chas.uni.edu/~schafer/cohort23/Methods/ReadingsBackups/mod2/ParsonsProblems.pdf); Tucker and colleagues (2024), [Prediction versus production for teaching computer programming](https://uclatall.com/pdfs/predictionversusproduction.pdf).
 - Weinman, Fox and Hearst (2021), [Improving instruction of programming patterns with Faded Parsons Problems](https://acelab.berkeley.edu/wp-content/papercite-data/pdf/parsons-chi2021.pdf); Rohrer and Taylor (2007), [The shuffling of mathematics problems improves learning](https://eric.ed.gov/?id=EJ786797).
 - LaToza, Venolia and DeLine (2006), [Maintaining mental models](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/p492-latoza.pdf); LaToza and Myers (2010), [Hard-to-answer questions about code](https://people.cs.gmu.edu/~tlatoza/papers/plateau2010.pdf); Ko, DeLine and Venolia (2007), [Information needs in collocated software development teams](https://faculty.washington.edu/ajko/papers/Ko2007InformationNeeds.pdf); Krüger and Hebig (2020), [What developers (care to) recall](https://wwwiti.cs.uni-magdeburg.de/iti_db/publikationen/ps/auto/KruegerH2020ICSME.pdf); Fritz and colleagues (2010), [A degree-of-knowledge model](https://www.cs.ubc.ca/~fritz/papers/icse10_dok_web.pdf).
-- Practitioners: Wozniak (1993), [SuperMemo as a new tool increasing the productivity of a programmer](https://super-memory.com/articles/programming.htm); Kinsella, [Janki Method](https://www.semicolonandsons.com/articles/janki-method) and [Janki Method Refined](https://www.semicolonandsons.com/articles/janki-method-refined); Nielsen, [Augmenting long-term memory](https://augmentingcognition.com/ltm.html); Matuschak, [Application prompts should vary when repeated](https://notes.andymatuschak.org/zSisETSpZBCgZH4rFNHRcnC); Gwern, [Spaced repetition for efficient learning](https://gwern.net/spaced-repetition); Skerritt, [Memorising LeetCode by using Anki as a scheduler](https://skerritt.blog/memorising-leetcode-by-using-anki-as-a-scheduler/).
+- Practitioners: Wozniak (1993), [SuperMemo as a new tool increasing the productivity of a programmer](https://super-memory.com/articles/programming.htm); Kinsella, [Janki Method](https://www.semicolonandsons.com/articles/janki-method) and [Janki Method Refined](https://www.semicolonandsons.com/articles/janki-method-refined); Nielsen, [Augmenting long-term memory](https://augmentingcognition.com/ltm.html); Matuschak, [Application prompts should vary when repeated](https://notes.andymatuschak.org/zSisETSpZBCgZH4rFNHRcnC) and [Readers answer Execute Program's prompts by executing a program](https://notes.andymatuschak.org/z9DRugkwcBv7iLRACEnWVDL); Gwern, [Spaced repetition for efficient learning](https://gwern.net/spaced-repetition); Skerritt, [Memorising LeetCode by using Anki as a scheduler](https://skerritt.blog/memorising-leetcode-by-using-anki-as-a-scheduler/).
 
 Behind the context line, read 2026-11-12:
 
@@ -189,18 +189,32 @@ card repeated verbatim turns into recall of one answer, so write variants when t
 (Matuschak).
 
 Patterns are worth keeping whole. Experts hold programming plans, generic fragments for stereotyped
-goals, and the rules for combining them (Soloway and Ehrlich, 1984), so a pattern is the unit an
-expert remembers where a particular example is not. Rearranging and completing the lines of a
-pattern taught it better than writing or tracing code, and improved code writing in general as much
-as writing practice did (Weinman, Fox and Hearst, 2021, with 237 students). Producing an answer also
+goals, and the rules for combining them (Soloway and Ehrlich, 1984), so the pattern, not one
+particular program, is what is worth keeping. Rearranging and completing the lines of a pattern
+taught it better than writing or tracing code, and improved code writing in general as much as
+writing practice did (Weinman, Fox and Hearst, 2021, with 237 students). Producing an answer also
 overtakes studying for complex material once the learner knows the domain (Chen, Kalyuga and
 Sweller, 2015, Experiment 2), which describes a working programmer meeting a pattern in a language
-they already write. A larger card is still harder to grade, which is why a skeleton carries a
+they already write. A larger card is still harder to grade, which is why a task card carries a
 `Check:` line: grading against listed parts cut overconfidence further than seeing the whole answer
 (Lipko and colleagues, 2009). Nielsen keeps a larger question as an integrative card on top of its
-atomic pieces. Knowing when a pattern applies is a separate skill: mixing problem types in practice
-beat blocking them by type a week later (Rohrer and Taylor, 2007, with college students), and a
-review queue already mixes topics.
+atomic pieces. Knowing when a pattern applies is a separate skill, trained by a card that gives the
+situation and asks which pattern fits: mixing problem types in practice beat blocking them by type
+a week later (Rohrer and Taylor, 2007, with college students), and a review queue already mixes
+topics.
+
+Examples and tasks are the most direct practice for writing code, and what counts against them is
+grading, not asking. Producing a new example is one of the generative prompts listed under "Prompt
+types beyond bare recall", judged on whether it is right rather than on whether it matches.
+Execute Program checks every answer by running it in an interpreter, so two different correct
+programs both pass (Matuschak's notes on it), and its larger prompts give a listing and a goal to
+reach, which is a task card graded by a machine. An application prompt repeated in the same words
+turns into recall of one answer, which a new example each time, or a second situation, avoids
+(Matuschak). Recalling a command when asked for it is not recognising the moment to use it in the
+command line (Nielsen), which is why a task describes the situation rather than naming the tool.
+What goes wrong is the grade: with one long reference to compare against, a learner credits near
+misses (Lipko and colleagues, 2009), so a task card names the parts it is graded on in a `Check:`
+line, and the user runs the answer when only running it would tell.
 
 Whole programs are practice. Spaced repetition keeps a skill and practice raises it (Gwern).
 Matuschak sketches a separate expanding queue of exercises for skills, and Skerritt schedules whole
@@ -226,8 +240,10 @@ lines to four to six, but its cost climbed with length: a median 14, 18, 31 and 
 answer at two to three, four to six, seven to ten, and eleven or more lines, with 12, 16, 29 and 42
 percent of answers at Anki's 60-second cap. Scenario cards, which give code or a table and ask for
 the code that uses it, did best among the long ones (12 percent Again, 83 percent passed after three
-weeks, n = 18) at 46 seconds a review. This is observational: what gets written as one line is
-probably also easier, and long answers are graded leniently.
+weeks, n = 18) at 46 seconds a review. Open "write an example" cards of four lines or more did
+worse: 21 percent Again and 60 percent passed after three weeks (n = 10), at 41 seconds. Both groups
+are small. This is observational: what gets written as one line is probably also easier, and long
+answers are graded leniently.
 
 ## Interference (SuperMemo 11)
 

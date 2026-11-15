@@ -81,15 +81,22 @@ Code, from source files, API docs, or a codebase the user works in:
   the code. Code they will read goes on the Front, asking what it returns, what it is for, or which
   line is wrong. What they will decide with (why it is built this way, what must hold, what breaks)
   gets a prose card with a one-reason answer. Neither kind trains the other, so mix them within a
-  topic rather than doing one first.
+  topic rather than doing one first. When the user wants to write the code without looking it up,
+  most of their code cards ask for code, and each Front describes the situation they will be in
+  while coding: recalling a command when asked for it is not noticing when to use it.
 - Size a code answer by what it holds. One line is the best-kept card. Up to six lines is fine when
-  they belong together, such as an idiom. Past six a review takes about twice as long, so only a
-  pattern the user writes again and again goes further, up to twelve lines, as a skeleton: the
-  Front names the pattern and its setting, the Back holds only the lines that make the pattern and
-  then a `Check:` line naming the parts to grade, and the card sits on top of cards for its key line
-  and for when to use it. Inside a longer snippet, blank the line that matters as a code cloze.
-- Never "Write an example of X": any correct example is right, so the Back cannot grade it. Name the
-  task so that one answer is right.
+  they belong together, such as an idiom. Past six a review takes about twice as long, which is
+  worth paying for code the user writes again and again, a pattern or a task from their work: a
+  task card goes up to twelve lines, holds only the lines that make the pattern, ends with a
+  `Check:` line, and sits on top of cards for its key line and for when to use it. Inside a longer
+  snippet, blank the line that matters as a code cloze.
+- Asking the user to write code, an example included, is the most direct practice for writing it.
+  The Front sets the task: the setting, the names, and what the code must do, or "of your choice"
+  when any example will do. The Back holds one solution, then a `Check:` line naming what every
+  correct answer contains, so a different correct solution passes. What fails is a bare "Write an
+  example of X" with one long answer to compare by eye, because nothing on the card says what
+  counts as right. For a pattern that matters, two or three task cards in different situations, or
+  one that leaves the example to the user, keep the review from turning into recall of one text.
 - Card a call only when recalling it beats looking it up. Not what the editor completes, such as a
   full import path.
 - From a codebase, card what the code does not say: why it is written this way, what must hold,
@@ -123,8 +130,8 @@ Phrasing:
 Formatting, in full in `references/house-style.md`:
 
 - Back is normally one short sentence ending in a period. A code Back is the code alone, with no
-  period: `<code>` for one line, `<pre><code>` for more, and a pattern skeleton ends with its
-  `Check:` line.
+  period: `<code>` for one line, `<pre><code>` for more, and a task card ends with its `Check:`
+  line.
 - `<code>` for identifiers, flags, paths, and commands. `<i>` for a term being defined.
 - No bold, no emoji, no em dash, no curly quotes, no bold-header bullet lists. Sources full of
   emoji headings and bold (Confluence and Notion especially) must be stripped, not mirrored.
@@ -157,8 +164,8 @@ Walk the drafted set once and ask:
 5. Does any Front repeat its own `Topic`, and does any `Topic` give away an answer?
 6. Is any Back longer than it needs to be?
 7. For each procedure, does the step that is easiest to get wrong have a card of its own?
-8. Does every fact the user will type have a card that makes them produce it? Is every Back over
-   six lines of code a pattern skeleton with its `Check:` line?
+8. Does every fact the user will type have a card that makes them produce it? Does every card that
+   asks for an example, and every Back over six lines of code, end with a `Check:` line?
 9. Would you want this card in six months?
 
 ## Reviewing existing cards
@@ -168,9 +175,10 @@ When asked to critique or repair cards, fetch them with `mcp__anki__findNotes` a
 rewrite for each. Apply changes with `mcp__anki__updateNoteFields` only after approval. Rewording a
 field, such as making a list's items parallel, keeps the card's review history. Splitting a
 bundled card means creating new notes and deleting the old one, which loses its review history, so
-call that out and let the user decide. A long code Back usually becomes a production card for the
-call that matters plus a code cloze for its context, a pattern skeleton when the shape is what the
-user needs, or an exercise for a whole program (worked examples 10 and 11).
+call that out and let the user decide. A card that asks for code to write usually stays one: give
+its Front the task and its Back a `Check:` line, which are field edits that keep its history. A
+long code Back becomes a task card cut to the lines that make the pattern, a production card for
+the call that matters, or an exercise for a whole program (worked examples 10 and 11).
 
 ## The Inbox
 

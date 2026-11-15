@@ -61,8 +61,8 @@ context value".
 The Back is normally one sentence. Two when the second earns its place, as in the Vim card above
 where the contrast is the fact. Past roughly 200 characters of prose, ask whether you are carding one
 fact or several. Past 400, you almost certainly have a bundle: split it. Code is counted in lines
-instead: one when it can be, up to six for lines that belong together, up to twelve for a pattern
-skeleton (see Code below).
+instead: one when it can be, up to six for lines that belong together, up to twelve for a task card
+ending in a `Check:` line (see Code below).
 
 The Front is normally under 100 characters. Longer is acceptable only when the extra words remove a
 genuine ambiguity, or when the card presents a concrete case to reason about.
@@ -118,7 +118,7 @@ Pick the form by what the user will do with the code:
 | The user will | Front | Back |
 | --- | --- | --- |
 | Type it | The goal, with the names and values the code needs | The code: one line when it can be, up to six when the lines belong together |
-| Write a pattern again and again | The pattern and its setting, with the names to use | The skeleton, at most twelve lines, then a `Check:` line naming the parts to grade |
+| Write it for a task, a pattern, or an example | The task: the setting, the names, what the code must do, or "of your choice" | One solution, at most twelve lines, then a `Check:` line naming what every correct answer contains |
 | Read it | A short snippet, asking what it returns, what it is for, or which line is wrong | The value, the purpose in one sentence, or the line and why |
 | Recognise its key line | The snippet as a cloze Text, with the line that matters blanked | None, it is a cloze |
 | Decide with it | Why it is built this way, what must hold, what breaks | One reason, in one sentence |
@@ -139,7 +139,7 @@ Drop the period after the second when you next edit it: after a command, a perio
 the command. In the review data in `principles.md`, one-line code answers were the best-kept cards
 and long code Backs among the costliest.
 
-Before, "write an example", a real card:
+Before, a real card:
 
 ```
 Topic: React
@@ -155,8 +155,9 @@ function TodoList({ todos, tab }) {
 }</code></pre>
 ```
 
-Any component that calls `useMemo` is a right answer, so the reviewer grades against one arbitrary
-example, nine lines long. The fact is the call. After:
+Asking for the component is not the problem. The card sets no task and says nothing about what
+counts as right, so the review compares yours by eye with nine lines someone else chose. Two fixes
+keep the code. If the call is what the user keeps forgetting, card the call:
 
 ```
 Topic: React
@@ -165,7 +166,38 @@ Back:  <code>useMemo(() =&gt; filterTodos(todos, tab), [todos, tab])</code>
 ```
 
 The dependency list is part of the answer, and only one is right: every reactive value the
-calculation reads.
+calculation reads. If writing the component is the point, keep the task and say what counts:
+
+```
+Topic: React
+Front: Write a component <code>TodoList({ todos, tab })</code> that computes <code>filterTodos(todos, tab)</code> only when its inputs change.
+Back:  <pre><code>function TodoList({ todos, tab }) {
+  const visibleTodos = useMemo(
+    () =&gt; filterTodos(todos, tab),
+    [todos, tab]
+  );
+  // ...
+}</code></pre>Check: <code>useMemo</code> takes a function that makes the call, and the dependency list is <code>[todos, tab]</code>.
+```
+
+Both are field edits to the old card, so either keeps its review history. A Front may also leave the
+example open, as in "Write a generator-based context manager for a resource of your choice", when
+the Check line names what every correct one contains. Any answer that meets it passes, and the user
+writes a different one each time, which keeps the card from turning into recall of one text.
+
+A scenario is a task with its data on the Front, the form closest to work:
+
+```
+Topic: PostgreSQL
+Front: Table <code>weather_reports(location, time, report)</code>. Write the query that returns the latest report for each location, with <code>DISTINCT ON</code>.
+Back:  <pre><code>SELECT DISTINCT ON (location) location, time, report
+FROM weather_reports
+ORDER BY location, time DESC;</code></pre>Check: <code>DISTINCT ON (location)</code>, <code>ORDER BY</code> starting with <code>location</code>, then <code>time DESC</code>.
+```
+
+The Front names `DISTINCT ON` because that is what the card trains; without it, a correct query with
+a window function would fail the Check line. When the Check line can only describe the result, the
+user runs the answer to grade it.
 
 Twins are the other common waste. One collection held six pairs of Snowflake Scripting blocks, one
 "that can be run in Snowsight" and one for the Snowflake CLI or the Python connector. Within a pair
@@ -202,8 +234,8 @@ Text:  Only types that {{c1::implement <code>fmt:<!-- -->:Display</code>}} can b
 Rust and C++ paths, Jinja, Helm and Go templates, JavaScript objects, and format strings all hit
 this. The linter catches both.
 
-A pattern the user writes again and again is the one place for a longer Back. A context manager
-written as a generator, as a skeleton:
+A pattern the user writes again and again earns the longest Back, up to twelve lines. A context
+manager written as a generator, as a task card:
 
 ```
 Topic: Python
@@ -217,13 +249,15 @@ def timed():
         print(time.perf_counter() - start)</code></pre>Check: setup before <code>yield</code>, <code>yield</code> inside <code>try</code>, cleanup in <code>finally</code>.
 ```
 
-The Front fixes the names and the behaviour, so one skeleton is right, and the Back holds nothing
+The Front fixes the names and the behaviour, so one solution is right, and the Back holds nothing
 incidental: no imports, no usage. The `Check:` line names what the review is graded on, because
-someone grading a long answer from memory credits most near misses. When you show such a card, tell
-the user to write the skeleton out, on paper or in an editor rather than in their head, before
-revealing it, and to press Again when any part on the Check line is missing.
+someone grading a long answer from memory credits most near misses. When you show a task card, tell
+the user how to review it: write the answer out, on paper or in an editor rather than in their
+head, before revealing it; grade it against the Check line, not against the solution shown, so a
+different correct answer passes; press Again when any part on the Check line is missing; and run it
+when only running it would tell.
 
-The skeleton is the integrative card. The cards it cannot hold come first: when to reach for the
+The task card is the integrative card. The cards it cannot hold come first: when to reach for the
 pattern, and the part people get wrong.
 
 ```
@@ -232,13 +266,12 @@ Front: Why does a generator-based context manager put its <code>yield</code> ins
 Back:  An exception in the <code>with</code> block is raised at the <code>yield</code>, so only a <code>finally</code> still runs the cleanup.
 ```
 
-For a design pattern such as Strategy or Builder, most of what is worth keeping is prose: the
-problem it answers, and what it costs against the simpler alternative. Card the language's own form
-of it as code, which is often shorter than the book's (a Python strategy is usually a function passed
-as an argument), and write a skeleton card only for the patterns the user actually writes. A
-skeleton reviewed in the same words every time turns into recall of that one skeleton. When
-applying the pattern is the point, add a note that sets it in a second context, or make it an
-exercise.
+For a design pattern such as Strategy or Builder, keep the problem it answers and what it costs
+against the simpler alternative as prose, and the way the user's language writes it as code, which
+is often shorter than the book's: a Python strategy is usually a function passed as an argument.
+Write task cards for the patterns the user actually writes, two or three in different situations
+when the pattern matters, and a card that gives a situation and asks which pattern fits, since
+choosing the pattern is a skill of its own.
 
 ## HTML
 

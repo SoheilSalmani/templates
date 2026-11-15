@@ -13,6 +13,14 @@
       },
       {
         "fields": {
+          "Topic": "Python",
+          "Front": "Write a decorator of your choice.",
+          "Back": "<pre><code>def log_calls(fn):\n    @functools.wraps(fn)\n    def wrapper(*args, **kwargs):\n        print(fn.__name__)\n        return fn(*args, **kwargs)\n    return wrapper</code></pre>",
+          "Source": "<a href=\"https://docs.python.org/3/library/functools.html\">Python docs: functools</a>"
+        }
+      },
+      {
+        "fields": {
           "Topic": "shadcn/ui",
           "Front": "Which component holds a submenu inside a sidebar menu item?",
           "Back": "<pre><code><SidebarMenuSub /></code></pre>",
