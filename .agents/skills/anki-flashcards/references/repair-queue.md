@@ -34,8 +34,7 @@ The inbox check rests its moves, its tag changes and its diagnoses apart, so a k
 holds back a move, and a move or a tag change, which fixes nothing, holds a note back from no check.
 
 `--max` caps the candidates, worst first for `failing` and `slow`; the inbox check's proposals are
-never capped. `--no-client` leaves out notes tagged `client::<name>`, for a run on a model the
-client has not cleared.
+never capped.
 
 ## Diagnosis and action
 
@@ -177,5 +176,3 @@ paseo schedule create --name anki-failing --cron "0 20 * * *" --timezone <zone> 
 - Anki must be open when a run fires. On macOS, App Nap must be off for Anki, or AnkiConnect stops
   answering in the background: `defaults write net.ankiweb.dtop NSAppSleepDisabled -bool true`, then
   restart Anki.
-- Client cards go only to a model the client has cleared, so give the other runs `--no-client`. The
-  inbox check moves client cards too, so it runs on a cleared model, without the flag.

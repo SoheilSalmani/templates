@@ -68,10 +68,9 @@ EMOJI_RE = re.compile(
     "]"
 )
 CLOZE_RE = re.compile(r"\{\{c(\d+)::")
-# The tags the skill writes. A subject, a source and a kind of card each have a place of their own.
-CLIENT_TAG_RE = re.compile(r"^client::[a-z0-9]+(-[a-z0-9]+)*$")
-# On every card quick to review by its shape, and on no other: little to read, little to produce.
-# The rule decides it, never a request (references/house-style.md, "Tags").
+# The one tag the skill writes, on every card quick to review by its shape and on no other: little
+# to read, little to produce. The rule decides it, never a request (references/house-style.md,
+# "Tags"). A subject, a source, a kind of card and a project each have a place of their own.
 FAST_TAG = "speed::fast"
 FAST_ANSWER_WORDS, FAST_ANSWER_CHARS = 3, 30
 FAST_QUESTION_CHARS, FAST_CLOZE_CHARS = 100, 120
@@ -456,12 +455,6 @@ def lint_source(where: str, raw: str, report: Report) -> None:
             )
 
 
-def client_tag(tag: str) -> str | None:
-    """The client tag that a near miss such as client-acme or Client::Acme stands for."""
-    match = re.match(r"^client(?:::|-|_)(.+)$", tag, re.I)
-    return "client::" + slug(match.group(1)) if match else None
-
-
 def visible(raw: str) -> str:
     """A field as the reviewer reads it. An HTML comment, which breaks up cloze syntax in code,
     disappears instead of leaving a space."""
@@ -768,12 +761,9 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
     tags = [str(tag) for tag in tags]
     stray = []
     for tag in tags:
-        if CLIENT_TAG_RE.match(tag) or tag == FAST_TAG:
+        if tag == FAST_TAG:
             continue
-        meant = client_tag(tag)
-        if meant:
-            report.error(where, "tag %r: write a client tag as %r." % (tag, meant))
-        elif FAST_NEAR_MISS_RE.match(tag):
+        if FAST_NEAR_MISS_RE.match(tag):
             report.error(where, "tag %r: the speed tag is %r, and only the rule in house-style.md sets it." % (tag, FAST_TAG))
         elif tag.lower() in ANKI_TAGS:
             report.error(where, "tag %r is one Anki adds itself. Never add it." % tag)
@@ -783,9 +773,9 @@ def lint_note(where: str, note: dict, model: str, model_fields: list[str] | None
         # The tags go beside the note, so every note with stray tags shares one finding.
         report.error(
             "%s (%s)" % (where, ", ".join(stray)),
-            "carries tags the skill does not write. It writes client::<name> on client work and %s "
-            "where the rule marks a card quick. The subject goes in %s, where the fact came from in "
-            "%s, and the kind of card is its note type." % (FAST_TAG, CONTEXT_FIELD, SOURCE_FIELD),
+            "carries tags the skill does not write. Its one tag is %s, where the rule marks a card "
+            "quick. The subject goes in %s, where the fact came from in %s, the kind of card is its "
+            "note type, and the project is its Inbox deck." % (FAST_TAG, CONTEXT_FIELD, SOURCE_FIELD),
         )
     reason = slow_reason(model, {name: value for name, value in fields.items() if isinstance(value, str)})
     if reason is None and FAST_TAG not in tags:
@@ -914,11 +904,6 @@ LEARNT_DAYS = 21
 HOMES_SEARCH = "-%s -%s -deck:filtered" % (IN_INBOX, ARCHIVE_SEARCH)
 
 
-def slug(text: str) -> str:
-    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
-    return re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
-
-
 def excerpt(raw: str, width: int = 70) -> str:
     text = strip_html(raw)
     return text if len(text) <= width else text[: width - 3].rstrip() + "..."
@@ -978,17 +963,6 @@ def home_of(topic: str, homes: dict) -> tuple[str | None, str]:
     return ranked[0][0], "most cards with it are in %s (%d)" % ranked[0]
 
 
-def client_label(members: list[dict]) -> str:
-    """Which client tag a project deck's notes carry: a client project's cards all carry one."""
-    clients = sorted({tag for note in members for tag in note["tags"] if CLIENT_TAG_RE.match(tag)})
-    tagged = sum(1 for note in members if any(CLIENT_TAG_RE.match(tag) for tag in note["tags"]))
-    if not tagged:
-        return "no client tag"
-    if tagged == len(members) and len(clients) == 1:
-        return "all tagged " + clients[0]
-    return "%d tagged %s, %d without a client tag" % (tagged, " or ".join(clients), len(members) - tagged)
-
-
 def cmd_inbox(_args) -> int:
     if not connected():
         print("AnkiConnect is not reachable. Run 'check' first.")
@@ -1036,7 +1010,7 @@ def cmd_inbox(_args) -> int:
         if deck != INBOX_DECK:
             subdecks[deck].append(note)
     for deck, members in sorted(subdecks.items()):
-        print("Subdeck %s: %s, %s." % (deck, count(len(members), "note"), client_label(members)))
+        print("Subdeck %s: %s." % (deck, count(len(members), "note")))
     for deck in deck_names:
         if deck.startswith(INBOX_DECK + "::") and not any(s == deck or s.startswith(deck + "::") for s in subdecks):
             print("Subdeck %s: empty, for the user to delete." % deck)
@@ -1104,7 +1078,6 @@ STUDIED_DAYS, MIN_ANSWERS = 90, 3
 # In the review log: the Again button, and an answer given while the card was in review, the only
 # kind whose time compares from card to card.
 AGAIN, REVIEW_ANSWER = 1, 1
-CLIENT_SEARCH = "tag:client::*"
 DAY_MS = 86_400_000
 
 
@@ -1188,10 +1161,6 @@ def held_back(states: list[dict], kind: str, now: datetime.datetime, group: str 
         if (mine and age < COOLDOWN_DAYS[kind]) or settling:
             resting.add(state["noteId"])
     return pending, resting
-
-
-def find(query: str, no_client: bool, action: str = "findCards") -> list[int]:
-    return call(action, query=query + (" -" + CLIENT_SEARCH if no_client else ""))
 
 
 def review_logs(card_ids: list[int]) -> dict[int, list[dict]]:
@@ -1308,9 +1277,9 @@ def inbox_check(args, path: Path, now: datetime.datetime, states: list[dict]) ->
     rest_retag = held_back(states, "inbox", now, "retag")[1]
     rest_move = held_back(states, "inbox", now, "move")[1]
     by_note: defaultdict = defaultdict(list)
-    for card in cards_info(find(IN_INBOX, args.no_client)):
+    for card in cards_info(call("findCards", query=IN_INBOX)):
         by_note[card["note"]].append(card)
-    notes = notes_by_id(find("deck:*", args.no_client, "findNotes"))
+    notes = notes_by_id(call("findNotes", query="deck:*"))
     taken = set(pending)
 
     # Anki's own tags, and the speed tag, which the rule below sets, need no diagnosis.
@@ -1386,13 +1355,13 @@ def cmd_candidates(args) -> int:
     pending, resting = held_back(states, args.kind, now)
     if args.kind in ("failing", "slow"):
         if args.kind == "failing":
-            marked_cards = set(find("tag:%s -is:suspended" % REPAIR_TAG, args.no_client))
-            cards = cards_info(sorted(set(find("rated:%d:1 -is:suspended" % args.days, args.no_client)) | marked_cards))
+            marked_cards = set(call("findCards", query="tag:%s -is:suspended" % REPAIR_TAG))
+            cards = cards_info(sorted(set(call("findCards", query="rated:%d:1 -is:suspended" % args.days)) | marked_cards))
             marked = {card["note"] for card in cards if card["cardId"] in marked_cards}
             ranked = failing_notes(cards, review_logs([card["cardId"] for card in cards]), marked, int(now.timestamp() * 1000))
         else:
             marked = set()
-            cards = cards_info(find("rated:%d -is:suspended" % STUDIED_DAYS, args.no_client))
+            cards = cards_info(call("findCards", query="rated:%d -is:suspended" % STUDIED_DAYS))
             ranked = slow_notes(cards, review_logs([card["cardId"] for card in cards]), args.seconds)
         # A note the user marked waits only for its pending proposal: marking it again asks again.
         eligible = [note for note in ranked if note not in pending and (note in marked or note not in resting)]
@@ -1404,7 +1373,7 @@ def cmd_candidates(args) -> int:
             query, signal = '"%s:_*" -is:suspended' % SOURCE_FIELD, "has a %s to check the card against" % SOURCE_FIELD
         else:
             query, signal = "rated:%d -is:suspended" % STUDIED_DAYS, "drawn at random from the notes studied in the last %d days" % STUDIED_DAYS
-        notes = find(query, args.no_client, "findNotes")
+        notes = call("findNotes", query=query)
         pool = [note for note in notes if note not in pending and note not in resting]
         eligible = random.sample(pool, min(args.max, len(pool)))
         held, available = len(notes) - len(pool), len(pool)
@@ -1772,7 +1741,6 @@ def main() -> int:
     p_candidates.add_argument("--max", type=int, default=20, help="at most this many notes to diagnose (default 20)")
     p_candidates.add_argument("--days", type=int, default=7, help="failing: failures of the last N days (default 7)")
     p_candidates.add_argument("--seconds", type=float, help="slow: this median answer time and slower, not the slowest tenth")
-    p_candidates.add_argument("--no-client", action="store_true", help="leave out notes tagged client::<name>")
     p_candidates.add_argument("--queue", help="queue file (default %s)" % queue_file(None))
     p_candidates.set_defaults(func=cmd_candidates)
 

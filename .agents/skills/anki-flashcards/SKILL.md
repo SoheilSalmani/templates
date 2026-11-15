@@ -149,10 +149,10 @@ Formatting, in full in `references/house-style.md`:
 - `Source` on every card: a link to the page the fact came from, with the page title as the link
   text, such as `<a href="https://docs.astral.sh/uv/reference/cli/">uv CLI reference</a>`, or the
   source in plain text when it has no URL.
-- Tags: `client::<name>` on every card from client work, and `speed::fast` on every card the rule
-  in `references/house-style.md` marks quick to review. The linter applies that rule, so a request
-  never decides it. Nothing else is a tag: the subject is the `Topic`, the source is the `Source`,
-  and the kind of card is its note type.
+- Tags: `speed::fast` on every card the rule in `references/house-style.md` marks quick to review,
+  and no other tag. The linter applies that rule, so a request never decides it. The subject is the
+  `Topic`, the source is the `Source`, the kind of card is its note type, and the project is its
+  `Inbox::<project>` deck.
 
 ## Self-audit before showing cards
 
@@ -208,10 +208,7 @@ subdeck, `Inbox::<project>`, so that its cards can be studied as a set while the
 with no project go to `Inbox` itself.
 
 A card sent to the Inbox gets everything but its final deck: note type, `Topic`, `Source`, tags.
-The `Topic` is what the card shows, and the deck never appears in review. A card from client work
-also gets `client::<name>`, such as `client::acme`: client cards go only to a model the client has
-cleared (`--no-client` in `references/repair-queue.md`), and once a card leaves its project deck
-the tag is the only thing that still says so. A personal project's cards get no tag.
+The `Topic` is what the card shows, and the deck never appears in review.
 
 A note leaves the Inbox once it is learnt: every card of it has an interval of 21 days or more,
 which Anki calls mature. It moves to the current deck holding the most cards with its `Topic`. When
@@ -223,8 +220,8 @@ The repair queue's `inbox` check proposes these moves every week. When the user 
 the Inbox now:
 
 1. Run `anki_cards.py inbox`. It groups the notes by `Topic` and says where cards with each one
-   live, marks the learnt notes, counts the overdue cards, shows each project deck's client tag,
-   and lists lint findings.
+   live, marks the learnt notes, counts the overdue cards, lists the project decks, and lists lint
+   findings.
 2. Propose one row per learnt note: the deck the rule gives, or, when it gives none, a broad deck
    under a placeholder name for the user to name, or keeping the note with its project. Notes not
    yet learnt stay where they are. Report a missing `Source` rather than guessing one. The source is

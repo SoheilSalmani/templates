@@ -50,8 +50,7 @@
           "Front": "What is the ARN format of an SSM parameter named <code>/app/prod/db-password</code>?",
           "Back": "<code>arn:&lt;partition&gt;:ssm:&lt;region&gt;:&lt;account&gt;:parameter/app/prod/db-password</code>",
           "Source": "<a href=\"https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html\">AWS Systems Manager Parameter Store</a>"
-        },
-        "tags": ["client::acme"]
+        }
       }
     ]
   },
