@@ -14,7 +14,7 @@ example = "Demo Service"
 id = "use_github"
 kind = "bool"
 prompt = "Hosted on GitHub?"
-description = "Installs the forge skills (issues, pull requests, review replies, READMEs, contributor documentation, repository metadata, scheduled pull requests) with their GitHub mechanics, which drive gh, and GitHub's remote MCP server (a personal access token each person exports as GITHUB_PAT_TOKEN, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. Answer false for a project on GitLab or on no forge; GitHub and GitLab are exclusive."
+description = "Installs the forge skills (issues, pull requests, review replies, READMEs, contributor documentation, repository metadata, scheduled pull requests) with their GitHub mechanics, which drive gh, writing-github-workflows for GitHub Actions workflows, and GitHub's remote MCP server (a personal access token each person exports as GITHUB_PAT_TOKEN, nothing stored in the repo) for Claude Code, Codex and oh-my-pi. Answer false for a project on GitLab or on no forge; GitHub and GitLab are exclusive."
 default = "True"
 
 [[question]]

@@ -1,0 +1,137 @@
+{
+  "skill_name": "writing-github-workflows",
+  "notes": "Score the workflow a reviewer and a developer whose check failed would read, not the amount of advice. A result fails outright if it leaves an inline program or a drift check in a step, keeps a floating action reference such as @v7 or @main, puts a contributor-controlled ${{ }} expression inside run:, or renames a job without saying that a required check may depend on its name. A review fails if it invents findings for a workflow that already meets the bar or restructures one the user asked only to change in one place. Removing a check without saying where its responsibility went is a failure even when the check was redundant. In the co-loaded case, the commit message or pull request description follows its own skill and carries no lint output.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "You made this too complicated. Simplify it.\n\n```yaml\n---\nname: SQL Format\n\n# sqlfmt needs no Snowflake login, so this check runs apart from the\n# pre-commit job in pr-checks.yml, which needs one for SQLFluff.\non:\n  pull_request:\n    branches:\n      - main\n      - develop\n\npermissions:\n  contents: read\n\njobs:\n  sqlfmt:\n    name: sqlfmt\n    runs-on: [\"atmos-aws-arc-runner-set\"]\n    timeout-minutes: 10\n\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v7\n\n      - name: Set up Python\n        uses: actions/setup-python@v7\n        with:\n          python-version: '3.11'\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v4\n        with:\n          version: \"latest\"\n\n      - name: Install the dev tools\n        run: uv sync --frozen --only-group dev\n\n      - name: Check that the sqlfmt hook pins the locked versions\n        run: |\n          uv run --no-sync python - <<'EOF'\n          import importlib.metadata\n          import sys\n\n          import yaml\n\n          with open(\".pre-commit-config.yaml\") as f:\n              repos = yaml.safe_load(f)[\"repos\"]\n          hook = next(r for r in repos if r[\"repo\"] == \"https://github.com/tconbeer/sqlfmt\")\n          rev = \"v\" + importlib.metadata.version(\"shandy-sqlfmt\")\n          black = \"black==\" + importlib.metadata.version(\"black\")\n          if hook[\"rev\"] != rev or black not in hook[\"hooks\"][0].get(\"additional_dependencies\", []):\n              sys.exit(\n                  f\"The sqlfmt hook in .pre-commit-config.yaml must pin rev {rev} and {black}, as uv.lock does. \"\n                  \"Bump both together, then run `make fmt` and commit the result.\"\n              )\n          EOF\n\n      # Before sqlfmt: its diff would show a bare camelCase key lowercased, and\n      # applying that diff makes the column NULL.\n      - name: Check that semi-structured keys are quoted\n        run: uv run --no-sync pre-commit run quote-json-keys --all-files\n\n      - name: Check SQL formatting\n        run: uv run --no-sync sqlfmt --diff --no-progressbar models tests snapshots analyses\n```",
+      "expected_output": "A rewrite of four or five steps with no inline program, the version check replaced by one source of truth for the sqlfmt and black versions, and a list of what moved where.",
+      "assertions": [
+        "The Python heredoc is gone and no other inline program, conditional or loop replaces it",
+        "It explains that the version check guarded two copies of the same pins, and removes one copy, showing the change to .pre-commit-config.yaml or to the dependency group that this needs",
+        "actions/setup-python and the hard-coded 3.11 are gone, and no Python version appears in the workflow",
+        "There is no separate uv sync step and no --no-sync flag",
+        "setup-uv is pinned to an exact release, by SHA with a version comment or as an exact tag recorded in a lockfile, and version: latest is gone",
+        "Every action reference is a full SHA with a version comment or an exact tag in a lockfile; none is a floating tag such as @v7",
+        "No comment in the result explains what a step does",
+        "Step names are sentence-case imperatives, checkout and setup steps carry no name, and no name repeats its command",
+        "The job id names the check rather than the tool, and no job name repeats the id",
+        "It proposes making the check a job of the existing pull request workflow, or gives a concrete reason to keep a separate workflow",
+        "It warns that renaming the sqlfmt job changes the check name a branch rule may require",
+        "--no-progressbar is gone, and permissions and timeout-minutes remain"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add GitHub Actions CI to this repo. It's a uv project; we lint with ruff and test with pytest, and the tests take about three minutes. [A repository with pyproject.toml, uv.lock and .python-version, and no .github directory.]",
+      "expected_output": "One ci.yml named CI with lint and test jobs whose steps are checkout, setup-uv and one-line uv run commands, linted with actionlint and zizmor.",
+      "assertions": [
+        "It creates one file, .github/workflows/ci.yml, whose name is CI and which runs on pull_request; any push trigger comes with a reason",
+        "Job ids are verbs such as lint and test, and no job has a name that repeats its id",
+        "No Python version appears and actions/setup-python is not used; setup-uv is pinned to an exact release",
+        "Every run: step is one line, runs uv run with the project's own tools, and has a sentence-case imperative name",
+        "permissions: contents: read is set, every job has timeout-minutes, and concurrency cancels superseded pull request runs",
+        "Checkout sets persist-credentials: false",
+        "The workflow has no comments other than version comments after SHA pins",
+        "It ran actionlint and zizmor on the file and reports their results, or says which could not run and why",
+        "It adds no file beyond the workflow unasked; a Dependabot configuration for the new pins is offered, not created"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review our CI workflow before I merge it.\n\n```yaml\nname: CI\n\non:\n  pull_request:\n  push:\n    branches: [main]\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\nenv:\n  UV_LOCKED: 1\n\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          persist-credentials: false\n      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2\n      - name: Check formatting\n        run: uv run ruff format --check\n      - name: Lint Python\n        run: uv run ruff check\n\n  test:\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          persist-credentials: false\n      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2\n      - name: Run tests\n        run: uv run pytest\n```",
+      "expected_output": "No changes needed: the workflow already meets the bar. At most an optional, labelled note.",
+      "assertions": [
+        "It says the workflow can merge as it is",
+        "It does not restructure, rename jobs, add steps, add job names or add comments",
+        "Anything it mentions is labelled optional and tied to a specific line",
+        "It says what the workflow already does well"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Bump actions/checkout in .github/workflows/ci.yml to the latest release. [ci.yml pins actions/checkout by SHA with a # v6.0.2 comment, and its step names use Title Case.]",
+      "expected_output": "Only the checkout references change, to the latest release's SHA with its exact version in the comment.",
+      "assertions": [
+        "It looks up the latest release and the commit it points at, for example with gh api, rather than recalling a SHA",
+        "Every actions/checkout reference changes to the new full SHA with the new exact version in the comment",
+        "No other line of the file changes, the Title Case step names included",
+        "It mentions anything in the new major release that this workflow relies on, or says it found nothing"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Rename the build job in ci.yml to compile, it reads better.",
+      "expected_output": "Before renaming, it checks whether a branch rule requires the build check, and either renames together with that rule or stops to say what would break.",
+      "assertions": [
+        "It lists the required status checks, for example with gh api repos/{owner}/{repo}/rules/branches/{branch}, or says it could not and why",
+        "If build is required, it says that renaming would leave pull requests waiting for a check that never reports, and that the rule must change in the same change",
+        "It updates every needs: build and needs.build reference if it renames",
+        "It does not change anything else in the workflow"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Clean up our PR labeler workflow, it works but it's ugly.\n\n```yaml\nname: labeler\non: pull_request_target\njobs:\n  label:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          ref: ${{ github.event.pull_request.head.sha }}\n      - run: |\n          echo \"Labelling ${{ github.event.pull_request.title }}\"\n          npm ci\n          node scripts/label.js\n        env:\n          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n```",
+      "expected_output": "The security problems come first: the fork's code runs under pull_request_target with a write token and the title is injected into the shell. The fix changes the design, not only the style.",
+      "assertions": [
+        "Its first finding is that the workflow checks out and runs the pull request's code under pull_request_target, which runs with the base repository's token and secrets",
+        "It flags ${{ github.event.pull_request.title }} inside run: as script injection",
+        "The rewrite runs no code from the pull request with privileges: it uses pull_request, or keeps pull_request_target without checking out or running the head",
+        "The rewrite sets explicit least-privilege permissions, granting pull-requests: write only to the labelling job if it is needed",
+        "Every action is pinned immutably and the echo of the title is gone",
+        "It notes that actions/checkout v7 refuses a fork's code under pull_request_target without allow-unsafe-pr-checkout"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Create a composite action in this repo that sets up our toolchain, so our three workflows stop repeating the same four setup steps. [The repository has mise.toml pinning node and pnpm; each workflow runs checkout, a node setup action, a pnpm setup action and a hand-written actions/cache step for the pnpm store.]",
+      "expected_output": "It first checks whether one setup step removes the repetition without a composite action, and only builds one if steps still repeat.",
+      "assertions": [
+        "It notices that mise.toml already pins the tools, so jdx/mise-action, or pnpm/setup for pnpm 11 and later, could replace the repeated steps in each workflow",
+        "If it still writes a composite action, the action lives under .github/actions/<name>/action.yml and workflows call it as uses: $/.github/actions/<name>",
+        "It states that $/ needs runner 2.336.0 or later and that actionlint 1.7.12 rejects it",
+        "It removes the hand-written actions/cache step in favour of the setup action's own cache"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Write a .gitlab-ci.yml that runs pytest on every merge request.",
+      "expected_output": "The skill does not load; this is GitLab CI.",
+      "assertions": [
+        "No GitHub Actions syntax, actions or GitHub-specific advice appears",
+        "The answer is a GitLab CI configuration"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "test_parse_dates fails in CI on main but passes on my laptop. Fix it.",
+      "expected_output": "The skill does not drive the work: the failure is in the code or its test, and the workflow is left alone unless the investigation shows the workflow causes it.",
+      "assertions": [
+        "It investigates the test and the code before touching any workflow",
+        "It does not restyle, rename or restructure the workflow",
+        "Any workflow change it makes is tied to the evidence of the failure, such as a timezone or locale the runner sets"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Write a JavaScript GitHub Action that posts a coverage summary as a pull request comment, so we can publish it on the Marketplace.",
+      "expected_output": "The action's own code is out of scope; the skill applies only to any workflow written to test or release the action.",
+      "assertions": [
+        "The action's TypeScript or JavaScript and its action.yml are written without this skill's workflow rules standing in for action-development guidance",
+        "Any workflow it adds to test or release the action follows the naming, pinning and permission rules"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Tidy up our deploy workflow, then commit it and open a pull request. [deploy.yml from a Cube project: a comment header, concurrency with cancel-in-progress: false under a comment, jobs named Staging and Production, and a deploy step that writes a kubeconfig and an optional env file from secrets with printf and an if before calling mise run deploy.]",
+      "expected_output": "A shorter deploy.yml whose deploy steps are one-line calls to the deploy task, with the kubeconfig and env-file handling moved into that task, committed and proposed with messages that follow their own skills.",
+      "assertions": [
+        "The comment header and the comment on concurrency are gone, and concurrency is the string form or an equivalent without cancel-in-progress: false",
+        "The kubeconfig and env-file logic moves into the deploy task, or the answer proposes that move with the task's change, instead of staying as shell in the workflow",
+        "Deploy jobs get verb ids such as deploy-staging and deploy-production, keep their environment: keys, and keep needs between them",
+        "The commit message follows writing-commits and the pull request description follows writing-pull-requests; neither pastes actionlint or zizmor output"
+      ]
+    }
+  ]
+}
