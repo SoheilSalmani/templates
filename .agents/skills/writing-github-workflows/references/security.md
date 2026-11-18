@@ -1,6 +1,6 @@
 # Security in GitHub workflows
 
-Checked 2026-10-23. Lockfiles and the `pull_request_target` policy were moving that month; recheck both before relying on them.
+Checked 2026-11-18. These facts move with GitHub's releases; recheck them before relying on them.
 
 ## Contents
 
@@ -18,12 +18,12 @@ Checked 2026-10-23. Lockfiles and the `pull_request_target` policy were moving t
 
 A tag can move. In March 2025 an attacker repointed the tags of `tj-actions/changed-files` at a commit that printed secrets into build logs, and through `reviewdog/action-setup@v1`, called by other actions, the same campaign reached workflows whatever their own pins said. Pin every action to something that cannot move.
 
-| Mechanism | In the YAML | Covers | State on 2026-10-23 |
+| Mechanism | In the YAML | Covers | State on 2026-11-18 |
 | --- | --- | --- | --- |
-| Workflow lockfile, `.github/workflows/actions.lock` | exact tags: `actions/checkout@v7.0.1` | each action and the actions it calls; not reusable workflows from other repositories, nor container images | public preview since 2026-10-14, github.com only; zizmor and OpenSSF Scorecard do not read it yet |
-| SHA pin | `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1` | the action named, not what it calls | what zizmor, Scorecard and GitHub's SHA-pinning policy check |
+| [Workflow lockfile](https://docs.github.com/en/actions/concepts/security/workflow-dependency-lockfiles), `.github/workflows/actions.lock` | exact tags: `actions/checkout@v7.0.1` | each action and the actions it calls; not reusable workflows from other repositories, nor container images | [generally available since 2026-10-28](https://github.blog/changelog/2026-10-28-github-actions-workflow-lockfiles-are-generally-available/) on github.com plans, not on GitHub Enterprise Server; `gh actions-lock` is still pre-1.0; zizmor reads it [experimentally since 1.32.0](https://docs.zizmor.sh/usage/); check whether your OpenSSF Scorecard release recognises it |
+| SHA pin | `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1` | the action named, not what it calls | what zizmor, Scorecard and [GitHub's SHA-pinning policy](https://github.blog/changelog/2025-08-15-github-actions-policy-now-supports-blocking-and-sha-pinning-actions/) check |
 
-Use the one the repository uses. A repository with neither gets SHA pins: every plan and every linter understands them. The lockfile is the readable choice once a team accepts a preview.
+Use the one the repository uses. For a repository with neither, the lockfile is the readable choice and also locks the actions an action calls; SHA pins remain the choice on GitHub Enterprise Server, or where a linter or policy the repository relies on does not read the lockfile yet.
 
 Never pin a branch (`@main`) or a floating major tag (`@v7`). An action without a major tag, such as `astral-sh/setup-uv` since v8.0.0, is a reminder that the tag was never a pin.
 
@@ -118,6 +118,6 @@ Variables the runner sets, such as `GITHUB_REF_NAME` and `GITHUB_SHA`, are alrea
 
 ## Linters
 
-- **actionlint** types expressions, checks ids, runner labels and action inputs, and runs shellcheck on `run:` blocks when shellcheck is on the `PATH`. Its input checks for popular actions only work on `@vN` references, so SHA-pinned steps lose them. 1.7.12, the release current on 2026-10-23, rejects `$/` references.
+- **actionlint** types expressions, checks ids, runner labels and action inputs, and runs shellcheck on `run:` blocks when shellcheck is on the `PATH`. Its input checks for popular actions only work on `@vN` references, so SHA-pinned steps lose them. 1.7.12, still the latest release on 2026-11-18, rejects `$/` references.
 - **zizmor** audits security. At the default persona it wants every action hash-pinned (since 1.20), `persist-credentials: false`, no `${{ }}` from untrusted contexts in scripts, least-privilege permissions, no cache in release workflows and trusted publishing where a registry offers it. `--persona=pedantic` also asks for a `name` on every job and for `concurrency` limits; this skill leaves job names off on purpose, so pedantic's `anonymous-definition` findings are expected.
 - In CI, `zizmorcore/zizmor-action` runs zizmor; actionlint has a Docker image and pre-commit hooks. Pin both like any other action.

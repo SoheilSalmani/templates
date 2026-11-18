@@ -7,14 +7,14 @@
 - Verbs
 - Rewrites
 - Matrices and reusable workflows
-- Required checks
+- Required checks and other readers of a name
 
 ## Where each name appears
 
 | Name | Shown in | Breaks when changed |
 | --- | --- | --- |
 | File path | the workflow's identity: badge URLs, `gh workflow run <file>`, and the Actions sidebar when `name` is missing | badges, scripts and documents that link it |
-| Workflow `name` | the Actions sidebar, the first half of each check in a pull request, the badge's text | nothing matches on it |
+| Workflow `name` | the Actions sidebar, the first half of each check in a pull request, the badge's text | `workflow_run` triggers, whose `workflows:` list selects workflows by name; `gh run list --workflow <name>` in scripts |
 | `run-name` | each run in the list of runs; by default the commit message or pull request title | nothing |
 | Job id, or job `name` when set | the check's name on pull requests and commits, with matrix values appended; what branch rules require | required checks; `needs:` and `needs.<id>` read the id |
 | Step `name` | the job's log; a step without one shows `Run` and its command's first line, or `Run owner/repo@<ref>`, which is a 40-character SHA once pinned | nothing |
@@ -27,7 +27,7 @@ An id starts with a letter or `_` and holds letters, digits, `-` and `_`. Hyphen
 ## The grammar, with its reasons
 
 - **Workflows are nouns**, because the sidebar lists what the repository has: `CI`, `Release`, `Deployment`, `Nightly`. `CI` is the usual name for the workflow that checks pull requests; nine of fifteen widely used repositories sampled in October 2026 use exactly that.
-- **Files mirror the name** in kebab-case with `.yml`, so the file behind a sidebar entry is predictable: `CI` is `ci.yml`, `Docs site` is `docs-site.yml`. A workflow that only other workflows call takes a `reusable-` prefix, `reusable-build.yml`, so nobody looks for its trigger. Renaming a file breaks badges and `gh workflow run` calls, so rename deliberately.
+- **Files mirror the name** in kebab-case with `.yml`, so the file behind a sidebar entry is predictable: `CI` is `ci.yml`, `Docs site` is `docs-site.yml`. A workflow that only other workflows call takes a `reusable-` prefix, `reusable-build.yml`, so nobody looks for its trigger. Renaming a file breaks badges and `gh workflow run` calls, and renaming a workflow's `name` silently stops every `workflow_run` trigger that names it, so neither is a style fix: find the readers first.
 - **Jobs are verbs**, because a check reads as what CI did: `CI / lint`, `CI / test`, `CI / check-format`, `Deployment / deploy-production`. Name the activity, never the tool: `typecheck`, not `mypy`; `check-format`, not `sqlfmt`. Tools are replaced more often than the checks they run, and a rule requires the check's name.
 - **Steps are imperative sentences**, verb first and in sentence case, because the log reads as a list of instructions carried out: `Install dependencies`, `Check SQL formatting`, `Publish to PyPI`. Thirteen of the fifteen repositories put the verb first.
 - **Ids are nouns for what they hold**: `version`, `pnpm-store`, `wheel-path`.
@@ -53,7 +53,7 @@ An id starts with a letter or `_` and holds letters, digits, `-` and `_`. Hyphen
 
 | Before | After | Why |
 | --- | --- | --- |
-| `sql-format.yml` named `SQL Format`, one job, triggered like the pull request workflow | a `check-format` job in the existing pull request workflow | a check on the same trigger is a job, not a workflow |
+| `sql-format.yml` named `SQL Format`, one job, triggered like the pull request workflow and owned by the same people | a `check-format` job in the existing pull request workflow | a check on the same trigger and owner is a job, not a workflow; a workflow another team owns, or one with its own path filters, may stay separate |
 | job `sqlfmt` with `name: sqlfmt` | job `check-format`, no `name` | named for its check; the `name` repeated the id |
 | `name: Checkout code` on `actions/checkout` | no name | the action says it, and "checkout" is the noun |
 | `name: Setup Node.js` on `actions/setup-node` | no name; `Set up Node.js` where the repository names every step | as above |
@@ -71,7 +71,7 @@ An id starts with a letter or `_` and holds letters, digits, `-` and `_`. Hyphen
 - Changing a matrix value, or the order of its keys, changes the check names, and with them the required checks.
 - A job that calls a reusable workflow shows as `<calling job> / <called job>`. Name the calling job for what it does, as you would any job.
 
-## Required checks
+## Required checks and other readers of a name
 
 List what the rules require before renaming any job:
 
@@ -99,3 +99,11 @@ Older branch protection, outside rulesets, shows its checks to administrators at
 ```
 
 - A repository with a merge queue also triggers its required workflows on `merge_group`, or the queue waits forever.
+
+Before renaming a workflow, find the workflows that trigger on it; `workflow_run` only reads workflows in the same repository:
+
+```sh
+grep -rn -A4 'workflow_run' .github/workflows   # each workflows: [ ... ] entry is a workflow name
+```
+
+Renaming `Build` to `CI` while a deploy workflow still says `workflows: [Build]` raises no error anywhere: the deploy simply never runs again. Change both in one commit, or keep the old name.

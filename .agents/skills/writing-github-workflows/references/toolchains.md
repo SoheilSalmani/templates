@@ -1,6 +1,6 @@
 # Toolchains in GitHub workflows
 
-Releases checked 2026-10-23. Before pinning, check for a newer one with `gh api repos/<owner>/<repo>/releases/latest --jq .tag_name`, then find the commit it points at with `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`.
+Releases checked 2026-11-18; this table is the one place the skill records them, and the SHAs in other examples are illustrative. Before pinning, check for a newer one with `gh api repos/<owner>/<repo>/releases/latest --jq .tag_name`, then find the commit it points at with `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`.
 
 ## Contents
 
@@ -10,7 +10,7 @@ Releases checked 2026-10-23. Before pinning, check for a newer one with `gh api 
 - Java with Gradle
 - mise
 - Caches
-- Releases on 2026-10-23
+- Releases on 2026-11-18
 
 ## Choosing the setup step
 
@@ -21,7 +21,7 @@ Releases checked 2026-10-23. Before pinning, check for a newer one with `gh api 
 ## Python with uv
 
 ```yaml
-      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       - name: Run tests
         run: uv run pytest
 ```
@@ -38,7 +38,7 @@ Releases checked 2026-10-23. Before pinning, check for a newer one with `gh api 
 With pnpm 11 or later, `pnpm/setup` is the whole setup: it installs the pnpm that `packageManager` names, the runtime that `devEngines.runtime` or `.nvmrc` names, and then runs `pnpm install`.
 
 ```yaml
-      - uses: pnpm/setup@a0881977cd8ea73b1ed212236c99ca10dcc80cf4 # v3.1.1
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
           require-lockfile: true
@@ -51,11 +51,11 @@ With pnpm 10 or earlier, `pnpm/action-setup` (which reads `packageManager`) come
 ## Java with Gradle
 
 ```yaml
-      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version-file: .java-version
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
       - name: Build
         run: ./gradlew build
 ```
@@ -65,7 +65,7 @@ With pnpm 10 or earlier, `pnpm/action-setup` (which reads `packageManager`) come
 ## mise
 
 ```yaml
-      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
       - name: Run tests
         run: mise run test
 ```
@@ -80,18 +80,18 @@ With pnpm 10 or earlier, `pnpm/action-setup` (which reads `packageManager`) come
 - Write an `actions/cache` step only for what no setup action caches, keyed on the lockfile: `key: <tool>-${{ runner.os }}-${{ hashFiles('<lockfile>') }}`.
 - Release and publish jobs restore no cache, because a cache saved by one run is restored by others: `cache-mode: none` on the job, or the setup action's cache turned off.
 
-## Releases on 2026-10-23
+## Releases on 2026-11-18
 
 | Action | Release | Commit |
 | --- | --- | --- |
 | `actions/checkout` | v7.0.1 | `3d3c42e5aac5ba805825da76410c181273ba90b1` |
 | `actions/setup-python` | v7.1.0 | `6d4fd22b20465ccc0f7354476588e8df7c9ca0e0` |
 | `actions/setup-node` | v7.1.0 | `949feb2413d6458794dcd2491c4babbbce0c15c1` |
-| `actions/setup-java` | v6.1.0 | `b843ebf9b913146b38da2eaa7aeddf76074ae1ad` |
+| `actions/setup-java` | v6.3.0 | `d1374f8ac74474200d16ef8ecee22c7ae7a51880` |
 | `actions/cache` | v6.1.0 | `55cc8345863c7cc4c66a329aec7e433d2d1c52a9` |
 | `actions/upload-artifact` | v7.0.2 | `cf430e030ddbb5b0abf93d22962f4752f3646cd9` |
-| `astral-sh/setup-uv` | v10.3.2 | `07a047e608db84b3d8c06cd9a7c7dcc9c355c18e` |
-| `jdx/mise-action` | v5.2.2 | `8418fedb1110381a0d3ba51a7a415d7c1b884550` |
-| `pnpm/setup` | v3.1.1 | `a0881977cd8ea73b1ed212236c99ca10dcc80cf4` |
-| `pnpm/action-setup` | v6.1.0 | `ea17c68df8912ef543352723c149a84f56e3d413` |
-| `gradle/actions` | v6.4.0 | `3f5f9adaf7d9fecd50b5935e54106014257a94e6` |
+| `astral-sh/setup-uv` | v10.3.3 | `68559e99cc807c1eb7e9238fd43a15bba460eec2` |
+| `jdx/mise-action` | v5.2.9 | `236a21c3b91f5db6d4e174b348674a0f0caac06d` |
+| `pnpm/setup` | v3.2.0 | `731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1` |
+| `pnpm/action-setup` | v6.1.1 | `73e46992e05b19abd31f2f3c20e0e7370d762115` |
+| `gradle/actions` | v6.4.1 | `8da46b539cd8fe6ab27ca75128919a18d757604c` |

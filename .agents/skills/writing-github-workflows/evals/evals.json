@@ -1,6 +1,6 @@
 {
   "skill_name": "writing-github-workflows",
-  "notes": "Score the workflow a reviewer and a developer whose check failed would read, not the amount of advice. A result fails outright if it leaves an inline program or a drift check in a step, keeps a floating action reference such as @v7 or @main, puts a contributor-controlled ${{ }} expression inside run:, or renames a job without saying that a required check may depend on its name. A review fails if it invents findings for a workflow that already meets the bar or restructures one the user asked only to change in one place. Removing a check without saying where its responsibility went is a failure even when the check was redundant. In the co-loaded case, the commit message or pull request description follows its own skill and carries no lint output.",
+  "notes": "Score the workflow a reviewer and a developer whose check failed would read, not the amount of advice, and score preserved behaviour before conformity. A result fails outright if it drops an invariant the old workflow enforced without the user's decision, changes which file is authoritative as a cleanup, keeps a floating action reference such as @v7 or @main, puts a contributor-controlled ${{ }} expression inside run:, or renames a job or workflow without checking what reads its name. Inline logic, a kept guard, a diagnostic step or a separate workflow is not a failure when the answer names the responsibility that justifies it; a duplication guard kept where the duplication could go, or a script used once only to shorten the YAML, is. A review fails if it invents findings for a workflow that already meets the bar or restructures one the user asked only to change in one place. Removing a check without saying where its responsibility went is a failure even when the check was redundant. Assertions name versions only as examples; any exact, current release passes. In the co-loaded case, the commit message or pull request description follows its own skill and carries no lint output.",
   "evals": [
     {
       "id": 1,
@@ -15,7 +15,7 @@
         "Every action reference is a full SHA with a version comment or an exact tag in a lockfile; none is a floating tag such as @v7",
         "No comment in the result explains what a step does",
         "Step names are sentence-case imperatives, checkout and setup steps carry no name, and no name repeats its command",
-        "The job id names the check rather than the tool, and no job name repeats the id",
+        "The job id names the check rather than the tool, or keeps sqlfmt because a branch rule may require it and offers the rename; no job name repeats the id",
         "It proposes making the check a job of the existing pull request workflow, or gives a concrete reason to keep a separate workflow",
         "It warns that renaming the sqlfmt job changes the check name a branch rule may require",
         "--no-progressbar is gone, and permissions and timeout-minutes remain"
@@ -131,6 +131,49 @@
         "The kubeconfig and env-file logic moves into the deploy task, or the answer proposes that move with the task's change, instead of staying as shell in the workflow",
         "Deploy jobs get verb ids such as deploy-staging and deploy-production, keep their environment: keys, and keep needs between them",
         "The commit message follows writing-commits and the pull request description follows writing-pull-requests; neither pastes actionlint or zizmor output"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Make our release workflow more readable.\n\n```yaml\nname: Release\non:\n  push:\n    tags: [\"v*\"]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v7\n      - uses: astral-sh/setup-uv@v10.3.3\n      - name: Check the tag matches the version\n        run: |\n          VERSION=$(python -c \"import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])\")\n          if [ \"v$VERSION\" != \"${{ github.ref_name }}\" ]; then\n            echo \"::error::Tag ${{ github.ref_name }} does not match version $VERSION\"\n            exit 1\n          fi\n      - run: uv build\n      - run: uv publish\n        env:\n          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}\n```",
+      "expected_output": "A shorter release workflow that still fails when the tag and the committed version disagree, with the comparison in one line or a task and no ${{ }} in the script. Deriving the version from the tag is at most offered as a separate policy choice.",
+      "assertions": [
+        "The rewrite still fails the release when the tag does not match the version committed in pyproject.toml",
+        "It does not set the package version from the tag in the rewrite; if it mentions that option, it presents it as a change of release policy for the user to decide",
+        "The tag reaches the shell through GITHUB_REF_NAME or env:, not through ${{ github.ref_name }} inside run:",
+        "Actions are pinned immutably, permissions are explicit, and the job has timeout-minutes",
+        "It may suggest trusted publishing in place of the token, but says it needs the PyPI project configured first"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Rename our Build workflow to CI, it's the house name. [.github/workflows/build.yml has name: Build; .github/workflows/deploy.yml triggers on workflow_run with workflows: [Build] and types: [completed].]",
+      "expected_output": "It finds the workflow_run trigger that selects Build by name and changes it in the same change, or stops to ask; it never renames Build alone.",
+      "assertions": [
+        "It searches the workflows for anything that reads the name Build before renaming",
+        "It names deploy.yml's workflows: [Build] as a reader that would silently stop triggering",
+        "The rename, if made, changes build.yml's name and deploy.yml's workflows: list together",
+        "It mentions that renaming the file as well would break badges or gh workflow run calls, or leaves the file name alone"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "Clean up ci.yml. [The test job ends with a step named 'Dump service logs when tests fail' that runs only if: failure() and prints docker compose logs; the user's message says the integration tests fail about once a week and nobody knows why yet.]",
+      "expected_output": "The failure-only log capture stays, because it serves a failure nobody understands yet; the rest of the cleanup follows the skill.",
+      "assertions": [
+        "The if: failure() log step is kept, or kept and improved, not deleted as a diagnostic step",
+        "It says the step stays because the intermittent failure is not yet understood, and when it could go",
+        "Other cleanups follow the naming, pinning and permission rules"
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Our repo has ci.yml, owned by the app team, and security.yml, owned by the security team, both on pull_request. Tidy up security.yml. [security.yml runs a dependency audit and is listed in CODEOWNERS under @org/security.]",
+      "expected_output": "security.yml stays a separate workflow because a different team owns it; the tidy-up happens inside it.",
+      "assertions": [
+        "It keeps security.yml as its own workflow and gives the separate owner as the reason",
+        "It does not move the audit into ci.yml",
+        "The changes inside security.yml follow the naming, pinning and permission rules without renaming a job a branch rule may require unchecked"
       ]
     }
   ]
