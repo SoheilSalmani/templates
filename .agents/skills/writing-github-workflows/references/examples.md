@@ -1,17 +1,17 @@
 # Workflows before and after
 
-The SHAs below are illustrative: the commits of the releases in their comments on 2026-10-23. Resolve current ones before copying: `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`.
+The SHAs below are the commits of the releases in their comments on 2026-11-18. Resolve current ones before copying: `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`.
 
 ## Contents
 
 - A pull request workflow from scratch
 - A check that grew a program
-- A release that compared the tag with the version
+- A release that checks the tag against the version
 - A deployment whose logic belonged to its task
 
 ## A pull request workflow from scratch
 
-A uv project with ruff and pytest. `push` to `main` is there because setup-uv's cache, saved on `main`, is what pull requests restore. `UV_LOCKED` makes every `uv run` fail on a stale `uv.lock`, so the commands stay the ones developers type.
+A Node project with ESLint, Prettier and a test script, and its Node version in `.nvmrc`. `push` to `main` is there because a cache saved on `main` is the one pull requests restore.
 
 ```yaml
 name: CI
@@ -28,9 +28,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  UV_LOCKED: 1
-
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -39,11 +36,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
       - name: Check formatting
-        run: uv run ruff format --check
-      - name: Lint Python
-        run: uv run ruff check
+        run: npm run format:check
+      - name: Lint JavaScript
+        run: npm run lint
 
   test:
     runs-on: ubuntu-latest
@@ -52,36 +54,40 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
       - name: Run tests
-        run: uv run pytest
+        run: npm test
 ```
 
-No Python version appears: uv installs the one `.python-version` pins. No `uv sync` step: `uv run` installs what it runs.
+No Node version appears: setup-node reads `.nvmrc`. The install step is right here, because unlike `uv run`, `npm test` installs nothing; each check is a script from `package.json`, so CI and a developer run the same command.
 
 ## A check that grew a program
 
-Before: seven steps, a Python program in a heredoc, and two comments explaining the YAML.
+A Python project that lints with ruff, both from its dev dependencies and from a pre-commit hook. Before: seven steps, a Python program in a heredoc, and two comments explaining the YAML.
 
 ```yaml
 ---
-name: SQL Format
+name: Lint
 
-# sqlfmt needs no Snowflake login, so this check runs apart from the
-# pre-commit job in pr-checks.yml, which needs one for SQLFluff.
+# Lint runs apart from ci.yml, whose test job needs the database
+# secret, so pull requests from forks still get a lint result.
 on:
   pull_request:
     branches:
       - main
-      - develop
 
 permissions:
   contents: read
 
 jobs:
-  sqlfmt:
-    name: sqlfmt
-    runs-on: ["atmos-aws-arc-runner-set"]
+  ruff:
+    name: ruff
+    runs-on: ["ubuntu-latest"]
     timeout-minutes: 10
 
     steps:
@@ -91,7 +97,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -101,7 +107,7 @@ jobs:
       - name: Install the dev tools
         run: uv sync --frozen --only-group dev
 
-      - name: Check that the sqlfmt hook pins the locked versions
+      - name: Check that the ruff hook pins the locked version
         run: |
           uv run --no-sync python - <<'EOF'
           import importlib.metadata
@@ -111,73 +117,74 @@ jobs:
 
           with open(".pre-commit-config.yaml") as f:
               repos = yaml.safe_load(f)["repos"]
-          hook = next(r for r in repos if r["repo"] == "https://github.com/tconbeer/sqlfmt")
-          rev = "v" + importlib.metadata.version("shandy-sqlfmt")
-          black = "black==" + importlib.metadata.version("black")
-          if hook["rev"] != rev or black not in hook["hooks"][0].get("additional_dependencies", []):
-              sys.exit(
-                  f"The sqlfmt hook in .pre-commit-config.yaml must pin rev {rev} and {black}, as uv.lock does. "
-                  "Bump both together, then run `make fmt` and commit the result."
-              )
+          hook = next(r for r in repos if r["repo"] == "https://github.com/astral-sh/ruff-pre-commit")
+          locked = "v" + importlib.metadata.version("ruff")
+          if hook["rev"] != locked:
+              sys.exit(f"The ruff hook pins {hook['rev']} but uv.lock has {locked}. Bump both together.")
           EOF
 
-      # Before sqlfmt: its diff would show a bare camelCase key lowercased, and
-      # applying that diff makes the column NULL.
-      - name: Check that semi-structured keys are quoted
-        run: uv run --no-sync pre-commit run quote-json-keys --all-files
+      # Formatting first: a lint finding on unformatted code may vanish once it is formatted.
+      - name: Check formatting
+        run: uv run --no-sync ruff format --check
 
-      - name: Check SQL formatting
-        run: uv run --no-sync sqlfmt --diff --no-progressbar models tests snapshots analyses
+      - name: Lint
+        run: uv run --no-sync ruff check
 ```
 
-After: one job in the pull request workflow, `pr-checks.yml`, which already runs on the same trigger. The job is given no Snowflake secret, so nothing needs a separate workflow, and the header comment has nothing left to explain.
+After: one job in `ci.yml`, which already runs on the same trigger. Secrets are given per job, so a `lint` job that is given no database secret runs for forks as it did before, and the header comment has nothing left to explain.
 
 ```yaml
-  check-format:
-    runs-on: atmos-aws-arc-runner-set
+  lint:
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
-      - name: Check semi-structured keys are quoted
-        run: uv run --locked --only-group dev pre-commit run quote-json-keys --all-files
-      - name: Check SQL formatting
-        run: uv run --locked --only-group dev sqlfmt --diff models tests snapshots analyses
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - name: Check formatting
+        run: uv run --locked --only-group dev ruff format --check
+      - name: Lint Python
+        run: uv run --locked --only-group dev ruff check
 ```
 
-The version check guarded a duplication: the pre-commit hook installed its own sqlfmt and black, pinned in `.pre-commit-config.yaml`, while CI and `make fmt` ran the ones in `uv.lock`, and different versions format differently. With one pin there is nothing to compare, so the hook runs the locked tools:
+The version check guarded a duplication: the pre-commit hook installed its own ruff, pinned by `rev`, while CI ran the one in `uv.lock`, and two ruff versions can disagree about the same file. With one pin there is nothing to compare, so the hooks run the locked ruff:
 
 ```yaml
 # .pre-commit-config.yaml, before
-  - repo: https://github.com/tconbeer/sqlfmt
-    rev: v0.32.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.5
     hooks:
-      - id: sqlfmt
-        additional_dependencies: ["shandy-sqlfmt[jinjafmt]", "black==26.10.1"]
+      - id: ruff-format
+      - id: ruff-check
 
 # after
   - repo: local
     hooks:
-      - id: sqlfmt
-        name: sqlfmt
-        entry: uv run --only-group dev sqlfmt
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --only-group dev ruff format --force-exclude
         language: unsupported
-        types_or: [sql, jinja]
+        types_or: [python, pyi, jupyter]
+        require_serial: true
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --only-group dev ruff check --force-exclude
+        language: unsupported
+        types_or: [python, pyi, jupyter]
         require_serial: true
 ```
 
-`language: unsupported` is pre-commit 4.4.0's name for `system`; on an older pre-commit, write `system`.
+`language: unsupported` is pre-commit 4.4.0's name for `system`; on an older pre-commit, write `system`. The other single source works as well: drop ruff from the dev dependencies, keep the remote hook, and have CI run `pre-commit run --all-files`. Either one removes the check; keeping both pins and the check does not.
 
 What else moved:
 
-- `name: sqlfmt` went: the id is the check's name. If a branch rule required `sqlfmt`, change the rule in the same change.
-- `actions/setup-python` and its `3.11` went: uv installs the Python the project pins, and `3.11` was a second pin.
-- `setup-uv@v4` declares Node 20, which runners stopped shipping on 2026-09-23, and setup-uv has published no major tags since v8.0.0, so the exact release is pinned. `version: "latest"` was the default; pin uv itself with `required-version` in `pyproject.toml` if it matters.
+- `name: ruff` went, and the job became `lint`: named for its check, not its tool. If a branch rule required `ruff`, change the rule in the same change, or keep the id.
+- `actions/setup-python` and its `3.12` went: uv installs the Python the project pins, and `3.12` was a second pin.
+- `setup-uv@v4` declares Node 20, which runners stopped shipping on 2026-09-23, and setup-uv has published no major tags since v8.0.0, so the exact release is pinned. `version: "latest"` was the default.
 - `uv sync` and every `--no-sync` went: `uv run --only-group dev` installs exactly that group. `--locked` replaced `--frozen`, so a stale `uv.lock` now fails instead of passing unnoticed.
-- The comment on order went: the steps keep that order, correctness before style, and the hooks' order in `.pre-commit-config.yaml` gives developers the same one.
-- `--no-progressbar` went: sqlfmt turns its bar off without a terminal.
+- The comment on order went: the steps keep that order, formatting before lint, and the hooks' order in `.pre-commit-config.yaml` gives developers the same one.
+- `runs-on` became a label instead of a one-item list.
 
 ## A release that checks the tag against the version
 
@@ -224,7 +231,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       - name: Check the tag matches the committed version
         run: test "v$(uv version --short)" = "$GITHUB_REF_NAME"
       - name: Build the package
@@ -239,7 +246,7 @@ Making the tag the only place the version is written, with `uv version --frozen 
 
 ## A deployment whose logic belonged to its task
 
-Before: comments explain a default, and the deploy step scripts around the task it calls.
+A service deployed to Kubernetes with Helm, whose tools and `deploy` task are defined in `mise.toml`. Before: a comment explains a default, and each deploy step scripts around the task it calls.
 
 ```yaml
 # One deploy at a time, and never one cancelled halfway.
@@ -258,19 +265,19 @@ jobs:
       - name: Deploy
         env:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
-          CUBE_ENV: ${{ secrets.CUBE_ENV }}
+          HELM_VALUES: ${{ secrets.HELM_VALUES }}
         run: |
           printf '%s\n' "$KUBECONFIG_CONTENT" > "$RUNNER_TEMP/kubeconfig"
           export KUBECONFIG="$RUNNER_TEMP/kubeconfig"
-          # Without CUBE_ENV, the Secret is managed outside this repository.
-          if [ -n "$CUBE_ENV" ]; then
-            printf '%s\n' "$CUBE_ENV" > "$RUNNER_TEMP/cube.env"
-            export CUBE_ENV_FILE="$RUNNER_TEMP/cube.env"
+          # Without HELM_VALUES, the release keeps the values already on the cluster.
+          if [ -n "$HELM_VALUES" ]; then
+            printf '%s\n' "$HELM_VALUES" > "$RUNNER_TEMP/values.yaml"
+            export VALUES_FILE="$RUNNER_TEMP/values.yaml"
           fi
           mise run deploy staging
 ```
 
-After: the deploy task reads `KUBECONFIG_CONTENT` and `CUBE_ENV` itself, so the same task works from a laptop and from CI, and its branch on `CUBE_ENV` lives in code that can be read and run on its own.
+After: the deploy task reads `KUBECONFIG_CONTENT` and `HELM_VALUES` itself, so the same task works from a laptop and from CI, and the branch on `HELM_VALUES` lives once in code that can be read and run on its own, instead of in every deploy job.
 
 ```yaml
 concurrency: deploy
@@ -284,10 +291,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: jdx/mise-action@8418fedb1110381a0d3ba51a7a415d7c1b884550 # v5.2.2
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
       - name: Deploy to staging
         env:
           KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG }}
-          CUBE_ENV: ${{ secrets.CUBE_ENV }}
+          HELM_VALUES: ${{ secrets.HELM_VALUES }}
         run: mise run deploy staging
 ```
+
+The move pays because the logic has a life outside this step: the production job and anyone deploying by hand need it too. Logic only this one step needs, moved into a script just to shorten the YAML, would not.

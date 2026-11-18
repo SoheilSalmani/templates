@@ -28,8 +28,8 @@ An id starts with a letter or `_` and holds letters, digits, `-` and `_`. Hyphen
 
 - **Workflows are nouns**, because the sidebar lists what the repository has: `CI`, `Release`, `Deployment`, `Nightly`. `CI` is the usual name for the workflow that checks pull requests; nine of fifteen widely used repositories sampled in October 2026 use exactly that.
 - **Files mirror the name** in kebab-case with `.yml`, so the file behind a sidebar entry is predictable: `CI` is `ci.yml`, `Docs site` is `docs-site.yml`. A workflow that only other workflows call takes a `reusable-` prefix, `reusable-build.yml`, so nobody looks for its trigger. Renaming a file breaks badges and `gh workflow run` calls, and renaming a workflow's `name` silently stops every `workflow_run` trigger that names it, so neither is a style fix: find the readers first.
-- **Jobs are verbs**, because a check reads as what CI did: `CI / lint`, `CI / test`, `CI / check-format`, `Deployment / deploy-production`. Name the activity, never the tool: `typecheck`, not `mypy`; `check-format`, not `sqlfmt`. Tools are replaced more often than the checks they run, and a rule requires the check's name.
-- **Steps are imperative sentences**, verb first and in sentence case, because the log reads as a list of instructions carried out: `Install dependencies`, `Check SQL formatting`, `Publish to PyPI`. Thirteen of the fifteen repositories put the verb first.
+- **Jobs are verbs**, because a check reads as what CI did: `CI / lint`, `CI / test`, `CI / check-format`, `Deployment / deploy-production`. Name the activity, never the tool: `typecheck`, not `mypy`; `check-format`, not `prettier`. Tools are replaced more often than the checks they run, and a rule requires the check's name.
+- **Steps are imperative sentences**, verb first and in sentence case, because the log reads as a list of instructions carried out: `Install dependencies`, `Check formatting`, `Publish to PyPI`. Thirteen of the fifteen repositories put the verb first.
 - **Ids are nouns for what they hold**: `version`, `pnpm-store`, `wheel-path`.
 
 ## Verbs
@@ -38,7 +38,7 @@ An id starts with a letter or `_` and holds letters, digits, `-` and `_`. Hyphen
 | --- | --- | --- |
 | `Set up` | a toolchain; usually unnamed, since the action says it | `Set up Python` |
 | `Install` | the project's dependencies | `Install dependencies` |
-| `Check` | a read-only check that fails instead of fixing | `Check SQL formatting`, `Check types`, `Check links` |
+| `Check` | a read-only check that fails instead of fixing | `Check formatting`, `Check types`, `Check links` |
 | `Lint` | a linter | `Lint Python` |
 | `Run` | tests or benchmarks | `Run unit tests` |
 | `Build` | an artefact | `Build the image`, `Build docs` |
@@ -53,13 +53,13 @@ An id starts with a letter or `_` and holds letters, digits, `-` and `_`. Hyphen
 
 | Before | After | Why |
 | --- | --- | --- |
-| `sql-format.yml` named `SQL Format`, one job, triggered like the pull request workflow and owned by the same people | a `check-format` job in the existing pull request workflow | a check on the same trigger and owner is a job, not a workflow; a workflow another team owns, or one with its own path filters, may stay separate |
-| job `sqlfmt` with `name: sqlfmt` | job `check-format`, no `name` | named for its check; the `name` repeated the id |
+| `lint.yml` named `Lint`, one job, triggered like the pull request workflow and owned by the same people | a `lint` job in the existing pull request workflow | a check on the same trigger and owner is a job, not a workflow; a workflow another team owns, or one with its own path filters, may stay separate |
+| job `eslint` with `name: eslint` | job `lint`, no `name` | named for its check; the `name` repeated the id |
 | `name: Checkout code` on `actions/checkout` | no name | the action says it, and "checkout" is the noun |
 | `name: Setup Node.js` on `actions/setup-node` | no name; `Set up Node.js` where the repository names every step | as above |
 | `name: Install the dev tools` running `uv sync` | gone | `uv run` installs what it runs |
-| `name: Check that the sqlfmt hook pins the locked versions` | gone | the duplication it guarded was removed |
-| `name: Check that semi-structured keys are quoted` | `Check semi-structured keys are quoted` | "that" adds nothing |
+| `name: Check that the lint hook pins the locked version` | gone | the duplication it guarded was removed |
+| `name: Check that generated files are up to date` | `Check generated files are up to date` | "that" adds nothing |
 | `name: Build & Package Binaries` | `Build binaries` | one verb, sentence case |
 | `name: Get Package Version` | `id: version` and `name: Read the package version` | sentence case; the id is the noun later steps read |
 | `- run: npm test` | `name: Run unit tests` above `run: npm test` | every `run:` step gets a name |
