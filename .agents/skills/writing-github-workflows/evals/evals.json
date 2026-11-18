@@ -4,21 +4,21 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "You made this too complicated. Simplify it.\n\n```yaml\n---\nname: SQL Format\n\n# sqlfmt needs no Snowflake login, so this check runs apart from the\n# pre-commit job in pr-checks.yml, which needs one for SQLFluff.\non:\n  pull_request:\n    branches:\n      - main\n      - develop\n\npermissions:\n  contents: read\n\njobs:\n  sqlfmt:\n    name: sqlfmt\n    runs-on: [\"atmos-aws-arc-runner-set\"]\n    timeout-minutes: 10\n\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v7\n\n      - name: Set up Python\n        uses: actions/setup-python@v7\n        with:\n          python-version: '3.11'\n\n      - name: Install uv\n        uses: astral-sh/setup-uv@v4\n        with:\n          version: \"latest\"\n\n      - name: Install the dev tools\n        run: uv sync --frozen --only-group dev\n\n      - name: Check that the sqlfmt hook pins the locked versions\n        run: |\n          uv run --no-sync python - <<'EOF'\n          import importlib.metadata\n          import sys\n\n          import yaml\n\n          with open(\".pre-commit-config.yaml\") as f:\n              repos = yaml.safe_load(f)[\"repos\"]\n          hook = next(r for r in repos if r[\"repo\"] == \"https://github.com/tconbeer/sqlfmt\")\n          rev = \"v\" + importlib.metadata.version(\"shandy-sqlfmt\")\n          black = \"black==\" + importlib.metadata.version(\"black\")\n          if hook[\"rev\"] != rev or black not in hook[\"hooks\"][0].get(\"additional_dependencies\", []):\n              sys.exit(\n                  f\"The sqlfmt hook in .pre-commit-config.yaml must pin rev {rev} and {black}, as uv.lock does. \"\n                  \"Bump both together, then run `make fmt` and commit the result.\"\n              )\n          EOF\n\n      # Before sqlfmt: its diff would show a bare camelCase key lowercased, and\n      # applying that diff makes the column NULL.\n      - name: Check that semi-structured keys are quoted\n        run: uv run --no-sync pre-commit run quote-json-keys --all-files\n\n      - name: Check SQL formatting\n        run: uv run --no-sync sqlfmt --diff --no-progressbar models tests snapshots analyses\n```",
-      "expected_output": "A rewrite of four or five steps with no inline program, the version check replaced by one source of truth for the sqlfmt and black versions, and a list of what moved where.",
+      "prompt": "This lint workflow got out of hand. Simplify it. [The repository also has ci.yml, triggered on pull_request, and a package.json whose lint script is `eslint .`.]\n\n```yaml\n---\nname: ESLint\n\n# Runs apart from ci.yml because ci.yml's test job needs the database\n# secret, which pull requests from forks don't get.\non:\n  pull_request:\n    branches:\n      - main\n\njobs:\n  eslint:\n    name: eslint\n    runs-on: [\"ubuntu-latest\"]\n\n    steps:\n      - name: Checkout code\n        uses: actions/checkout@v4\n\n      - name: Setup Node\n        uses: actions/setup-node@v4\n        with:\n          node-version: '22.11.0'\n\n      - name: Print versions\n        run: |\n          node --version\n          npm --version\n\n      # .nvmrc must match the node-version above, or developers and CI\n      # lint with different Node versions.\n      - name: Check that .nvmrc matches the CI Node version\n        run: |\n          node -e '\n            const want = require(\"fs\").readFileSync(\".nvmrc\", \"utf8\").trim().replace(/^v/, \"\");\n            const have = process.version.replace(/^v/, \"\");\n            if (want !== have) { console.error(`.nvmrc says ${want}, CI runs ${have}`); process.exit(1); }\n          '\n\n      - name: Install\n        run: npm install\n\n      - name: Run eslint\n        run: npx eslint . --max-warnings 0\n```",
+      "expected_output": "A lint job of four or five steps, with setup-node reading .nvmrc so the version comparison and its program disappear, the warnings threshold where developers get it too, and a list of what moved where.",
       "assertions": [
-        "The Python heredoc is gone and no other inline program, conditional or loop replaces it",
-        "It explains that the version check guarded two copies of the same pins, and removes one copy, showing the change to .pre-commit-config.yaml or to the dependency group that this needs",
-        "actions/setup-python and the hard-coded 3.11 are gone, and no Python version appears in the workflow",
-        "There is no separate uv sync step and no --no-sync flag",
-        "setup-uv is pinned to an exact release, by SHA with a version comment or as an exact tag recorded in a lockfile, and version: latest is gone",
-        "Every action reference is a full SHA with a version comment or an exact tag in a lockfile; none is a floating tag such as @v7",
+        "The node -e program is gone because setup-node reads .nvmrc through node-version-file, leaving one Node pin; no other inline program replaces it",
+        "No Node version appears in the workflow",
+        "The version-printing step is gone, or kept with a stated reason",
+        "Dependencies install with npm ci rather than npm install",
+        "Lint runs a command developers also run, such as npm run lint, and --max-warnings 0 moves into package.json or the ESLint configuration rather than staying a CI-only flag, or the answer says why it stays",
+        "Every action reference is a full SHA with a version comment or an exact tag in a lockfile; none is a floating tag such as @v4",
+        "permissions: contents: read and timeout-minutes are added",
         "No comment in the result explains what a step does",
         "Step names are sentence-case imperatives, checkout and setup steps carry no name, and no name repeats its command",
-        "The job id names the check rather than the tool, or keeps sqlfmt because a branch rule may require it and offers the rename; no job name repeats the id",
-        "It proposes making the check a job of the existing pull request workflow, or gives a concrete reason to keep a separate workflow",
-        "It warns that renaming the sqlfmt job changes the check name a branch rule may require",
-        "--no-progressbar is gone, and permissions and timeout-minutes remain"
+        "The job id names the check, such as lint, or keeps eslint because a branch rule may require it and offers the rename; no job name repeats the id",
+        "It proposes making the check a job of ci.yml, because secrets are given per job, or gives a concrete reason to keep a separate workflow",
+        "runs-on is a label rather than a one-item list"
       ]
     },
     {
@@ -124,13 +124,13 @@
     },
     {
       "id": 11,
-      "prompt": "Tidy up our deploy workflow, then commit it and open a pull request. [deploy.yml from a Cube project: a comment header, concurrency with cancel-in-progress: false under a comment, jobs named Staging and Production, and a deploy step that writes a kubeconfig and an optional env file from secrets with printf and an if before calling mise run deploy.]",
-      "expected_output": "A shorter deploy.yml whose deploy steps are one-line calls to the deploy task, with the kubeconfig and env-file handling moved into that task, committed and proposed with messages that follow their own skills.",
+      "prompt": "Tidy up our deploy workflow, then commit it and open a pull request. [deploy.yml for a service deployed to Kubernetes with Helm: a comment header, concurrency with cancel-in-progress: false under a comment, jobs named Staging and Production, and in each a deploy step that writes a kubeconfig and an optional Helm values file from secrets with printf and an if before calling the project's deploy task.]",
+      "expected_output": "A shorter deploy.yml whose deploy steps are one-line calls to the deploy task, with the kubeconfig and values-file handling moved into that task, committed and proposed with messages that follow the repository's conventions.",
       "assertions": [
         "The comment header and the comment on concurrency are gone, and concurrency is the string form or an equivalent without cancel-in-progress: false",
-        "The kubeconfig and env-file logic moves into the deploy task, or the answer proposes that move with the task's change, instead of staying as shell in the workflow",
+        "The kubeconfig and values-file logic moves into the deploy task, or the answer proposes that move with the task's change, instead of staying as shell in each deploy job",
         "Deploy jobs get verb ids such as deploy-staging and deploy-production, keep their environment: keys, and keep needs between them",
-        "The commit message follows writing-commits and the pull request description follows writing-pull-requests; neither pastes actionlint or zizmor output"
+        "The commit message and the pull request description follow the repository's conventions, and any commit or pull request skill loaded alongside; neither pastes actionlint or zizmor output"
       ]
     },
     {
@@ -147,7 +147,7 @@
     },
     {
       "id": 13,
-      "prompt": "Rename our Build workflow to CI, it's the house name. [.github/workflows/build.yml has name: Build; .github/workflows/deploy.yml triggers on workflow_run with workflows: [Build] and types: [completed].]",
+      "prompt": "Rename our Build workflow to CI, so it matches our other repositories. [.github/workflows/build.yml has name: Build; .github/workflows/deploy.yml triggers on workflow_run with workflows: [Build] and types: [completed].]",
       "expected_output": "It finds the workflow_run trigger that selects Build by name and changes it in the same change, or stops to ask; it never renames Build alone.",
       "assertions": [
         "It searches the workflows for anything that reads the name Build before renaming",
