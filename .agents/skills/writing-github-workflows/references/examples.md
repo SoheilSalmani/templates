@@ -1,6 +1,6 @@
 # Workflows before and after
 
-The SHAs below are the commits of the releases in their comments on 2026-10-23. Resolve current ones before copying: `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`.
+The SHAs below are illustrative: the commits of the releases in their comments on 2026-10-23. Resolve current ones before copying: `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha`.
 
 ## Contents
 
@@ -179,7 +179,7 @@ What else moved:
 - The comment on order went: the steps keep that order, correctness before style, and the hooks' order in `.pre-commit-config.yaml` gives developers the same one.
 - `--no-progressbar` went: sqlfmt turns its bar off without a terminal.
 
-## A release that compared the tag with the version
+## A release that checks the tag against the version
 
 Before: a script compares the tag with `pyproject.toml`, interpolates the tag into the shell, and publishes with a long-lived token.
 
@@ -200,7 +200,7 @@ Before: a script compares the tag with `pyproject.toml`, interpolates the tag in
         run: twine upload dist/*
 ```
 
-After: the tag is the only place the version is written, so there is nothing to compare, and PyPI's trusted publishing replaces the token.
+After: the same rule in one line, without `${{ }}` in the script, and PyPI's trusted publishing instead of the token. The check is not a drift check: it enforces a release policy, that the version committed in `pyproject.toml` is the one published, so it stays.
 
 ```yaml
 name: Release
@@ -225,15 +225,17 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
-      - name: Set the version from the tag
-        run: uv version --frozen "${GITHUB_REF_NAME#v}"
+      - name: Check the tag matches the committed version
+        run: test "v$(uv version --short)" = "$GITHUB_REF_NAME"
       - name: Build the package
         run: uv build
       - name: Publish to PyPI
         run: uv publish
 ```
 
-`GITHUB_REF_NAME` is an environment variable the runner sets, so the tag never passes through `${{ }}` into the script. `uv publish` uses trusted publishing on GitHub Actions once the PyPI project trusts this workflow and environment. setup-uv leaves its cache off for tag pushes, so a poisoned cache cannot reach the release.
+`GITHUB_REF_NAME` is an environment variable the runner sets, so the tag never passes through `${{ }}` into the script, and `uv version --short` reads the version without creating an environment. `uv publish` uses trusted publishing on GitHub Actions once the PyPI project trusts this workflow and environment. setup-uv leaves its cache off for tag pushes, so a poisoned cache cannot reach the release.
+
+Making the tag the only place the version is written, with `uv version --frozen "${GITHUB_REF_NAME#v}"` before `uv build`, would remove the comparison too, but it is a different release policy: a mismatched tag would publish whatever version it names instead of failing. Offer it as that choice and let the user make it; it is never a readability fix.
 
 ## A deployment whose logic belonged to its task
 

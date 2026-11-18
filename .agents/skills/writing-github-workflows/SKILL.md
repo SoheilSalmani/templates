@@ -11,25 +11,28 @@ A workflow is read far more often than it is written: by whoever reviews the cha
 
 - **Read what exists**: every file in `.github/workflows/`, the project's entry points (Makefile, mise tasks, `package.json` scripts, justfile, nox or tox sessions, `.pre-commit-config.yaml`) and its pins (`mise.toml`, `.python-version`, `uv.lock`, `packageManager`). A step calls one of those entry points and never re-implements one.
 - **Keep the repository's conventions**: how it pins actions (`.github/workflows/actions.lock`, SHA pins, Dependabot or Renovate), `.yml` or `.yaml`, and how it names steps.
-- **Find the required checks before renaming a job.** A job's `name`, or its id when it has none, is the name a branch rule requires; `references/naming.md` has the command that lists them.
-- **Size the job.** A workflow with one check needs four steps, not a framework. A matrix, a composite action or a reusable workflow earns its place with its second or third caller.
+- **Find what reads a name before changing it.** A job's `name`, or its id when it has none, is the name a branch rule requires; a workflow's `name` is what another workflow's `workflow_run` trigger selects. `references/naming.md` has the commands that find both.
+- **Size the job.** A workflow with one check usually needs four steps, not a framework. A matrix, a composite action or a reusable workflow earns its place with its second or third caller.
 
 ## When rules collide
 
-1. **Security beats readability.** Immutable pins, least privilege, untrusted input kept out of scripts and the choice of trigger are never traded for a shorter file. Win readability back through structure: fewer actions, a lockfile instead of SHA pins, a task instead of a script.
-2. **A required check's name beats the naming grammar.** Rename a required job only in the same change as the rule that requires it.
-3. **The repository's conventions beat this skill's style defaults**, such as case, the file extension and which steps get names. Consistency inside one repository is worth more than agreement with a guide. Rule 1 is not style.
-4. **Plain beats DRY.** Two short, similar jobs beat a YAML anchor, a one-entry matrix or a reusable workflow with one caller.
+1. **Behaviour, release policy and trust boundaries are preserved.** Simplifying may move a check to where it belongs, never drop the invariant it enforces. Removing an invariant, or changing which file is authoritative, is a decision for the user: name it and ask, never fold it into a cleanup.
+2. **Security beats readability.** Immutable pins, least privilege, untrusted input kept out of scripts and the choice of trigger are never traded for a shorter file. Win readability back through structure: fewer actions, a lockfile instead of SHA pins, a task instead of a script.
+3. **A name something reads beats the naming grammar.** Rename a required job, or a workflow another one triggers on, only in the same change as whatever reads the name.
+4. **The repository's conventions beat this skill's style defaults**, such as case, the file extension and which steps get names. Consistency inside one repository is worth more than agreement with a guide. Rule 2 is not style.
+5. **Plain beats DRY.** Two short, similar jobs beat a YAML anchor, a one-entry matrix or a reusable workflow with one caller.
+
+The rest of this skill sets defaults. Depart from one where a concrete responsibility needs it, such as a separate owner, a deliberate install boundary or a failure nobody yet understands, and say which responsibility it is.
 
 ## The shape
 
 | Unit | Is | Split when | Never split to |
 | --- | --- | --- | --- |
-| Workflow | a trigger with a purpose: checks on pull requests, a release, a deployment, a schedule | the trigger or the audience differs | group by tool: a new pull request check is a job in the existing workflow |
+| Workflow | a trigger with a purpose: checks on pull requests, a release, a deployment, a schedule | the trigger, the audience or the owner differs | group by tool: a new check on the same trigger and owner is a job in the existing workflow |
 | Job | a check someone reads, or work that needs its own runner, permissions, secrets or environment | it must run in parallel, report separately or hold other privileges | label phases: every job pays for a runner, a checkout and a toolchain |
 | Step | one command whose failure means one thing | the failures mean different things to the reader | show progress: group long output with `::group::` |
 
-A check job is three to five steps: check out, set up the toolchain, install when the run command does not, run the check. Past six, write down what each step buys and cut the ones that buy nothing.
+A check job is usually three to five steps: check out, set up the toolchain, install when the run command does not, run the check. The count is a prompt to inspect, not a target: past six, write down what each step buys and cut the ones that buy nothing.
 
 ## Names
 
@@ -54,14 +57,14 @@ Read `references/naming.md` for where each name appears, rewrites of names that 
 ## Steps
 
 - **A step runs one command a developer could paste into a terminal**, usually one line calling the project's entry point: `uv run pytest`, `pnpm test`, `mise run lint`, `make check`, `./gradlew build`. When CI needs a command no developer runs, decide which side should change.
-- **No programs in YAML.** A `run:` block holds at most a few plain commands in sequence: no conditionals or loops, no heredoc in another language, no `python -c`, no parsing another command's output. Logic like that becomes a task in the project's runner or a script file that also runs locally, called in one line, or it is designed away.
-- **Delete a drift check by deleting the drift.** A step that checks two files agree, such as a version pinned in two places or a list kept twice, guards a duplication. Make one file the source and derive or delete the other. When a generated copy must stay, check it with its own generator, `<regenerate> && git diff --exit-code`. Never parse YAML or TOML in a step.
+- **No programs in YAML.** By default a `run:` block holds a few plain commands in sequence: no loops, no heredoc in another language, no `python -c`, no parsing another command's output. Logic like that becomes a task in the project's runner or a script file that also runs locally, called in one line, or it is designed away. Moving it only pays when the logic has a life outside CI: a script used once, just to make the YAML shorter, hides the complexity without removing it.
+- **Delete a drift check by deleting the drift, but only when it guards a duplication.** A step that checks two copies of the same fact agree, such as a version pinned in two files or a list kept twice, goes once one copy is the source and the other is derived or deleted. When a generated copy must stay, check it with its own generator, `<regenerate> && git diff --exit-code`. A check that enforces policy, such as a release tag matching the committed version, is not a drift check: keep its invariant, and move it into a one-line command or a task. Never parse YAML or TOML in a step.
 - **Configuration belongs to the tool, not the command line.** Paths, excludes, line length and dialect go in the tool's own configuration where it has a key for them, so CI and a developer run the same command. No input or flag that restates a default or does nothing in CI, such as setup-uv's `version: latest` or sqlfmt's `--no-progressbar`, which it already applies without a terminal.
 - **No version numbers in the workflow**, except in a matrix that tests several. The project pins its tools and languages (`mise.toml`, `.python-version`, `uv.lock`, `required-version`, `packageManager`) and the setup step reads the pins.
 - **One setup step per toolchain, and none for a tool another one provides.** `jdx/mise-action` installs everything `mise.toml` pins. `astral-sh/setup-uv` is enough for a uv project, because uv installs the Python the project pins; `actions/setup-python` beside it is a second source of truth. Use the setup action's own cache before writing an `actions/cache` step.
-- **Don't install what the run command installs.** `uv run` syncs the environment it needs, so a `uv sync` step followed by `uv run --no-sync` is two steps doing one job.
+- **Don't install what the run command installs.** `uv run` syncs the environment it needs, so a `uv sync` step followed by `uv run --no-sync` is usually two steps doing one job. Keep a separate install step where it is a deliberate boundary, such as installing once for steps that do not go through uv, or keeping install failures apart from check failures.
 - **When order matters, the order is visible.** Put steps in the order the reader should fix them, so the names explain it. When the order protects something beyond CI, it belongs where developers get it too, such as hook order in `.pre-commit-config.yaml` or a make prerequisite.
-- **No diagnostic steps**: printing versions, `ls`, `env`, "check that X is installed", `set -x`, `sleep`. A setup action fails loudly, and the log already shows versions.
+- **No routine diagnostic steps**: printing versions, `ls`, `env`, "check that X is installed", `set -x`, `sleep`. A setup action fails loudly, and the log already shows versions. A step that captures state for a failure nobody yet understands may stay, under `if: failure()` and with a name that says what it captures, until the failure is understood.
 - **Let the tool explain its failure.** Prefer the tool's own diff, annotations or problem matcher (`--diff`, `--show-diff-on-failure`, the matchers `setup-*` actions register) to a script that prints advice.
 
 Read `references/examples.md` for whole workflows before and after, including one that went from seven steps and an embedded Python program to four steps.
@@ -125,7 +128,7 @@ These are commands for you to run, not lines for a workflow or for a page writte
 
 ```sh
 mise x actionlint@1.7.12 shellcheck@0.11.0 -- actionlint   # syntax, expressions, runner labels, shellcheck on run: blocks
-uvx zizmor@1.31.1 .github/workflows                          # security audits at the default persona
+uvx zizmor@1.32.0 .github/workflows                          # security audits at the default persona
 ```
 
 - Use the repository's own pins of these tools when it has them, and check for newer releases before pinning new ones.
@@ -135,7 +138,7 @@ uvx zizmor@1.31.1 .github/workflows                          # security audits a
 
 ## Reviewing a workflow
 
-1. Read it top to bottom and write down, for each step, what it proves or produces. A step with nothing to write down goes.
+1. Read it top to bottom and write down, for each step, what it proves or produces and which invariant, if any, it enforces. A step with nothing to write down goes; an invariant stays, wherever it ends up.
 2. Report findings ranked: unsafe or broken first (floating pins, untrusted input in scripts, privileged triggers, write permissions at the top, actions on a removed runtime), then structure, then names and comments.
 3. Give each finding its line, the problem, the fix, and where a removed responsibility now lives, such as "the version check is gone because the hook now runs the locked sqlfmt".
 4. Show the whole rewritten file, then the changes outside it that the rewrite depends on.
@@ -143,18 +146,20 @@ uvx zizmor@1.31.1 .github/workflows                          # security audits a
 
 ## Before you finish
 
-- Every step sets up a toolchain or runs one command a developer can run; no inline program, drift check or diagnostic step is left.
+- Every step sets up a toolchain or runs one command a developer can run; any inline logic, kept guard or diagnostic step left in has a stated responsibility.
+- Every invariant the old workflow enforced is still enforced somewhere, or the user chose to drop it.
 - No comment says what a step does.
-- Names follow the grammar, or the repository's own grammar throughout, and no required check was renamed by accident.
+- Names follow the grammar, or the repository's own grammar throughout, and nothing that reads a job or workflow name (a branch rule, a `workflow_run` trigger) was broken by a rename.
 - Every action is pinned to a SHA or a locked exact tag, `permissions` is explicit, untrusted input reaches scripts only through `env:`, and every job has `timeout-minutes`.
 - No tool or language version appears in the YAML outside a matrix.
 - actionlint and zizmor ran on the changed files, and their findings are fixed or reported.
 
 ## Sources
 
-Checked 2026-10-23. GitHub changes Actions every month; recheck versions, and anything in preview, before relying on them.
+Checked 2026-11-18. GitHub changes Actions every month; recheck versions and compatibility facts before relying on them. The volatile ones, releases and their SHAs included, are kept in `references/toolchains.md` and `references/security.md`.
 
-- GitHub Docs: workflow syntax, the secure use reference, workflow dependency lockfiles, troubleshooting required status checks, reusing workflow configurations. GitHub changelog: 2025-08-15 (SHA-pinning policy), 2025-09-18 (YAML anchors), 2026-07-30 (self-repository references), 2026-09-23 (Node 20 removed), 2026-10-14 (workflow lockfiles, public preview).
-- zizmor 1.31.1 audit documentation; actionlint 1.7.12 checks documentation; OpenSSF Scorecard checks.
-- uv's GitHub Actions guide and the `astral-sh/setup-uv` v8.0.0 release notes; the pre-commit 4.4.0 changelog (`language: unsupported`); the sqlfmt configuration reference.
-- Bitwarden's workflow conventions and `bitwarden/workflow-linter`; the CI workflows of fifteen widely used repositories, among them `astral-sh/uv`, `python/cpython`, `cli/cli`, `pypa/pip` and `dbt-labs/dbt-core`; Pact's CI guide for contributors; Ian Duncan, "GitHub Actions Is Slowly Killing Your Engineering Team" (2026-02-05).
+- GitHub Docs: [workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [events that trigger workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows) (`workflow_run` selects workflows by name), [secure use](https://docs.github.com/en/actions/reference/security/secure-use), [workflow dependency lockfiles](https://docs.github.com/en/actions/concepts/security/workflow-dependency-lockfiles), [troubleshooting required status checks](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks), [reusing workflow configurations](https://docs.github.com/en/actions/concepts/workflows-and-actions/reusing-workflow-configurations).
+- GitHub changelog: [SHA-pinning policy](https://github.blog/changelog/2025-08-15-github-actions-policy-now-supports-blocking-and-sha-pinning-actions/) (2025-08-15), [YAML anchors](https://github.blog/changelog/2025-09-18-actions-yaml-anchors-and-non-public-workflow-templates/) (2025-09-18), [self-repository references](https://github.blog/changelog/2026-07-30-reference-same-repository-actions-with-self-repository-syntax/) (2026-07-30), [Node 20 removed](https://github.blog/changelog/2026-09-23-node-20-is-no-longer-available-in-github-actions/) (2026-09-23), [workflow lockfiles generally available](https://github.blog/changelog/2026-10-28-github-actions-workflow-lockfiles-are-generally-available/) (2026-10-28).
+- [zizmor audits](https://docs.zizmor.sh/audits/); [actionlint checks](https://github.com/rhysd/actionlint/blob/main/docs/checks.md); [OpenSSF Scorecard checks](https://github.com/ossf/scorecard/blob/main/docs/checks.md).
+- [uv's GitHub Actions guide](https://docs.astral.sh/uv/guides/integration/github/) and the [`astral-sh/setup-uv` v8.0.0 release notes](https://github.com/astral-sh/setup-uv/releases/tag/v8.0.0); [pre-commit's `unsupported` language](https://pre-commit.com/#unsupported); the [sqlfmt configuration reference](https://docs.sqlfmt.com/getting-started/configuring-sqlfmt).
+- [`bitwarden/workflow-linter`](https://github.com/bitwarden/workflow-linter); the CI workflows of fifteen widely used repositories, among them `astral-sh/uv`, `python/cpython`, `cli/cli`, `pypa/pip` and `dbt-labs/dbt-core`; [Pact's CI guide for contributors](https://docs.pact.io/contributing/ci); Ian Duncan, ["GitHub Actions Is Slowly Killing Your Engineering Team"](https://iankduncan.com/engineering/2026-02-05-github-actions-killing-your-team) (2026-02-05).
