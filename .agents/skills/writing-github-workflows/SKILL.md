@@ -11,7 +11,7 @@ A workflow is read far more often than it is written: by whoever reviews the cha
 
 - **Read what exists**: every file in `.github/workflows/`, the project's entry points (Makefile, mise tasks, `package.json` scripts, justfile, nox or tox sessions, `.pre-commit-config.yaml`) and its pins (`mise.toml`, `.python-version`, `uv.lock`, `packageManager`). A step calls one of those entry points and never re-implements one.
 - **Keep the repository's conventions**: how it pins actions (`.github/workflows/actions.lock`, SHA pins, Dependabot or Renovate), `.yml` or `.yaml`, and how it names steps.
-- **Find what reads a name before changing it.** A job's `name`, or its id when it has none, is the name a branch rule requires; a workflow's `name` is what another workflow's `workflow_run` trigger selects. `references/naming.md` has the commands that find both.
+- **Find what reads a name before changing it.** A job's `name`, or its id when it has none, is the name a branch rule requires, so giving a job its first `name` renames its check too; a workflow's `name` is what another workflow's `workflow_run` trigger selects. `references/naming.md` has the commands that find both.
 - **Size the job.** A workflow with one check usually needs four steps, not a framework. A matrix, a composite action or a reusable workflow earns its place with its second or third caller.
 
 ## When rules collide
@@ -42,15 +42,16 @@ Workflows are nouns, jobs are verbs, steps are sentences. One grammar lets a rea
 | --- | --- | --- | --- |
 | File | the workflow's name in kebab-case, `.yml` | `ci.yml`, `release.yml`, `docs-site.yml` | `Run_Tests.yaml`, `workflow2.yml` |
 | Workflow `name` | short noun phrase, sentence case, no emoji | `CI`, `Release`, `Deployment`, `Docs site`, `Nightly` | `Run CI`, `ESLint Check Workflow`, `🚀 Deploy` |
-| Job id | kebab-case verb, with an object when siblings need one: what the job does, never the tool that does it | `lint`, `test`, `build`, `check-format`, `deploy-staging` | `eslint`, `pytest`, `job1`, `Build_Docs` |
-| Job `name` | omitted, so the id is the check's name; set only to word a matrix or keep a name a rule already requires | `Test (${{ matrix.python }})` | `name: lint` repeating the id |
+| Job `name` | on every job: a verb, with its object when the verb alone is ambiguous, in sentence case, saying what the check reports | `Lint`, `Test`, `Check formatting`, `Build the image`, `Deploy to staging` | `lint` (the id again), `ESLint`, `Lint and test` |
+| Job id | the name's words in kebab-case, without articles or prepositions: the stable key `needs:` reads | `lint`, `test`, `check-formatting`, `build-image`, `deploy-staging` | `eslint`, `job1`, `Build_Docs` |
 | Step `name` | imperative in sentence case: a verb, then what the step proves or produces; no full stop | `Check formatting`, `Install dependencies`, `Run unit tests`, `Publish to PyPI` | `Run prettier --check .`, `Formatting`, `Checkout code`, `Setup Node` |
 | Step `id` | only when something reads it: a kebab-case noun for its output | `version`, `pnpm-store` | an id on every step |
 
 - **Name every `run:` step. Name a `uses:` step only when the action's name hides what it does here**: `actions/checkout` and `setup-*` steps go unnamed; an `actions/upload-artifact` step is `Upload test reports`.
-- **One verb per meaning**: `Check` for a read-only check that fails instead of fixing, `Lint`, `Run` for tests, `Set up` for a toolchain (two words; "setup" is the noun), `Install` for dependencies, `Build`, `Publish` to a registry, `Deploy` to an environment, `Upload` and `Download` for artifacts. Never `Ensure`, `Verify that` or `Make sure`.
+- **One verb per meaning**: `Check` for a read-only check that fails instead of fixing, `Lint`, `Test` for a job that runs tests and `Run` for the step that runs them, `Set up` for a toolchain (two words; "setup" is the noun), `Install` for dependencies, `Build`, `Publish` to a registry, `Deploy` to an environment, `Upload` and `Download` for artifacts. Never `Ensure`, `Verify that` or `Make sure`.
 - **Name the outcome, not the mechanism.** The command already shows the mechanism, so a name that repeats it says nothing.
-- **A job is named for its check, not its tool**, so the check, and the rule that requires it, survive a change of tool.
+- **Every job has a `name`**, because the name is what pull requests list and branch rules require: `CI / Check formatting`. The id carries the same words for `needs:`, so the two never drift apart: naming a job that already has an id means using the id's words, `report` becomes `Report`, and a better word means renaming the id and every `needs:` with it. Name the job for its check, not its tool, so the check, and the rule that requires it, survive a change of tool.
+- **In a repository whose jobs have no names, adding them renames every check.** Make that a change of its own, together with the branch rules that require the old names, never a side effect of another edit.
 
 Read `references/naming.md` for where each name appears, rewrites of names that went wrong, matrices, reusable workflows, and keeping required checks intact.
 
@@ -149,7 +150,7 @@ uvx zizmor@1.32.0 .github/workflows                          # security audits a
 - Every step sets up a toolchain or runs one command a developer can run; any inline logic, kept guard or diagnostic step left in has a stated responsibility.
 - Every invariant the old workflow enforced is still enforced somewhere, or the user chose to drop it.
 - No comment says what a step does.
-- Names follow the grammar, or the repository's own grammar throughout, and nothing that reads a job or workflow name (a branch rule, a `workflow_run` trigger) was broken by a rename.
+- Every job has a `name`, names follow the grammar, or the repository's own grammar throughout, and nothing that reads a job or workflow name (a branch rule, a `workflow_run` trigger) was broken by a rename or by a job's first `name`.
 - Every action is pinned to a SHA or a locked exact tag, `permissions` is explicit, untrusted input reaches scripts only through `env:`, and every job has `timeout-minutes`.
 - No tool or language version appears in the YAML outside a matrix.
 - actionlint and zizmor ran on the changed files, and their findings are fixed or reported.

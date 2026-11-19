@@ -30,6 +30,7 @@ concurrency:
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -48,6 +49,7 @@ jobs:
         run: npm run lint
 
   test:
+    name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -135,6 +137,7 @@ After: one job in `ci.yml`, which already runs on the same trigger. Secrets are 
 
 ```yaml
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -179,7 +182,7 @@ The version check guarded a duplication: the pre-commit hook installed its own r
 
 What else moved:
 
-- `name: ruff` went, and the job became `lint`: named for its check, not its tool. If a branch rule required `ruff`, change the rule in the same change, or keep the id.
+- The job became `lint`, named `Lint`: named for its check, not its tool. A branch rule that required `ruff` now needs `Lint`; change the rule in the same change, or keep `ruff` as the name.
 - `actions/setup-python` and its `3.12` went: uv installs the Python the project pins, and `3.12` was a second pin.
 - `setup-uv@v4` declares Node 20, which runners stopped shipping on 2026-09-23, and setup-uv has published no major tags since v8.0.0, so the exact release is pinned. `version: "latest"` was the default.
 - `uv sync` and every `--no-sync` went: `uv run --only-group dev` installs exactly that group. `--locked` replaced `--frozen`, so a stale `uv.lock` now fails instead of passing unnoticed.
@@ -220,7 +223,8 @@ permissions:
   contents: read
 
 jobs:
-  publish:
+  publish-pypi:
+    name: Publish to PyPI
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: pypi
@@ -284,6 +288,7 @@ concurrency: deploy
 
 jobs:
   deploy-staging:
+    name: Deploy to staging
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: staging
