@@ -1,6 +1,6 @@
 {
   "skill_name": "writing-github-workflows",
-  "notes": "Score the workflow a reviewer and a developer whose check failed would read, not the amount of advice, and score preserved behaviour before conformity. A result fails outright if it drops an invariant the old workflow enforced without the user's decision, changes which file is authoritative as a cleanup, keeps a floating action reference such as @v7 or @main, puts a contributor-controlled ${{ }} expression inside run:, or renames a job or workflow without checking what reads its name. Inline logic, a kept guard, a diagnostic step or a separate workflow is not a failure when the answer names the responsibility that justifies it; a duplication guard kept where the duplication could go, or a script used once only to shorten the YAML, is. A review fails if it invents findings for a workflow that already meets the bar or restructures one the user asked only to change in one place. Removing a check without saying where its responsibility went is a failure even when the check was redundant. Assertions name versions only as examples; any exact, current release passes. In the co-loaded case, the commit message or pull request description follows its own skill and carries no lint output.",
+  "notes": "Score the workflow a reviewer and a developer whose check failed would read, not the amount of advice, and score preserved behaviour before conformity. A result fails outright if it drops an invariant the old workflow enforced without the user's decision, changes which file is authoritative as a cleanup, keeps a floating action reference such as @v7 or @main, puts a contributor-controlled ${{ }} expression inside run:, or renames a job or workflow without checking what reads its name; giving an unnamed job its first name is such a rename. A workflow it writes or rewrites names every job. Inline logic, a kept guard, a diagnostic step or a separate workflow is not a failure when the answer names the responsibility that justifies it; a duplication guard kept where the duplication could go, or a script used once only to shorten the YAML, is. A review fails if it invents findings for a workflow that already meets the bar or restructures one the user asked only to change in one place. Removing a check without saying where its responsibility went is a failure even when the check was redundant. Assertions name versions only as examples; any exact, current release passes. In the co-loaded case, the commit message or pull request description follows its own skill and carries no lint output.",
   "evals": [
     {
       "id": 1,
@@ -16,7 +16,7 @@
         "permissions: contents: read and timeout-minutes are added",
         "No comment in the result explains what a step does",
         "Step names are sentence-case imperatives, checkout and setup steps carry no name, and no name repeats its command",
-        "The job id names the check, such as lint, or keeps eslint because a branch rule may require it and offers the rename; no job name repeats the id",
+        "The job is named for its check in sentence case, such as Lint, with the matching kebab-case id, such as lint; it says a branch rule requiring the old check name eslint must change with the rename, or keeps that name",
         "It proposes making the check a job of ci.yml, because secrets are given per job, or gives a concrete reason to keep a separate workflow",
         "runs-on is a label rather than a one-item list"
       ]
@@ -27,7 +27,7 @@
       "expected_output": "One ci.yml named CI with lint and test jobs whose steps are checkout, setup-uv and one-line uv run commands, linted with actionlint and zizmor.",
       "assertions": [
         "It creates one file, .github/workflows/ci.yml, whose name is CI and which runs on pull_request; any push trigger comes with a reason",
-        "Job ids are verbs such as lint and test, and no job has a name that repeats its id",
+        "Every job has a sentence-case name, such as Lint and Test, and the matching kebab-case id, such as lint and test",
         "No Python version appears and actions/setup-python is not used; setup-uv is pinned to an exact release",
         "Every run: step is one line, runs uv run with the project's own tools, and has a sentence-case imperative name",
         "permissions: contents: read is set, every job has timeout-minutes, and concurrency cancels superseded pull request runs",
@@ -39,11 +39,11 @@
     },
     {
       "id": 3,
-      "prompt": "Review our CI workflow before I merge it.\n\n```yaml\nname: CI\n\non:\n  pull_request:\n  push:\n    branches: [main]\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\nenv:\n  UV_LOCKED: 1\n\njobs:\n  lint:\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          persist-credentials: false\n      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2\n      - name: Check formatting\n        run: uv run ruff format --check\n      - name: Lint Python\n        run: uv run ruff check\n\n  test:\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          persist-credentials: false\n      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2\n      - name: Run tests\n        run: uv run pytest\n```",
+      "prompt": "Review our CI workflow before I merge it.\n\n```yaml\nname: CI\n\non:\n  pull_request:\n  push:\n    branches: [main]\n\npermissions:\n  contents: read\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\nenv:\n  UV_LOCKED: 1\n\njobs:\n  lint:\n    name: Lint\n    runs-on: ubuntu-latest\n    timeout-minutes: 10\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          persist-credentials: false\n      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2\n      - name: Check formatting\n        run: uv run ruff format --check\n      - name: Lint Python\n        run: uv run ruff check\n\n  test:\n    name: Test\n    runs-on: ubuntu-latest\n    timeout-minutes: 15\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1\n        with:\n          persist-credentials: false\n      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2\n      - name: Run tests\n        run: uv run pytest\n```",
       "expected_output": "No changes needed: the workflow already meets the bar. At most an optional, labelled note.",
       "assertions": [
         "It says the workflow can merge as it is",
-        "It does not restructure, rename jobs, add steps, add job names or add comments",
+        "It does not restructure, rename jobs, add steps or add comments",
         "Anything it mentions is labelled optional and tied to a specific line",
         "It says what the workflow already does well"
       ]
@@ -61,11 +61,12 @@
     },
     {
       "id": 5,
-      "prompt": "Rename the build job in ci.yml to compile, it reads better.",
-      "expected_output": "Before renaming, it checks whether a branch rule requires the build check, and either renames together with that rule or stops to say what would break.",
+      "prompt": "Rename the build job in ci.yml to compile, it reads better. [The job is `build:` with `name: Build`.]",
+      "expected_output": "Before renaming, it checks whether a branch rule requires the Build check, and either renames together with that rule or stops to say what would break.",
       "assertions": [
         "It lists the required status checks, for example with gh api repos/{owner}/{repo}/rules/branches/{branch}, or says it could not and why",
-        "If build is required, it says that renaming would leave pull requests waiting for a check that never reports, and that the rule must change in the same change",
+        "It changes the name to Compile and the id to compile together, so the two keep the same words",
+        "If Build is required, it says that renaming would leave pull requests waiting for a check that never reports, and that the rule must change in the same change",
         "It updates every needs: build and needs.build reference if it renames",
         "It does not change anything else in the workflow"
       ]
@@ -129,7 +130,7 @@
       "assertions": [
         "The comment header and the comment on concurrency are gone, and concurrency is the string form or an equivalent without cancel-in-progress: false",
         "The kubeconfig and values-file logic moves into the deploy task, or the answer proposes that move with the task's change, instead of staying as shell in each deploy job",
-        "Deploy jobs get verb ids such as deploy-staging and deploy-production, keep their environment: keys, and keep needs between them",
+        "Deploy jobs get names such as Deploy to staging and Deploy to production with the matching ids deploy-staging and deploy-production, keep their environment: keys, and keep needs between them",
         "The commit message and the pull request description follow the repository's conventions, and any commit or pull request skill loaded alongside; neither pastes actionlint or zizmor output"
       ]
     },
@@ -173,7 +174,18 @@
       "assertions": [
         "It keeps security.yml as its own workflow and gives the separate owner as the reason",
         "It does not move the audit into ci.yml",
-        "The changes inside security.yml follow the naming, pinning and permission rules without renaming a job a branch rule may require unchecked"
+        "The changes inside security.yml follow the naming, pinning and permission rules, and any job it names or renames has its required checks looked up first"
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Our CI jobs have no names, so the checks show up as lint and test. Give them proper names. [ci.yml has jobs lint and test without name:; the main branch's ruleset requires the checks lint and test.]",
+      "expected_output": "Both jobs get sentence-case names, and the answer says the required checks lint and test become Lint and Test, so the ruleset must change in the same change.",
+      "assertions": [
+        "It looks up the required status checks before adding names, or says it could not and why",
+        "It adds name: Lint and name: Test and keeps the ids lint and test, so needs: references still work",
+        "It says that adding the names renames the checks, so a ruleset still requiring lint and test would leave pull requests waiting, and that the ruleset must change in the same change",
+        "It changes nothing else in the workflow"
       ]
     }
   ]
