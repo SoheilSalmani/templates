@@ -34,7 +34,7 @@
       "assertions": [
         "The rewritten description states the observable problem before any implementation detail",
         "SQL, the test plan, and the migration plan are removed from the Linear description",
-        "The response says where each removed piece should go, naming a pull request, a GitHub issue, an ADR, or a comment",
+        "The response says where each removed piece should go, naming a pull request, a repository issue, an ADR, or a comment",
         "Nothing factual in the original is silently discarded",
         "The response does not write the change to Linear without approval"
       ]
@@ -117,6 +117,26 @@
         "No user-facing or reliability benefit is asserted unless the user supplied evidence for it",
         "If a motivation is included, it is attributed or marked as inferred",
         "The issue is not converted into a project"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Link ENG-42 to my merge request so that merging it completes the issue. [Repository is on GitLab and Linear's GitLab integration is connected]",
+      "expected_output": "A closing magic word with the identifier in the merge request description or title, not in a commit message or comment.",
+      "assertions": [
+        "It puts `Fixes ENG-42` or another closing word in the merge request description, or the identifier in the title or branch name",
+        "It does not rely on a commit message or a comment to make the link",
+        "It checks the team's merge automations and post-Done states before using a closing word",
+        "It calls it a merge request, not a pull request"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "File a GitLab issue for the flaky checkout test.",
+      "expected_output": "Not a Linear request: the skill does not create a Linear object and leaves the GitLab issue to the repository issue skill.",
+      "assertions": [
+        "No Linear object is created or proposed as the home for the GitLab issue",
+        "It does not write a Linear-shaped issue body"
       ]
     }
   ]

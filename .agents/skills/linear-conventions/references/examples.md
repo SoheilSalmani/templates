@@ -91,9 +91,9 @@ Observed, expected, where it was seen, and one line of evidence. The full trace 
 >
 > Turning on "Include archived" still hides issues that belong to archived projects, so people cannot find work they know exists. Search should honour the toggle for archived projects as well as archived issues, without changing ranking, pagination, or project search.
 >
-> Technical work and the migration plan: [GitHub #412](https://github.com/…)
+> Technical work and the migration plan: [#412](<issue URL>)
 
-Everything removed was relocated, not deleted. The SQL, the file references, the test plan, and the alternatives moved to the GitHub issue, and the one alternative that had product consequences moved to a comment. What is left is what a person who cannot read the codebase needs in order to agree the work is worth doing, plus the constraint that matters.
+Everything removed was relocated, not deleted. The SQL, the file references, the test plan, and the alternatives moved to the repository issue, and the one alternative that had product consequences moved to a comment. What is left is what a person who cannot read the codebase needs in order to agree the work is worth doing, plus the constraint that matters.
 
 ## An issue where implementation detail is correct
 
