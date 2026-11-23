@@ -20,7 +20,7 @@ weft new gh:SoheilSalmani/templates//slides my-talk
 
 Each template's `AGENTS.md` lists its questions and patches. A deck from `slides` opens on a tour of what it can do: its `docs/how-to-write-a-talk.md` turns that into your talk, and its README is the reference for the syntax.
 
-For a client's repository, answer no to the `commit_*` questions: the skills, MCP configuration, `mise.toml` and agent instructions are still rendered and kept current by `weft update`, but the committed `.gitignore` keeps them, `paseo.json` and `.weft/` out of git, and every new git worktree, Paseo's included, gets a copy from your main checkout.
+For a client's repository, answer no to the `commit_*` questions: the skills, MCP configuration, `mise.toml` and agent instructions are still rendered and kept current by `weft update`, but the committed `.gitignore` keeps them, `paseo.json`, `.worktreeinclude` and `.weft/` out of git. `.worktreeinclude` then lists them, so Paseo and Claude Code copy them into each new worktree from the checkout it starts from; only the `.claude/skills/` links stay behind, since a failed copy aborts the worktree.
 
 ## The base template
 

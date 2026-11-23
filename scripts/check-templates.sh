@@ -59,13 +59,14 @@ for p in "$BASE"/patches/*.json; do
   fi
 done
 
-# The commit_* answers reach .gitignore, the README and slides' talk guide
-# through hand-written expr segments, which `weft patch amend` flattens into
-# literal text, and `weft check` would not notice. So render for real and ask
-# git: with every commit_* answer false the tooling is rendered but ignored, and
-# no committed file says to run mise or points at the skills; with the defaults,
+# The commit_* answers reach .gitignore, .worktreeinclude, the README and
+# slides' talk guide through hand-written expr segments, which `weft patch
+# amend` flattens into literal text, and `weft check` would not notice. So
+# render for real and ask git: with every commit_* answer false the tooling is
+# rendered but ignored, .worktreeinclude lists it for each new worktree, and no
+# committed file says to run mise or points at the skills; with the defaults,
 # git would commit it all.
-tooling='^(\.agents/|\.claude/skills/|\.mcp\.json$|\.codex/|\.omp/|mise\.toml$|AGENTS\.md$|paseo\.json$|\.weft/)'
+tooling='^(\.agents/|\.claude/skills/|\.mcp\.json$|\.codex/|\.omp/|mise\.toml$|AGENTS\.md$|paseo\.json$|\.weft/|\.worktreeinclude$)'
 render() {
   src="$1" dest="$2"
   shift 2
@@ -85,12 +86,15 @@ for t in "$BASE" $(templates); do
   fi
   problems="$(
     git -C "$private" ls-files --others --exclude-standard | grep -E "$tooling" | sed 's/^/committed: /'
-    for f in paseo.json mise.toml AGENTS.md .agents/skills; do
+    for f in paseo.json mise.toml AGENTS.md .agents/skills .worktreeinclude; do
       [ -e "$private/$f" ] || echo "not rendered: $f"
+    done
+    for p in /.agents/ /.codex/ /.mcp.json /.omp/ /.worktreeinclude /AGENTS.md /mise.toml; do
+      grep -qxF "$p" "$private/.worktreeinclude" 2>/dev/null || echo "not copied into new worktrees: $p"
     done
     git -C "$private" grep -l --untracked 'mise install' | sed 's/^/says mise install: /'
     git -C "$private" grep -l --untracked '\.agents/skills' | sed 's/^/points at the skills: /'
-    git -C "$committed" check-ignore paseo.json mise.toml AGENTS.md .agents/skills | sed 's/^/ignored by default: /'
+    git -C "$committed" check-ignore paseo.json mise.toml AGENTS.md .agents/skills .worktreeinclude | sed 's/^/ignored by default: /'
   )" || true
   if [ -n "$problems" ]; then
     printf 'FAIL  %-10s commit_* answers (%s problems)\n' "$name" "$(printf '%s\n' "$problems" | wc -l | tr -d ' ')"
