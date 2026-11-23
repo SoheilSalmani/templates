@@ -1,33 +1,30 @@
-# Cache folders (Python)
-__pycache__/
-
-# Virtual environments (Python)
-.venv/
-
-# Configuration and data (Rope)
-.ropeproject/
-
-# Lock files (uv)
-uv.lock
-
-.git
+# Environment variables
 .env
+
+# Settings file (Astro CLI)
 airflow_settings.yaml
-astro
-.venv
+
+# Standalone mode state (Astro CLI)
 .astro/standalone/
-airflow-webserver.pid
-webserver_config.py
-airflow.cfg
-airflow.db
-.astro/*.local.yml
-.astro/*.local.yaml
 
-# Skill scripts
-node_modules/
-
-# Claude Code symlink farm (rebuilt by the sync-claude-skills hook)
+# Project skills (Claude Code)
+# Rebuilt by the sync-claude-skills hook.
 .claude/skills/
 
-# Personal, per-machine files
+# Personal overrides (mise)
 mise.local.toml
+
+# Dependencies (Node.js)
+node_modules/
+
+# Compiled files (Python)
+__pycache__/
+
+# Virtual environment (Python)
+.venv/
+
+# Project folder (rope)
+.ropeproject/
+
+# Lockfile (uv)
+uv.lock
