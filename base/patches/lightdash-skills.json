@@ -15505,8 +15505,7 @@
       ],
       "use_github": true,
       "use_jira": false,
-      "use_linear": true,
-      "use_weft": false
+      "use_linear": true
     }
   }
 }
