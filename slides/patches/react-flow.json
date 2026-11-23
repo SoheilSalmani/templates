@@ -42,6 +42,7 @@
             "    },",
             "    {",
             "      \"id\": 15,",
+            "      \"rationale\": \"Without the skill, agents show an architecture change as two diagrams on two slides, so the audience cannot see what moved. This case fails if it is not one flow fence with the versions split by ---, a node that stays changes its id, or pnpm check warns about the slide.\",",
             "      \"prompt\": \"Show on slide 6 how the architecture changes when we put a queue between the API and the workers.\",",
             "      \"expected_output\": \"One slide with a flow fence holding the architecture before and after, split by ---.\",",
             "      \"assertions\": [",
