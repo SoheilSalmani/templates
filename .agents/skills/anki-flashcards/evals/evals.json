@@ -384,6 +384,17 @@
         "No changeDeck, addTags, removeTags, updateNoteFields or addNotes call is made",
         "The response asks the user nothing and waits for no approval"
       ]
+    },
+    {
+      "id": 34,
+      "prompt": "This is an unattended scheduled run of the anki-flashcards repair queue's unsourced check, and nobody will answer questions. anki_cards.py candidates unsourced printed two candidates. 1) noteId 1794600000001, Q&A by topic, deck Tech, signal \"the Source names no page: Python documentation; 2 notes on this Topic without a linked page\". Front: Which decorator turns a generator function into a context manager? Topic: Python. Back: <code>@contextlib.contextmanager</code>. Source: Python documentation. 2) noteId 1794600000002, Q&A by topic, deck Home, signal \"no Source; 1 note on this Topic without a linked page\". Front: Which floor of our building is the bike room on? Topic: Apartment. Back: The second basement. Source is empty. Searching for the first card's fact, you fetched https://docs.python.org/3/library/contextlib.html, titled \"contextlib — Utilities for with-statement contexts\". Under the heading @contextlib.contextmanager it says: \"This function is a decorator that can be used to define a factory function for with statement context managers, without needing to create a class or separate __enter__() and __exit__() methods.\" No page you found mentions the second card's building.",
+      "expected_output": "Queues a source for the first note, whose fields hold only a Source linking https://docs.python.org/3/library/contextlib.html with a title as its text and no em dash, and whose quotes map that address to the passage word for word. Queues a keep for the second, saying no page states the fact, with no address invented. All goes through anki_cards.py queue add; nothing is written to the collection and nothing is asked.",
+      "assertions": [
+        "The proposal for note 1794600000001 is a source whose fields hold the Source alone, a link to https://docs.python.org/3/library/contextlib.html whose text names the page",
+        "Its quotes map https://docs.python.org/3/library/contextlib.html to the passage exactly as the page gives it, not a paraphrase",
+        "The proposal for note 1794600000002 is a keep whose diagnosis says no page states the fact, and no address is given for it",
+        "No updateNoteFields call is made, and the response asks the user nothing"
+      ]
     }
   ]
 }
