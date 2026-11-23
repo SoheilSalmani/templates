@@ -1,6 +1,6 @@
 {
   "title": "Cube project",
-  "description": "Adds the Cube project under cube/: an empty cube.py, an example cube on inline rows with the view clients query over it, and .env.example with the data source type. compose.yaml and the dev task run Cube in development mode on this machine, on ports .env can move; every task is a mise file task in .mise/tasks, README.md replaces base's with the setup and the dev loop, and the Cube ignores go at the top of base's .gitignore.",
+  "description": "Adds the Cube project under cube/: an empty cube.py, an example cube on inline rows with the view clients query over it, and .env.example with the data source type. compose.yaml and the dev task run Cube in development mode on this machine, on ports .env can move; every task is a mise file task in .mise/tasks, README.md replaces base's with the setup and the dev loop, and its Cube Store and Python blocks go into base's .gitignore where their tools sort.",
   "depends_on": [
     "base",
     "mise"
@@ -11,19 +11,36 @@
       "path": ".gitignore",
       "hunks": [
         {
-          "context_before": [],
+          "context_before": [
+            ".claude/settings.local.json",
+            ""
+          ],
           "removed": [],
           "added": [
-            "# Local data of the Cube dev server (Cube Store)",
+            "# Data directory (Cube Store)",
             ".cubestore/",
-            "",
-            "# Python bytecode of cube.py and Jinja globals",
+            ""
+          ],
+          "context_after": [
+            "# Thumbnail cache (File Explorer)",
+            "Thumbs.db"
+          ]
+        },
+        {
+          "context_before": [
+            "mise.local.toml",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "# Compiled files (Python)",
+            "# From cube.py and the Jinja globals.",
             "__pycache__/",
             ""
           ],
           "context_after": [
-            "# Operating system",
-            ".DS_Store"
+            "# Swap files (Vim)",
+            "*.swp"
           ]
         }
       ]

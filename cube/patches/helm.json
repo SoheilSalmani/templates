@@ -88,13 +88,21 @@
       "op": "create_file",
       "path": "charts/cube/.helmignore",
       "content": [
-        "# Files left out of the chart: its unit tests, CI values and docs template.",
-        ".DS_Store",
-        "*.swp",
-        "*.tmp",
-        "/tests/",
+        "# Values files (chart-testing)",
         "/ci/",
-        "README.md.gotmpl"
+        "",
+        "# Template file (helm-docs)",
+        "README.md.gotmpl",
+        "",
+        "# Test suite files (helm-unittest)",
+        "# Anchored, so the Helm test hook in templates/tests/ stays in the chart.",
+        "/tests/",
+        "",
+        "# Folder metadata (macOS)",
+        ".DS_Store",
+        "",
+        "# Swap files (Vim)",
+        "*.swp"
       ],
       "mode": 420
     },

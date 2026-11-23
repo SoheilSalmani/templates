@@ -1,6 +1,6 @@
 {
   "title": "scala-cli hello world",
-  "description": "Adds a scala-cli entry point pinned to the chosen Scala release, a matching .scalafmt.conf, and its own README with a mise setup recipe in place of base's, left out when mise.toml is kept out of git. The Scala tooling stanzas go at the top of base's .gitignore.",
+  "description": "Adds a scala-cli entry point pinned to the chosen Scala release, a matching .scalafmt.conf, and its own README with a mise setup recipe in place of base's, left out when mise.toml is kept out of git. The Bloop, Build Server Protocol, Metals and Scala CLI blocks go into base's .gitignore where their tools sort.",
   "depends_on": [
     "base"
   ],
@@ -10,7 +10,9 @@
       "path": ".gitignore",
       "hunks": [
         {
-          "context_before": [],
+          "context_before": [
+            ""
+          ],
           "removed": [],
           "added": [
             "# Configuration directory (Bloop)",
@@ -18,17 +20,43 @@
             "",
             "# Connection files (Build Server Protocol)",
             ".bsp/",
-            "",
-            "# Workspace data (Metals)",
+            ""
+          ],
+          "context_after": [
+            "# Project local settings (Claude Code)",
+            ".claude/settings.local.json"
+          ]
+        },
+        {
+          "context_before": [
+            ".DS_Store",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "# Logs and other files (Metals)",
             ".metals/",
-            "",
-            "# Build outputs & caches (Scala CLI)",
+            ""
+          ],
+          "context_after": [
+            "# Personal overrides (mise)",
+            "mise.local.toml"
+          ]
+        },
+        {
+          "context_before": [
+            "mise.local.toml",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "# Outputs and caches (Scala CLI)",
             ".scala-build/",
             ""
           ],
           "context_after": [
-            "# Operating system",
-            ".DS_Store"
+            "# Swap files (Vim)",
+            "*.swp"
           ]
         }
       ]

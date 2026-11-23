@@ -1,6 +1,6 @@
 {
   "title": "Astro CLI project",
-  "description": "Adds the Astro CLI project layout on top of base: Dockerfile on Astro Runtime, the example DAG with its DAG-integrity tests, requirements.txt, packages.txt, and Astro's own README in place of base's. The Astro and Python ignores go at the top of base's .gitignore.",
+  "description": "Adds the Astro CLI project layout on top of base: Dockerfile on Astro Runtime, the example DAG with its DAG-integrity tests, requirements.txt, packages.txt, and Astro's own README in place of base's. Its Astro CLI and Python blocks go into base's .gitignore where their tools sort.",
   "depends_on": [
     "base"
   ],
@@ -199,14 +199,20 @@
       "op": "create_file",
       "path": ".dockerignore",
       "content": [
-        "astro",
-        ".git",
+        "# Environment variables",
         ".env",
+        "",
+        "# Settings file (Astro CLI)",
         "airflow_settings.yaml",
-        "logs/",
-        ".venv",
-        "airflow.db",
-        "airflow.cfg"
+        "",
+        "# Standalone mode state (Astro CLI)",
+        ".astro/standalone",
+        "",
+        "# Repository (Git)",
+        ".git",
+        "",
+        "# Virtual environment (Python)",
+        ".venv"
       ],
       "mode": 420
     },
@@ -221,26 +227,40 @@
       "path": ".gitignore",
       "hunks": [
         {
-          "context_before": [],
+          "context_before": [
+            ""
+          ],
           "removed": [],
           "added": [
-            ".git",
+            "# Settings file (Astro CLI)",
             "airflow_settings.yaml",
-            "__pycache__/",
-            "astro",
-            ".venv",
+            "",
+            "# Standalone mode state (Astro CLI)",
             ".astro/standalone/",
-            "airflow-webserver.pid",
-            "webserver_config.py",
-            "airflow.cfg",
-            "airflow.db",
-            ".astro/*.local.yml",
-            ".astro/*.local.yaml",
             ""
           ],
           "context_after": [
-            "# Operating system",
-            ".DS_Store"
+            "# Project local settings (Claude Code)",
+            ".claude/settings.local.json"
+          ]
+        },
+        {
+          "context_before": [
+            "mise.local.toml",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "# Compiled files (Python)",
+            "__pycache__/",
+            "",
+            "# Virtual environment (Python)",
+            ".venv/",
+            ""
+          ],
+          "context_after": [
+            "# Swap files (Vim)",
+            "*.swp"
           ]
         }
       ]

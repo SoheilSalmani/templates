@@ -31,7 +31,7 @@ Secrets are never passed as answers — they resolve from their source
 
 ## Patches
 
-- **base** (inherited): Adds the README with a mise setup recipe and the house .gitignore stanzas for OS junk, editors, environment files, mise.local.toml and Claude Code local settings. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/, and leave the mise recipe out when mise.toml is kept out too.
+- **base** (inherited): Adds the README with a mise setup recipe and the house .gitignore, one block per tool: environment files, Claude Code local settings, File Explorer, IntelliJ IDEA, macOS, mise and Vim. Expr segments on the commit_* answers add a Personal tooling block after the environment files for the tooling kept out of git, plus paseo.json and .weft/, and leave the mise recipe out when mise.toml is kept out too.
 - **editorconfig** (inherited): Adds the house .editorconfig: UTF-8, LF, final newline, four-space indentation with two spaces for YAML, JSON and TOML, and trailing whitespace kept in Markdown.
 - **gitattributes** (inherited): Adds a .gitattributes that stores and checks out every text file with LF line endings.
 - **instructions** (inherited): Adds AGENTS.md as the single instruction file, which Claude Code, Codex, oh-my-pi and GitHub Copilot CLI each read directly. It records only what is true for every scaffold: mise setup, where skills live, and how MCP servers are declared.
@@ -51,7 +51,7 @@ Secrets are never passed as answers — they resolve from their source
 - **notion-mcp** (inherited) _(when `use_notion`)_: Declares Notion's remote MCP server, notion at https://mcp.notion.com/mcp, for Claude Code, Codex and oh-my-pi. Definition only: each person authorises with OAuth, so nothing is stored in the repository.
 - **terraform-skills** (inherited) _(when `'terraform' in stack_skills`)_: Installs the documenting-terraform Agent Skill under .agents/skills: one fixed standard for Terraform documentation, with labelled Purpose, Rationale, Security, Caution and See headers above every block, the comments owed inside blocks, variable and output descriptions, and module READMEs whose reference terraform-docs generates, plus a standard-library Python checker for every rule a script can decide, next to the general skills the skills patch provides.
 - **writing-slides** (inherited) _(when `'slides' in stack_skills`)_: Installs the writing-slides Agent Skill under .agents/skills: how to turn material into a talk of one-idea slides with sentence headlines, visual evidence, builds, code that fits and steps through, and speaker notes, with this deck's syntax and measured limits, its failure modes, and pnpm check followed by a look at every slide, next to the general skills the skills patch provides.
-- **airflow**: Adds the Astro CLI project layout on top of base: Dockerfile on Astro Runtime, the example DAG with its DAG-integrity tests, requirements.txt, packages.txt, and Astro's own README in place of base's. The Astro and Python ignores go at the top of base's .gitignore.
+- **airflow**: Adds the Astro CLI project layout on top of base: Dockerfile on Astro Runtime, the example DAG with its DAG-integrity tests, requirements.txt, packages.txt, and Astro's own README in place of base's. Its Astro CLI and Python blocks go into base's .gitignore where their tools sort.
 - **mise-astro**: Pins the Astro CLI 1.45 in mise.toml so mise install provides the astro binary that runs and tests the project locally.
 
 ## Hooks (side-effects, in run order)

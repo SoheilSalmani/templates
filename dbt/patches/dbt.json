@@ -1,6 +1,6 @@
 {
   "title": "dbt project",
-  "description": "Adds dbt_project.yml with dbt_utils in packages.yml, a uv-managed pyproject.toml pinned to Python 3.13, the empty models, macros and seeds directories, and the dbt VS Code extension recommendation on top of base, whose README the project keeps. The dbt and Python stanzas go at the top of base's .gitignore, and the uv-sync and dbt-deps hooks run before base's git-commit.",
+  "description": "Adds dbt_project.yml with dbt_utils in packages.yml, a uv-managed pyproject.toml pinned to Python 3.13, the empty models, macros and seeds directories, and the dbt VS Code extension recommendation on top of base, whose README the project keeps. The dbt, Python and rope blocks go into base's .gitignore where their tools sort, and the uv-sync and dbt-deps hooks run before base's git-commit.",
   "depends_on": [
     "base"
   ],
@@ -10,34 +10,47 @@
       "path": ".gitignore",
       "hunks": [
         {
-          "context_before": [],
+          "context_before": [
+            ".claude/settings.local.json",
+            ""
+          ],
           "removed": [],
           "added": [
-            "# Compiled files (dbt)",
+            "# Artifacts and compiled SQL (dbt)",
             "target/",
-            "",
-            "# Internal packages (dbt)",
-            "dbt_internal_packages/",
             "",
             "# Logs (dbt)",
             "logs/",
             "",
-            "# Third-party packages (dbt)",
+            "# Packages (dbt)",
             "dbt_packages/",
-            "",
-            "# Cache folders (Python)",
+            ""
+          ],
+          "context_after": [
+            "# Thumbnail cache (File Explorer)",
+            "Thumbs.db"
+          ]
+        },
+        {
+          "context_before": [
+            "mise.local.toml",
+            ""
+          ],
+          "removed": [],
+          "added": [
+            "# Compiled files (Python)",
             "__pycache__/",
             "",
-            "# Virtual environments (Python)",
+            "# Virtual environment (Python)",
             ".venv/",
             "",
-            "# Configuration and data (Rope)",
+            "# Project folder (rope)",
             ".ropeproject/",
             ""
           ],
           "context_after": [
-            "# Operating system",
-            ".DS_Store"
+            "# Swap files (Vim)",
+            "*.swp"
           ]
         }
       ]

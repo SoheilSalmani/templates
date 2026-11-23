@@ -28,7 +28,7 @@ Secrets are never passed as answers — they resolve from their source
 
 ## Patches
 
-- **base**: Adds the README with a mise setup recipe and the house .gitignore stanzas for OS junk, editors, environment files, mise.local.toml and Claude Code local settings. Expr segments on the commit_* answers end .gitignore with a stanza for the tooling kept out of git, plus paseo.json and .weft/, and leave the mise recipe out when mise.toml is kept out too.
+- **base**: Adds the README with a mise setup recipe and the house .gitignore, one block per tool: environment files, Claude Code local settings, File Explorer, IntelliJ IDEA, macOS, mise and Vim. Expr segments on the commit_* answers add a Personal tooling block after the environment files for the tooling kept out of git, plus paseo.json and .weft/, and leave the mise recipe out when mise.toml is kept out too.
 - **editorconfig**: Adds the house .editorconfig: UTF-8, LF, final newline, four-space indentation with two spaces for YAML, JSON and TOML, and trailing whitespace kept in Markdown.
 - **gitattributes**: Adds a .gitattributes that stores and checks out every text file with LF line endings.
 - **instructions**: Adds AGENTS.md as the single instruction file, which Claude Code, Codex, oh-my-pi and GitHub Copilot CLI each read directly. It records only what is true for every scaffold: mise setup, where skills live, and how MCP servers are declared.
