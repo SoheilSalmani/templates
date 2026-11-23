@@ -120,12 +120,9 @@
     "answers": {
       "package_name": "demo-talk",
       "project_name": "Demo Talk",
-      "use_anki": false,
       "use_github": true,
       "use_jira": false,
-      "use_linear": true,
-      "use_meetings": false,
-      "use_obsidian": false
+      "use_linear": true
     }
   }
 }

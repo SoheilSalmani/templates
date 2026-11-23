@@ -15503,12 +15503,9 @@
       "stack_skills": [
         "lightdash"
       ],
-      "use_anki": false,
       "use_github": true,
       "use_jira": false,
       "use_linear": true,
-      "use_meetings": false,
-      "use_obsidian": false,
       "use_weft": false
     }
   }

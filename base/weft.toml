@@ -56,27 +56,6 @@ description = "Installs Notion's remote MCP server (OAuth per user, nothing stor
 default = "False"
 
 [[question]]
-id = "use_anki"
-kind = "bool"
-prompt = "Write Anki flashcards about this project?"
-description = "Installs anki-flashcards and remembering-what-you-built, and the anki MCP server they call (run by npx against AnkiConnect on localhost, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
-default = "False"
-
-[[question]]
-id = "use_obsidian"
-kind = "bool"
-prompt = "Keep this project's ideas in an Obsidian vault?"
-description = "Installs idea-garden and the MCP server of Obsidian's Local REST API with MCP plugin (its HTTP server turned on and its API key exported as OBSIDIAN_MCP_API_KEY by each person, nothing stored in the repo) for Claude Code, Codex and oh-my-pi."
-default = "False"
-
-[[question]]
-id = "use_meetings"
-kind = "bool"
-prompt = "Prepare client meetings from this project?"
-description = "Installs preparing-client-meetings, which prepares what to say at dailies and weeklies from pull requests and tickets, in a weekly note in the Obsidian vault. The vault is found per machine, so nothing about it is stored in the repo."
-default = "False"
-
-[[question]]
 id = "use_weft"
 kind = "bool"
 prompt = "Work on Weft or Weft templates in this project?"
