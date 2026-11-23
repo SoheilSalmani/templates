@@ -324,6 +324,23 @@ checked, judged, and updated when the page changes (SuperMemo rule 18). The note
 - From a repository, link the file on its forge, under the repository's own address, as
   `remembering-what-you-built` describes.
 
+A card whose `Source` is empty or names a site rather than a page, written before its source was
+recorded, gets the most authoritative page that states its fact. Find the page and read it; never
+supply an address from memory. In order of authority:
+
+- a tool or a service: its maker's documentation or manual, at the page for the feature, for the
+  version the card describes;
+- a format, a protocol or a language: its standard or specification;
+- law, tax and public bodies: the official text or the body's own site, such as Légifrance, BOFiP,
+  EUR-Lex or a regulator;
+- a textbook subject: the textbook chapter, linked when it is online;
+- anything else: the manufacturer's manual, a dictionary entry, or the project's repository.
+
+The page must state the fact the card asks for. A page that is only about the subject is a guess
+with a link. When no page states the fact, the `Source` stays as it is and the gap is reported. When
+the page contradicts the card, or describes a later version, the card is fixed against it, with the
+date or version in its text.
+
 Volatility goes in the card text, not in the `Source`. Write "as of March 2026" in the Back or the
 cloze sentence: the `Source` says where a fact came from, not how long it holds.
 

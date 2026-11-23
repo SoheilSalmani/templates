@@ -187,7 +187,8 @@ the call that matters, or an exercise for a whole program (worked examples 10 an
 
 Reviews show which cards fail, which are slow, and which have gone out of date; reading cards cold
 does not. `anki_cards.py candidates <kind>` picks them from the review history: `failing`, `slow`,
-`sourced` or `random`. You diagnose each, draft one proposal, and `anki_cards.py queue add` keeps it
+`sourced` or `random`, and `unsourced` picks the cards whose `Source` links no page, to find the page
+that states their fact. You diagnose each, draft one proposal, and `anki_cards.py queue add` keeps it
 in a repair queue the user approves from later. Marking a note while reviewing, the `*` key, asks
 for its repair. The `inbox` check also prints proposals a rule decides, ready to queue as they are:
 the moves of learnt notes out of the Inbox, and the `speed::fast` changes its rule calls for.
@@ -224,10 +225,11 @@ the Inbox now:
    findings.
 2. Propose one row per learnt note: the deck the rule gives, or, when it gives none, a broad deck
    under a placeholder name for the user to name, or keeping the note with its project. Notes not
-   yet learnt stay where they are. Report a missing `Source` rather than guessing one. The source is
-   usually out of reach by now, so audit the form, and flag a doubtful fact instead of rewriting
-   it. A note that names its source in a tag instead gets that name moved into `Source` as plain
-   text, and the tag removed. Fixes follow "Reviewing existing cards" above.
+   yet learnt stay where they are. A missing `Source`, or one that names a site rather than a page,
+   gets the page that states the fact, found as `references/house-style.md`, "Source", says, or is
+   reported when no page does. That page also settles a doubtful fact; with none, flag the fact
+   instead of rewriting it. A note that names its source in a tag instead gets that name moved into
+   `Source` as plain text, and the tag removed. Fixes follow "Reviewing existing cards" above.
 3. Lead with what is decaying. Studied cards keep falling due, and a card that has waited more than
    two weeks is losing the context it was written in.
 4. After approval, apply fixes and new notes first, then tags with `mcp__anki__addTags` and

@@ -11,7 +11,8 @@ Subcommands:
   inbox                     What waits in the Inbox deck and its project subdecks, which notes are
                             learnt, and where each could move.
   candidates <kind>         Notes the review history says to look at, as JSON: failing, slow,
-                            sourced, random or inbox. What a run of the repair queue works through.
+                            sourced, unsourced, random or inbox. What a run of the repair queue
+                            works through.
   queue add|list|decide|skip|report
                             The repair queue: proposals, verdicts and what they changed, kept in a
                             file outside the collection (references/repair-queue.md).
@@ -28,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import html
 import json
 import os
 import random
@@ -1054,18 +1056,31 @@ def cmd_inbox(_args) -> int:
 # Mark Note, the * key while reviewing, adds this tag to ask for a repair. It comes off when the
 # proposal is decided, through the MCP tools, since this script never writes to the collection.
 REPAIR_TAG = "marked"
-KINDS = ("failing", "slow", "sourced", "random", "inbox")
-ACTIONS = ("keep", "rewrite", "split", "prerequisite", "differentiate", "fix-fact", "suspend", "delete", "move", "retag")
-# The actions that change a note's own fields, and those that add notes.
+KINDS = ("failing", "slow", "sourced", "unsourced", "random", "inbox")
+ACTIONS = ("keep", "rewrite", "split", "prerequisite", "differentiate", "fix-fact", "source", "suspend", "delete", "move", "retag")
+# The fixes that change a note's own fields, and those that add notes.
 FIELD_ACTIONS = {"rewrite", "differentiate", "fix-fact"}
 NOTE_ACTIONS = {"split", "prerequisite"}
+# Linking the page that states a note's fact changes its Source alone. What the card asks and
+# answers stays as it was, so the change has no effect to settle or to measure.
+SOURCE_ACTION = "source"
 # The actions a rule decides rather than a diagnosis: moving a learnt note out of the Inbox, and
 # making speed::fast follow its rule. Only the inbox check proposes them, ready to queue.
 RULE_ACTIONS = {"move", "retag"}
 VERDICTS = ("applied", "rejected")
-PROPOSAL_KEYS = ("kind", "noteId", "action", "diagnosis", "signal", "fields", "newNotes", "resource", "toDeck", "tags", "model")
+PROPOSAL_KEYS = ("kind", "noteId", "action", "diagnosis", "signal", "fields", "newNotes", "quotes", "resource", "toDeck", "tags", "model")
 # Days a check leaves a note alone after closing a proposal of its own for it.
-COOLDOWN_DAYS = {"failing": 30, "slow": 90, "sourced": 180, "random": 90, "inbox": 90}
+COOLDOWN_DAYS = {"failing": 30, "slow": 90, "sourced": 180, "unsourced": 180, "random": 90, "inbox": 90}
+# A page a proposal links for the first time is read as served, without running its scripts, and
+# must hold the passage quoted from it, at least QUOTE_CHARS long without its spaces. A page under
+# PAGE_MIN_CHARS builds its text in the browser, where this check cannot read it.
+PAGE_TIMEOUT, PAGE_BYTES, QUOTE_CHARS, PAGE_MIN_CHARS = 20, 8_000_000, 20, 200
+PAGE_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    "Accept": "text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.8",
+}
+PAGE_TYPES = {"text/html", "application/xhtml+xml", "text/plain"}
+PLAIN_PUNCTUATION = str.maketrans({"\u2018": "'", "\u2019": "'", "\u201c": '"', "\u201d": '"', "\u2013": "-", "\u2014": "-"})
 # Days an applied fix gets to show its effect: no check picks the note before then, and the report
 # compares this many days of answers before the proposal and after the fix.
 SETTLE_DAYS = 30
@@ -1148,7 +1163,8 @@ def held_back(states: list[dict], kind: str, now: datetime.datetime, group: str 
     verdict. A resting one had a proposal of this kind closed within the kind's cool-down, or a fix
     applied within SETTLE_DAYS, which needs reviews before anyone can tell whether it worked. With a
     group, only proposals in that group of actions count, so a kept diagnosis never holds back a
-    move, and a move or a retag, which fixes nothing, never holds back a check."""
+    move, and a move, a retag or a linked source, which change nothing to recall, hold back no other
+    check."""
     pending, resting = set(), set()
     for state in states:
         if state["status"] == "pending":
@@ -1157,7 +1173,7 @@ def held_back(states: list[dict], kind: str, now: datetime.datetime, group: str 
         age = (now - parse_stamp(state["closedAt"])).days
         mine = state["kind"] == kind and (group is None or action_group(state.get("action")) == group)
         settling = (group in (None, "fix") and state["status"] == "applied"
-                    and state.get("action") not in RULE_ACTIONS and age < SETTLE_DAYS)
+                    and state.get("action") not in RULE_ACTIONS | {SOURCE_ACTION} and age < SETTLE_DAYS)
         if (mine and age < COOLDOWN_DAYS[kind]) or settling:
             resting.add(state["noteId"])
     return pending, resting
@@ -1222,6 +1238,26 @@ def slow_notes(cards: list[dict], logs: dict, seconds: float | None) -> dict[int
         if card["note"] not in found or (median,) > found[card["note"]][0]:
             found[card["note"]] = ((median,), signal)
     return found
+
+
+def source_links(raw: str) -> set[str]:
+    """The web addresses a Source field links, with entities such as &amp; decoded."""
+    return {html.unescape(href.strip()) for href, _ in SOURCE_LINK_RE.findall(raw or "") if re.match(r"https?://", href.strip(), re.I)}
+
+
+def unsourced_order(pool: list[int], notes: dict[int, dict]) -> tuple[list[int], dict[int, str]]:
+    """The notes whose Source links no page, a Topic at a time, the Topic with the most first: one
+    page often states the facts of several cards on a subject, so one search serves them all."""
+    topics = {note_id: topic_of(notes[note_id]["fields"]) for note_id in pool}
+    sizes = Counter(topics.values())
+    order = sorted(pool, key=lambda note_id: (-sizes[topics[note_id]], topics[note_id], note_id))
+    signals = {}
+    for note_id in order:
+        named = strip_html(notes[note_id]["fields"][SOURCE_FIELD]["value"])
+        signals[note_id] = "%s; %s on this Topic without a linked page" % (
+            "the %s names no page: %s" % (SOURCE_FIELD, named) if named else "no %s" % SOURCE_FIELD,
+            count(sizes[topics[note_id]], "note"))
+    return order, signals
 
 
 def notes_by_id(note_ids: list[int]) -> dict[int, dict]:
@@ -1368,16 +1404,26 @@ def cmd_candidates(args) -> int:
         eligible.sort(key=lambda note: ranked[note][0], reverse=True)
         held, available = len(ranked) - len(eligible), len(eligible)
         signals = {note: ranked[note][1] for note in eligible}
-    else:
+    elif args.kind in ("sourced", "unsourced"):
+        # Both look at the decks in use: nobody reviews an archived card, so its source is moot. A
+        # Source that links a page gives the sourced check something to compare with; one that is
+        # empty or names no page leaves the unsourced check a page to find.
+        current = notes_by_id(call("findNotes", query='"%s:*" -is:suspended -%s' % (SOURCE_FIELD, ARCHIVE_SEARCH)))
+        linked = {note_id for note_id, note in current.items() if source_links(note["fields"][SOURCE_FIELD]["value"])}
+        notes = sorted(linked if args.kind == "sourced" else set(current) - linked)
+        pool = [note for note in notes if note not in pending and note not in resting]
+        held, available = len(notes) - len(pool), len(pool)
         if args.kind == "sourced":
-            query, signal = '"%s:_*" -is:suspended' % SOURCE_FIELD, "has a %s to check the card against" % SOURCE_FIELD
+            eligible = random.sample(pool, min(args.max, len(pool)))
+            signals = {note: "links a page to check the card against" for note in eligible}
         else:
-            query, signal = "rated:%d -is:suspended" % STUDIED_DAYS, "drawn at random from the notes studied in the last %d days" % STUDIED_DAYS
-        notes = call("findNotes", query=query)
+            eligible, signals = unsourced_order(pool, current)
+    else:
+        notes = call("findNotes", query="rated:%d -is:suspended" % STUDIED_DAYS)
         pool = [note for note in notes if note not in pending and note not in resting]
         eligible = random.sample(pool, min(args.max, len(pool)))
         held, available = len(notes) - len(pool), len(pool)
-        signals = {note: signal for note in eligible}
+        signals = {note: "drawn at random from the notes studied in the last %d days" % STUDIED_DAYS for note in eligible}
     candidates = describe(args.kind, eligible[: args.max], signals)
     print(json.dumps({"kind": args.kind, "at": now.isoformat(), "queue": str(path), "candidates": candidates},
                      ensure_ascii=False, indent=1))
@@ -1475,6 +1521,72 @@ def check_new_notes(where: str, note: dict, action: str, proposal: dict, errors:
         warnings += ["%s: %s" % (label, message) for message in sorted(new_warnings)]
 
 
+def folded(raw: str) -> str:
+    """Text to find a quoted passage in: no markup, scripts or styles, entities decoded, Unicode and
+    case folded, typographic quotes and dashes made plain, and no whitespace at all, since markup
+    puts spaces where a reader sees none, such as before the full stop after a <code> span."""
+    text = re.sub(r"<(script|style)\b.*?</\1\s*>|<!--.*?-->", " ", raw, flags=re.I | re.S)
+    text = html.unescape(re.sub(r"<[^>]+>", " ", text))
+    text = unicodedata.normalize("NFKC", text).casefold().translate(PLAIN_PUNCTUATION)
+    return re.sub(r"\s+", "", text)
+
+
+@lru_cache(maxsize=None)
+def read_page(url: str) -> tuple[str, str]:
+    """A page as served, without running its scripts: (its folded text, "") or ("", why it could not
+    be read). Cached, since one page often backs a whole batch."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=PAGE_HEADERS), timeout=PAGE_TIMEOUT) as page:
+            kind = page.headers.get_content_type()
+            if kind not in PAGE_TYPES:
+                return "", "it serves %s, not a page of text" % kind
+            body = page.read(PAGE_BYTES).decode(page.headers.get_content_charset() or "utf-8", "replace")
+    except urllib.error.HTTPError as exc:
+        return "", "it answered HTTP %d" % exc.code
+    except Exception as exc:  # A page that cannot be fetched refuses the proposal; it never stops the batch.
+        return "", "it could not be fetched (%s)" % (getattr(exc, "reason", None) or exc)
+    text = folded(body)
+    if len(text) < PAGE_MIN_CHARS:
+        return "", "it serves almost no text until its scripts run in a browser"
+    return text, ""
+
+
+def check_quotes(where: str, note: dict, action: str, proposal: dict, errors: list) -> None:
+    """Every page a proposal links that the note does not link yet, in its own Source or a new
+    note's, must hold the passage the proposal quotes from it, word for word: proof that the page
+    was read, not recalled. A source links such a page and changes nothing but the Source."""
+    new: set = set()
+    for fields in [proposal.get("fields")] + [extra.get("fields") for extra in proposal.get("newNotes") or [] if isinstance(extra, dict)]:
+        if isinstance(fields, dict) and isinstance(fields.get(SOURCE_FIELD), str):
+            new |= source_links(fields[SOURCE_FIELD])
+    new -= source_links(ordered_fields(note).get(SOURCE_FIELD, ""))
+    if action == SOURCE_ACTION:
+        fields = proposal.get("fields")
+        if isinstance(fields, dict) and set(fields) - {SOURCE_FIELD}:
+            errors.append("%s: a source changes the %s alone. A change to what the card asks or answers is a "
+                          "fix-fact or a rewrite, which may link the page too." % (where, SOURCE_FIELD))
+        if not new:
+            errors.append("%s: a source links a page the note does not link yet. When no page states the fact, "
+                          "keep the card and say so." % where)
+    quotes = proposal.get("quotes") or {}
+    if not isinstance(quotes, dict):
+        errors.append('%s: quotes maps each page linked to the passage quoted from it, {"<address>": "<passage>"}.' % where)
+        return
+    for url in sorted(new):
+        quote = quotes.get(url)
+        if not isinstance(quote, str) or len(folded(quote)) < QUOTE_CHARS:
+            errors.append('%s: it links %s for the first time. Put the passage on that page that states the fact, '
+                          'word for word and at least %d characters, in quotes["%s"].' % (where, url, QUOTE_CHARS, url))
+            continue
+        text, problem = read_page(url)
+        if problem:
+            errors.append("%s: %s cannot be checked: %s. Link a page that serves its text, or keep the card and "
+                          "say where its fact is." % (where, url, problem))
+        elif folded(quote) not in text:
+            errors.append("%s: the passage quoted from %s is not on that page as served. Quote it word for word, "
+                          "or link the page that states the fact." % (where, url))
+
+
 def cmd_queue_add(args) -> int:
     try:
         text = sys.stdin.read() if args.file == "-" else Path(args.file).read_text(encoding="utf-8")
@@ -1518,7 +1630,7 @@ def cmd_queue_add(args) -> int:
             errors.append("%s: a second proposal for this note in one batch." % where)
         seen.add(note_id)
         tag_change = None
-        if action in FIELD_ACTIONS:
+        if action in FIELD_ACTIONS or action == SOURCE_ACTION:
             tag_change = check_field_change(where, note, proposal.get("fields"), errors, warnings)
         elif action in NOTE_ACTIONS:
             check_new_notes(where, note, action, proposal, errors, warnings)
@@ -1526,12 +1638,14 @@ def cmd_queue_add(args) -> int:
             check_move(where, note, proposal.get("toDeck"), errors)
         elif action == "retag":
             check_retag(where, note, proposal.get("tags"), errors)
+        if action in FIELD_ACTIONS | NOTE_ACTIONS | {SOURCE_ACTION}:
+            check_quotes(where, note, action, proposal, errors)
         if action in RULE_ACTIONS and kind != "inbox":
             errors.append("%s: a %s comes from the inbox check, which decides it by rule." % (where, action))
         record = {"type": "proposal", "id": "%s-%d-%s" % (kind, note_id, now.strftime("%Y%m%d%H%M%S")), "at": now.isoformat()}
         record.update((key, proposal[key]) for key in PROPOSAL_KEYS if key in proposal)
-        # A field fix carries the speed::fast change its new fields call for, applied with it.
-        if action in FIELD_ACTIONS:
+        # A field change carries the speed::fast change its new fields call for, applied with it.
+        if action in FIELD_ACTIONS or action == SOURCE_ACTION:
             record.pop("tags", None)
             if tag_change:
                 record["tags"] = tag_change
