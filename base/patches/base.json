@@ -1,6 +1,6 @@
 {
   "title": "Repository root",
-  "description": "Adds the README with a mise setup recipe and the house .gitignore, one block per tool: environment files, Claude Code local settings, File Explorer, IntelliJ IDEA, macOS, mise and Vim. Expr segments on the commit_* answers add a Personal tooling block after the environment files for the tooling kept out of git, plus paseo.json and .weft/, and leave the mise recipe out when mise.toml is kept out too.",
+  "description": "Adds the README with a mise setup recipe and the house .gitignore, one block per tool: environment files, Claude Code local settings, File Explorer, IntelliJ IDEA, macOS, mise and Vim. Expr segments on the commit_* answers add a Personal tooling block after the environment files for the tooling kept out of git, plus paseo.json, .weft/ and .worktreeinclude, and leave the mise recipe out when mise.toml is kept out too.",
   "ops": [
     {
       "op": "create_file",
@@ -12,7 +12,7 @@
         [
           "!.env.example",
           {
-            "expr": "'' if commit_skills and commit_mcp and commit_mise and commit_instructions else '\\n\\n# Personal tooling\\n' + '\\n'.join([p for p, kept_out in [('/.agents/', not commit_skills), ('/.claude/skills/', not commit_skills), ('/.codex/', not commit_mcp), ('/.mcp.json', not commit_mcp), ('/.omp/', not commit_mcp), ('/.weft/', True), ('/AGENTS.md', not commit_instructions), ('/mise.toml', not commit_mise), ('/paseo.json', True)] if kept_out])"
+            "expr": "'' if commit_skills and commit_mcp and commit_mise and commit_instructions else '\\n\\n# Personal tooling\\n' + '\\n'.join([p for p, kept_out in [('/.agents/', not commit_skills), ('/.claude/skills/', not commit_skills), ('/.codex/', not commit_mcp), ('/.mcp.json', not commit_mcp), ('/.omp/', not commit_mcp), ('/.weft/', True), ('/.worktreeinclude', True), ('/AGENTS.md', not commit_instructions), ('/mise.toml', not commit_mise), ('/paseo.json', True)] if kept_out])"
           }
         ],
         "",

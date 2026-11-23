@@ -67,26 +67,26 @@ default = "[]"
 id = "commit_skills"
 kind = "bool"
 prompt = "Commit the Agent Skills to git?"
-description = "When false, .agents/ and the .claude/skills/ links are gitignored; weft still renders and updates them, and every new git worktree, Paseo's included, gets a copy from the main checkout. Any false commit_* answer also gitignores paseo.json and .weft/, whose base.json holds a copy of every rendered file."
+description = "When false, .agents/ and the .claude/skills/ links are gitignored; weft still renders and updates them, and .worktreeinclude lists .agents/, so Paseo and Claude Code copy it into each new worktree from the checkout it starts from. The links are not copied, since a failed copy aborts the worktree, so Claude Code agents in a new worktree go without the project skills. Any false commit_* answer also gitignores paseo.json, .worktreeinclude and .weft/, whose base.json holds a copy of every rendered file."
 default = "True"
 
 [[question]]
 id = "commit_mcp"
 kind = "bool"
 prompt = "Commit the MCP server configuration to git?"
-description = "When false, .mcp.json, .codex/ and .omp/ are gitignored and copied into every new git worktree instead. Asked whatever servers the other answers turn on, since a stack can add its own server to them. Any false commit_* answer also gitignores paseo.json and .weft/."
+description = "When false, .mcp.json, .codex/ and .omp/ are gitignored, and .worktreeinclude lists them so Paseo and Claude Code copy them into each new worktree. Asked whatever servers the other answers turn on, since a stack can add its own server to them. Any false commit_* answer also gitignores paseo.json, .worktreeinclude and .weft/."
 default = "True"
 
 [[question]]
 id = "commit_mise"
 kind = "bool"
 prompt = "Commit mise.toml to git?"
-description = "When false, mise.toml is gitignored like mise.local.toml and copied into every new git worktree, and the README leaves out its mise install step. Any false commit_* answer also gitignores paseo.json and .weft/."
+description = "When false, mise.toml is gitignored like mise.local.toml, .worktreeinclude lists it so Paseo and Claude Code copy it into each new worktree, and the README leaves out its mise install step. Any false commit_* answer also gitignores paseo.json, .worktreeinclude and .weft/."
 default = "True"
 
 [[question]]
 id = "commit_instructions"
 kind = "bool"
 prompt = "Commit AGENTS.md to git?"
-description = "AGENTS.md documents the skills, MCP servers and mise setup, so it defaults to staying out of git whenever one of them does. When false, AGENTS.md is gitignored and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/."
+description = "AGENTS.md documents the skills, MCP servers and mise setup, so it defaults to staying out of git whenever one of them does. When false, AGENTS.md is gitignored, and .worktreeinclude lists it so Paseo and Claude Code copy it into each new worktree. Any false commit_* answer also gitignores paseo.json, .worktreeinclude and .weft/."
 default = "commit_skills and commit_mcp and commit_mise"
