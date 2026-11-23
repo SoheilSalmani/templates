@@ -87,6 +87,6 @@ default = "True"
 [[question]]
 id = "commit_instructions"
 kind = "bool"
-prompt = "Commit AGENTS.md and CLAUDE.md to git?"
-description = "AGENTS.md documents the skills, MCP servers and mise setup, so it defaults to staying out of git whenever one of them does. When false, AGENTS.md and CLAUDE.md are gitignored and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/."
+prompt = "Commit AGENTS.md to git?"
+description = "AGENTS.md documents the skills, MCP servers and mise setup, so it defaults to staying out of git whenever one of them does. When false, AGENTS.md is gitignored and copied into every new git worktree. Any false commit_* answer also gitignores paseo.json and .weft/."
 default = "commit_skills and commit_mcp and commit_mise"

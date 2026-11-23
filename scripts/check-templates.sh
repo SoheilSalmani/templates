@@ -65,7 +65,7 @@ done
 # git: with every commit_* answer false the tooling is rendered but ignored, and
 # no committed file says to run mise or points at the skills; with the defaults,
 # git would commit it all.
-tooling='^(\.agents/|\.claude/skills/|\.mcp\.json$|\.codex/|\.omp/|mise\.toml$|AGENTS\.md$|CLAUDE\.md$|paseo\.json$|\.weft/)'
+tooling='^(\.agents/|\.claude/skills/|\.mcp\.json$|\.codex/|\.omp/|mise\.toml$|AGENTS\.md$|paseo\.json$|\.weft/)'
 render() {
   src="$1" dest="$2"
   shift 2
