@@ -1,6 +1,6 @@
 {
   "title": "FastAPI application",
-  "description": "Adds a uv-managed FastAPI project on Python 3.13 with a main.py exposing three example routes on top of base, whose README the project keeps. The Python stanzas go at the top of base's .gitignore, and the uv-sync hook runs before base's git-commit.",
+  "description": "Adds a uv-managed FastAPI project on Python 3.13 with a main.py exposing three example routes on top of base, whose README the project keeps. The Python and rope blocks go into base's .gitignore where their tools sort, and the uv-sync hook runs before base's git-commit.",
   "depends_on": [
     "base"
   ],
@@ -10,22 +10,25 @@
       "path": ".gitignore",
       "hunks": [
         {
-          "context_before": [],
+          "context_before": [
+            "mise.local.toml",
+            ""
+          ],
           "removed": [],
           "added": [
-            "# Cache folders (Python)",
+            "# Compiled files (Python)",
             "__pycache__/",
             "",
-            "# Virtual environments (Python)",
+            "# Virtual environment (Python)",
             ".venv/",
             "",
-            "# Configuration and data (Rope)",
+            "# Project folder (rope)",
             ".ropeproject/",
             ""
           ],
           "context_after": [
-            "# Operating system",
-            ".DS_Store"
+            "# Swap files (Vim)",
+            "*.swp"
           ]
         }
       ]

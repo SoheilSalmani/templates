@@ -1,6 +1,6 @@
 {
   "title": "Vite + React app",
-  "description": "Adds a Vite 8 and React 19 app in TypeScript, styled by Tailwind CSS 4 with the shadcn/ui radix-nova tokens and Geist fonts, a light and dark theme provider, Prettier with the Tailwind plugin, and its own README in place of base's, which drops mise install when mise.toml is kept out of git; the build uses relative paths so dist/ runs from any host or sub-path. Its stanza goes at the top of base's .gitignore, and the pnpm-install hook runs before base's git-commit.",
+  "description": "Adds a Vite 8 and React 19 app in TypeScript, styled by Tailwind CSS 4 with the shadcn/ui radix-nova tokens and Geist fonts, a light and dark theme provider, Prettier with the Tailwind plugin, and its own README in place of base's, which drops mise install when mise.toml is kept out of git; the build uses relative paths so dist/ runs from any host or sub-path. Its Node.js, export, TypeScript and Vite blocks go into base's .gitignore where their tools sort, and the pnpm-install hook runs before base's git-commit.",
   "depends_on": [
     "base"
   ],
@@ -10,20 +10,39 @@
       "path": ".gitignore",
       "hunks": [
         {
-          "context_before": [],
+          "context_before": [
+            "mise.local.toml",
+            ""
+          ],
           "removed": [],
           "added": [
-            "# Dependencies and build output",
+            "# Dependencies (Node.js)",
             "node_modules/",
-            "dist/",
+            "",
+            "# Export output (scripts/export.ts)",
+            "/.tmp/",
+            "",
+            "# Build info files (TypeScript)",
             "*.tsbuildinfo",
-            "*.log",
             ""
           ],
           "context_after": [
-            "# Operating system",
-            ".DS_Store"
+            "# Swap files (Vim)",
+            "*.swp"
           ]
+        },
+        {
+          "context_before": [
+            "# Swap files (Vim)",
+            "*.swp"
+          ],
+          "removed": [],
+          "added": [
+            "",
+            "# Output directory (Vite)",
+            "dist/"
+          ],
+          "context_after": []
         }
       ]
     },
@@ -31,17 +50,18 @@
       "op": "create_file",
       "path": ".prettierignore",
       "content": [
-        "dist/",
-        "pnpm-lock.yaml",
-        "",
-        "# Kept by weft and the house templates; formatting them here would drift",
-        "# from what `weft update` merges against.",
-        ".weft/",
+        "# Template-managed files",
+        "# weft update merges against these; formatting them here would make them drift.",
         ".agents/",
         ".mcp.json",
         ".omp/mcp.json",
+        ".weft/",
         "",
-        "# Written by the shadcn CLI; left as generated so re-adding one shows real changes.",
+        "# Lockfile (pnpm)",
+        "pnpm-lock.yaml",
+        "",
+        "# UI components (shadcn/ui)",
+        "# Left as the shadcn CLI writes them, so re-adding one shows only real changes.",
         "src/components/ui/"
       ],
       "mode": 420

@@ -1,36 +1,36 @@
-# Compiled files (dbt)
+# Environment variables
+.env
+
+# Project skills (Claude Code)
+# Rebuilt by the sync-claude-skills hook.
+.claude/skills/
+
+# Artifacts and compiled SQL (dbt)
 target/
-
-# Internal packages (dbt)
-dbt_internal_packages/
-
-# Lock files (dbt)
-package-lock.yml
 
 # Logs (dbt)
 logs/
 
-# Third-party packages (dbt)
+# Package lock file (dbt)
+package-lock.yml
+
+# Packages (dbt)
 dbt_packages/
 
-# Cache folders (Python)
-__pycache__/
+# Personal overrides (mise)
+mise.local.toml
 
-# Virtual environments (Python)
-.venv/
-
-# Configuration and data (Rope)
-.ropeproject/
-
-# Lock files (uv)
-uv.lock
-
-# Skill scripts
+# Dependencies (Node.js)
 node_modules/
 
-# Claude Code symlink farm (rebuilt by the sync-claude-skills hook)
-.claude/skills/
+# Compiled files (Python)
+__pycache__/
 
-# Personal, per-machine files
-mise.local.toml
-.env
+# Virtual environment (Python)
+.venv/
+
+# Project folder (rope)
+.ropeproject/
+
+# Lockfile (uv)
+uv.lock

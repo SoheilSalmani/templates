@@ -17,17 +17,21 @@
       "hunks": [
         {
           "context_before": [
-            "# Written by the shadcn CLI; left as generated so re-adding one shows real changes.",
-            "src/components/ui/"
+            ".weft/",
+            ""
           ],
           "removed": [],
           "added": [
-            "",
+            "# Documents (MDX)",
             "# Prettier moves text inside JSX onto lines of its own, which MDX then reads",
             "# as a paragraph: formatting would change how the slides render.",
-            "*.mdx"
+            "*.mdx",
+            ""
           ],
-          "context_after": []
+          "context_after": [
+            "# Lockfile (pnpm)",
+            "pnpm-lock.yaml"
+          ]
         }
       ]
     },

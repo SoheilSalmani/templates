@@ -30,12 +30,19 @@
       "op": "create_file",
       "path": ".dockerignore",
       "content": [
+        "# Build context",
         "# The image needs the Cube project only, without the dev server's local data.",
         "*",
-        "!cube/",
-        "cube/.cubestore/",
+        "!cube",
+        "",
+        "# Environment variables",
         "cube/.env*",
-        "cube/**/__pycache__/"
+        "",
+        "# Data directory (Cube Store)",
+        "cube/.cubestore",
+        "",
+        "# Compiled files (Python)",
+        "cube/**/__pycache__"
       ],
       "mode": 420
     },

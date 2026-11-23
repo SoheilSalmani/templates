@@ -1,18 +1,18 @@
-# gitignore-style patterns excluded when weft reads a recording
-# worktree back (weft commit / diff / patch resync). Keeps tool
-# side-products out of patches. `.git/`, `.weft/`, and `.DS_Store`
-# are always ignored.
+# Environment variables
+.env
 
-# Python (skill scripts)
-__pycache__/
-.venv/
-
-# Node (skill scripts, MCP servers)
-node_modules/
-
-# Claude Code symlink farm (rebuilt by the sync-claude-skills hook)
+# Project skills (Claude Code)
+# Rebuilt by the sync-claude-skills hook.
 .claude/skills/
 
-# Personal, per-machine files
+# Personal overrides (mise)
 mise.local.toml
-.env
+
+# Dependencies (Node.js)
+node_modules/
+
+# Compiled files (Python)
+__pycache__/
+
+# Virtual environment (Python)
+.venv/
