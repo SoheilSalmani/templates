@@ -5,9 +5,9 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BASE="$ROOT/base"
 RECORD_ANSWER="project_name=Demo Service"
-# Skills patches get their own project name: the Weft skills quote
-# "Demo Service" in their examples, and recorded under it that prose would
-# become project_name references. No skill may contain this value.
+# Skills patches get their own project name: a skill that quoted
+# "Demo Service" in an example, recorded under it, would carry project_name
+# references. No skill may contain this value.
 SKILLS_RECORD_ANSWER="project_name=Skills Recording"
 
 # Every template directory except base, which each of them extends: a
@@ -30,7 +30,7 @@ check_combinations() {
     "" \
     "--answer use_linear=false --answer use_jira=true" \
     "--answer use_github=false --answer use_linear=false --answer commit_skills=false --answer commit_mise=false" \
-    "--answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_notion=true --answer use_meetings=true --answer use_weft=true" \
-    "--answer use_github=false --answer use_gitlab=true --answer gitlab_mcp_url=https://gitlab.example.com/api/v4/mcp --answer use_anki=true --answer use_obsidian=true --answer use_jira=true --answer use_notion=true --answer use_meetings=true --answer use_weft=true" \
+    "--answer use_jira=true --answer use_notion=true" \
+    "--answer use_github=false --answer use_gitlab=true --answer gitlab_mcp_url=https://gitlab.example.com/api/v4/mcp --answer use_jira=true --answer use_notion=true" \
     "$PRIVATE_ANSWERS"
 }
