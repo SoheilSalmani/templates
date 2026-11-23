@@ -1,30 +1,37 @@
-# Operating system
-.DS_Store
-Thumbs.db
-
-# Editors
-.idea/
-*.swp
-.tmp/
-
-# Environment files
+# Environment variables
 .env
 .env.*
 !.env.example
 
-# Personal toolchain overrides (mise)
-mise.local.toml
+# Connection files (Build Server Protocol)
+.bsp/
 
-# Personal settings (Claude Code)
+# Project local settings (Claude Code)
 .claude/settings.local.json
 
-# Weft session worktrees (scratch renders; never committed)
-.weft-sessions/
-.weft-record/
+# Thumbnail cache (File Explorer)
+Thumbs.db
 
-# Editor / build-tool side-products
-.ropeproject/
+# Project settings (IntelliJ IDEA)
+.idea/
+
+# Folder metadata (macOS)
+.DS_Store
+
+# Logs and other files (Metals)
 .metals/
+
+# Personal overrides (mise)
+mise.local.toml
+
+# Project folder (rope)
+.ropeproject/
+
+# Outputs and caches (Scala CLI)
 .scala-build/
-.bsp/
-.temp/
+
+# Swap files (Vim)
+*.swp
+
+# Session worktrees (Weft)
+.weft-sessions/
